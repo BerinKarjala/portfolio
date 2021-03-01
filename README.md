@@ -1,6 +1,19 @@
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This porject also uses Sanity.io [Sanity Build with Structured Content](https://github.com/sanity-io/sanity/blob/next/README.md)
+
+## `npm install -g @sanity/cli`
+
+This will install the sanity command line interface
+
+## `sanity init`
+
+This will build and initialize the sanity project
+
+## `sanity start`
+
+Open [http://localhost:3333](http://localhost:3333) to view it in the browser.
 
 ## Available Scripts
 
@@ -68,3 +81,4 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
