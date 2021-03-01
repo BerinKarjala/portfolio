@@ -53,10 +53,11 @@ export default function NavBar() {
             style={{ height: 35, width: 35 }}
           />
           <SocialIcon
-            url="https://linkedin.com"
+            url="https://github.com/BerinKarjala/portfolio"
             className="mr-4"
             target="_blank"
             fgColor="#fff"
+            bgColor="green"
             style={{ height: 35, width: 35 }}
           />
         </div>
