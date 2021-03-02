@@ -31,7 +31,7 @@ export default function Post() {
           Welcome to my developer's web log!
         </h1>
         <h2 className="text-lg text-gray-600 flex justify-center mb-12">
-          You will find the latest up to date information about the changes to my portfolio.
+          You will find up-to-date information about the changes to my portfolio.
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {postData &&
