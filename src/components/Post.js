@@ -28,10 +28,10 @@ export default function Post() {
     <main className="bg-green-100 min-h-screen p-12">
       <section className="container mx-auto">
         <h1 className="text-5xl flex justify-center cursive mb-20">
-          Blog Posts Page
+          Welcome to my developer's web log!
         </h1>
         <h2 className="text-lg text-gray-600 flex justify-center mb-12">
-          Welcome to my page of blog posts
+          You will find the latest up to date information about the changes to my portfolio.
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {postData &&
