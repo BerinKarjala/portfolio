@@ -20,7 +20,7 @@ export default function NavBar() {
             className="inflex-flex items-center py-3 cursive px-3 my-6 rounded text-blue-100 hover:text-green-800"
             activeClassName="text-white-100 bg-blue-700"
           >
-            Social Media
+            Developer's Log
           </NavLink>
           <NavLink
             to="/project"

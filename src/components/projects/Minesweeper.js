@@ -212,8 +212,9 @@ class Minsweeper extends Component {
     return (
       <div className="boardBox">
         <div className="gridX"></div>
+        <h3><i>right click on a tile to add a flag to the board</i></h3>
         <div>
-          Flags left: <span id="flags-left"></span>
+          Flags left: 🚩<span id="flags-left"></span>
         </div>
         <div id="result"></div>
         <button className='resetbtn' onClick={() => window.location.reload(false)}>Click to reset the board:🌟</button>

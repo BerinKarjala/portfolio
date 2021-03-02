@@ -7,6 +7,9 @@ import Post from "./components/Post";
 import Project from "./components/Project";
 import NavBar from "./components/NavBar";
 import Minesweeper from "./components/projects/Minesweeper";
+import RPG from "./components/projects/RPG";
+
+
 
 function App() {
   return (    
@@ -19,6 +22,7 @@ function App() {
         <Route component={Post} path="/post" />
         <Route component={Project} path="/project" />
         <Route component={Minesweeper} path="/projects/Minesweeper" />
+        <Route component={RPG} path="/projects/RPG" />
       </Switch>
       
     </BrowserRouter>);
