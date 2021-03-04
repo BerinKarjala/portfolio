@@ -32,7 +32,7 @@ function App() {
   responsive='true'
   layoutKey='-gw-1+2a-9x+5c'
 />
-      <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+      
     </BrowserRouter>);
   
 }
