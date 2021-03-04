@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-
+import AdSense from 'react-adsense';
 import Home from "./components/Home";
 import About from "./components/About";
 import SinglePost from "./components/SinglePost";
@@ -12,6 +12,7 @@ import RPG from "./components/projects/RPG";
 
 
 function App() {
+
   return (    
     <BrowserRouter>
     <NavBar />
@@ -24,7 +25,14 @@ function App() {
         <Route component={Minesweeper} path="/projects/Minesweeper" />
         <Route component={RPG} path="/projects/RPG" />
       </Switch>
-      
+      <AdSense.Google
+  client='ca-pub-3336553805044512'
+  style={{ display: 'block' }}
+  format='auto'
+  responsive='true'
+  layoutKey='-gw-1+2a-9x+5c'
+/>
+      <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
     </BrowserRouter>);
   
 }

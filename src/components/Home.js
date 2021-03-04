@@ -1,5 +1,4 @@
 import React from "react";
-import image from "../drop-of-water.jpg";
 import landingImage from "../underconstruction.jpg"
 
 export default function Home() {
