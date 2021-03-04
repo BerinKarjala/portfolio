@@ -27,6 +27,7 @@ function App() {
       </Switch>
       <AdSense.Google
   client='ca-pub-3336553805044512'
+  slot='4117074295'
   style={{ display: 'block' }}
   format='auto'
   responsive='true'
