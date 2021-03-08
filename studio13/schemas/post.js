@@ -41,6 +41,11 @@ export default {
       title: 'Body',
       type: 'blockContent',
     },
+    {
+      name: 'youtube',
+      title: 'Youtube video',
+      type: 'youtube'
+    }
   ],
 
   preview: {

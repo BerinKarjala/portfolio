@@ -3,11 +3,23 @@ import { useParams } from "react-router-dom"
 import sanityClient from "../client.js"
 import imageUrlBuilder from "@sanity/image-url";
 import BlockContent from "@sanity/block-content-to-react"
+import getYouTubeId from 'get-youtube-id'
+import YouTube from 'react-youtube'
 
 const builder = imageUrlBuilder(sanityClient)
 function urlFor(source){
     return builder.image(source)
 }
+
+const serializer = {
+    types: {
+      youtube: (node) => {
+        const { url } = node
+        const id = getYouTubeId(url)
+        return(<YouTube videoId={id} />)
+      }
+    }
+  };
 
 export default function SinglePost(){
     const [singlePost, setSinglePost] = useState(null)
@@ -26,7 +38,12 @@ export default function SinglePost(){
             },
             body,
             "name": author->name,
-            "authorImage": author->image
+            "authorImage": author->image,
+            youtube{
+                asset->{
+                    url
+                }
+            }
         }`).then((data) => setSinglePost(data[0])).catch(console.error)
     }, [slug]);
     if (!singlePost) return <div>Loading...</div>
@@ -51,7 +68,7 @@ export default function SinglePost(){
                     <img src={singlePost.mainImage.asset.url} alt={singlePost.title} className="w-full object-cover rounded-t" style={{height: "400px"}} />
                 </header>
                 <div className="px-16 lg:px-48 py-12 lg:py-20 prose lg:prose-xl max-w-full">
-                    <BlockContent blocks={singlePost.body} projectId="jp1px5kh" dataset="production" />
+                    <BlockContent blocks={singlePost.body} projectId="jp1px5kh" dataset="production" serializers={serializer} />
                 </div>
             </article>
         </main>
