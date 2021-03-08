@@ -1,11 +1,14 @@
 import React from "react";
-import landingImage from "../underconstruction.jpg"
+import landingImage from "../drop-of-water.jpg"
 
 export default function Home() {
   return (
-    <main className="items-center justify-center h-screen p-10 lg:pt-0">
-      <div className="container mx-auto px-14 relative">
-        <img src={landingImage} alt="This page is under construction sorry for the inconvience" className="rounded-lg border shadow-lg p-10 w-2/4 " />
+    <main>
+      <div>
+        <img src={landingImage} alt="a drop of water creating ripples in a pool" className="absolute object-cover w-full h-full" />
+        <section className="relative flex justify-center min-h-screen pt-6 lg:pt-30 px-8">
+          <h1 className="text-6xl text-green-1000 font-bold cursive leading-none lg:leading-snug home-name">Tervetuola!</h1>
+        </section>
       </div>
     </main>
   );

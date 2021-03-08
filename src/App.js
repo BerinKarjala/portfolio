@@ -11,8 +11,8 @@ import RPG from "./components/projects/RPG";
 
 
 
-function App() {
 
+function App() {
   return (    
     <BrowserRouter>
     <NavBar />
@@ -26,8 +26,8 @@ function App() {
         <Route component={RPG} path="/projects/RPG" />
       </Switch>
       <AdSense.Google
-  client='ca-pub-3336553805044512'
-  slot='4117074295'
+  client='pub-3336553805044512'
+  slot='3489068167'
   style={{ display: 'block' }}
   format='auto'
   responsive='true'
