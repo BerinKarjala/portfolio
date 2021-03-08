@@ -6,9 +6,6 @@ import reportWebVitals from './reportWebVitals';
 
 ReactDOM.render(
   <React.StrictMode>
-    <head>
-    <script data-ad-client="ca-pub-3336553805044512" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-    </head>
     <App />
   </React.StrictMode>,
   document.getElementById('root')
