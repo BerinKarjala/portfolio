@@ -7,6 +7,7 @@ import Project from "./components/Project";
 import NavBar from "./components/NavBar";
 import Minesweeper from "./components/projects/Minesweeper";
 import RPG from "./components/projects/RPG";
+import AdSense from 'react-adsense'
 
 
 
@@ -25,7 +26,14 @@ function App() {
         <Route component={Minesweeper} path="/projects/Minesweeper" />
         <Route component={RPG} path="/projects/RPG" />
       </Switch>
-      
+      <AdSense.Google
+  client='pub-3336553805044512'
+  slot='8275811156'
+  style={{ display: 'block' }}
+  format='auto'
+  responsive='true'
+  layoutKey='-gw-1+2a-9x+5c'
+/>
     </BrowserRouter>);
   
 }
