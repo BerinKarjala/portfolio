@@ -27,13 +27,13 @@ function App() {
         <Route component={RPG} path="/projects/RPG" />
       </Switch>
       <AdSense.Google
-  client='pub-3336553805044512'
-  slot='8275811156'
-  style={{ display: 'block' }}
-  format='auto'
-  responsive='true'
-  layoutKey='-gw-1+2a-9x+5c'
-/>
+        client='pub-3336553805044512'
+        slot='8275811156'
+        style={{ display: 'block' }}
+        format='auto'
+        responsive='true'
+        layoutKey='-gw-1+2a-9x+5c'
+      />
     </BrowserRouter>);
   
 }

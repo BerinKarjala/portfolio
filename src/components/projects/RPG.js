@@ -6,14 +6,15 @@ class RPG extends Component {
     componentDidMount(){
         //did mount functions
         const hello = document.querySelector("#buckle")
-        hello.innerHTML="hello world"
+        const sprite = "Hello"+<Sprite />
+       
         
     }
     render(){
         return(
             <div className='main'>
                 <h1 id="buckle"></h1>
-                <Sprite />
+                
             </div>
         )
     }

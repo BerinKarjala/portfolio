@@ -6,7 +6,7 @@ export default function Sprite(){
             display: "inline-block",
             height: "32px",
             width: "32px",
-            backgroundImage: "url(../sprite/m1.png)",
+            backgroundImage: "url(m1.png)",
             backgroundRepeat: "no-repeat",
             backgroundPosition: "0px 0px",
             border: "solid thin black"
