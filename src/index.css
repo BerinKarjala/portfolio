@@ -3,6 +3,7 @@
 
 .nav-bar {
   background-image: url('top.jpg');
+  background-size:cover;
 }
 .cursive {
   font-family: "Tangerine", cursive;

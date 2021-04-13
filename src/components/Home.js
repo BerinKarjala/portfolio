@@ -9,7 +9,6 @@ export default function Home() {
   return (
     <main>
       <div>
-        <img src={landingImage} alt="a drop of water creating ripples in a pool" className="absolute object-cover w-full h-full" />
         <section className="relative flex justify-center min-h-screen pt-6 lg:pt-30 px-8">
           <YouTube videoId={id} />
         </section>

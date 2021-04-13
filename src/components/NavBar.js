@@ -6,12 +6,12 @@ export default function NavBar() {
   return (
     <header className="nav-bar">
       <div className="container mx-auto flex justify-between">
-        <nav className="flex">
+        <nav className="mx-auto w-full flex">
           <NavLink
             to="/"
             exact
             activeClassName="text-white"
-            className="inflex-flex items-center py-6 px-3 mr-4 text-blue-100 hover:text-green-800 text-4xl font-bold cursive tracking-widest"
+            className="inflex-flex items-center py-6 px-3 mr-4 text-blue-100 hover:text-green-800 text-3xl font-bold cursive tracking-widest"
           >
             Berin Karjala
           </NavLink>
@@ -36,8 +36,7 @@ export default function NavBar() {
           >
             About Me!
           </NavLink>
-        </nav>
-        <div className="inline-flex py-3 px-3 my-6">
+          <div className="inline-flex py-3 px-3 my-6">
           <SocialIcon
             url="https://www.linkedin.com/in/berin-karjala-90846842/"
             className="mr-4"
@@ -54,6 +53,7 @@ export default function NavBar() {
             style={{ height: 35, width: 35 }}
           />
         </div>
+        </nav>
       </div>
     </header>
   );
