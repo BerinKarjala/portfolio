@@ -7,6 +7,7 @@ import Project from "./components/Project";
 import NavBar from "./components/NavBar";
 import Minesweeper from "./components/projects/Minesweeper";
 import RPG from "./components/projects/RPG";
+import ComponentSandbox from "./components/projects/ComponentSandbox";
 import AdSense from 'react-adsense'
 
 
@@ -25,6 +26,7 @@ function App() {
         <Route component={Project} path="/project" />
         <Route component={Minesweeper} path="/projects/Minesweeper" />
         <Route component={RPG} path="/projects/RPG" />
+        <Route component={ComponentSandbox} path="/projects/ComponentSandbox" />
       </Switch>
       <AdSense.Google
         client='pub-3336553805044512'
