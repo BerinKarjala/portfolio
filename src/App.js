@@ -8,10 +8,6 @@ import NavBar from "./components/NavBar";
 import Minesweeper from "./components/projects/Minesweeper";
 import RPG from "./components/projects/RPG";
 import ComponentSandbox from "./components/projects/ComponentSandbox";
-import AdSense from 'react-adsense'
-
-
-
 
 function App() {
 
@@ -28,14 +24,6 @@ function App() {
         <Route component={RPG} path="/projects/RPG" />
         <Route component={ComponentSandbox} path="/projects/ComponentSandbox" />
       </Switch>
-      <AdSense.Google
-        client='pub-3336553805044512'
-        slot='8275811156'
-        style={{ display: 'block' }}
-        format='auto'
-        responsive='true'
-        layoutKey='-gw-1+2a-9x+5c'
-      />
     </BrowserRouter>);
   
 }
