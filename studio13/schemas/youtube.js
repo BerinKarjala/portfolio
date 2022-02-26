@@ -17,7 +17,7 @@ export default {
         {
         name: 'url',
         type: 'url',
-        title: 'YouTube video URL'
+        title: 'YouTube video URL',
         }
     ],
     preview: {

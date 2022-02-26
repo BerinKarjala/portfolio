@@ -4,9 +4,9 @@ import { SocialIcon } from "react-social-icons";
 
 export default function NavBar() {
   return (
-    <header className="container">
-      <div className="mx-auto flex-initial justify-between nav-bar py-5 drop-shadow-lg">
-        <nav className="mx-auto w-screen flex-nowrap">
+    <header className="container flex">
+      <div className="flex justify-between nav-bar py-5 drop-shadow-lg">
+        <nav className="w-screen flex-nowrap">
           <NavLink
             to="/"
             exact
