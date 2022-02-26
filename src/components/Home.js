@@ -1,5 +1,4 @@
 import React from "react";
-import landingImage from "../drop-of-water.jpg"
 import getYouTubeId from "get-youtube-id"
 import YouTube from "react-youtube"
 
@@ -8,9 +7,9 @@ export default function Home() {
   const id = getYouTubeId(url)
   return (
     <main>
-      <div>
-        <section className="relative flex justify-center min-h-screen pt-6 lg:pt-30 px-8">
-          <YouTube videoId={id} />
+      <div className="container relative flex min-h-screen bg-gradient-to-r from-purple-500 to-pink-500">
+        <section className="grow">
+          <YouTube className="m-2 p-1 border-2 rounded min-w-auto lg:min-w-screen justify-left sm:justify-center" videoId={id} />
         </section>
       </div>
     </main>

@@ -5,10 +5,6 @@
   background-image: url('top.jpg');
   background-size:cover;
 }
-.cursive {
-  font-family: "Tangerine", cursive;
-  font-weight: 700;
-}
 
 .prose img {
   margin-left: auto;
