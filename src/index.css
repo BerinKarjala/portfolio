@@ -1,5 +1,20 @@
 @import url("https://cdn.jsdelivr.net/npm/@tailwindcss/typography@0.2.x/dist/typography.min.css");
 @import url("https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css");
+@import url('https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cedarville+Cursive&display=swap');
+
+.handwriting {
+  font-family: "Shadows Into Light", handwriting;
+  font-weight: 600;
+}
+.cursive {
+  font-family: "Cedarville Cursive", cursive;
+}
+.home-name {
+  font-size: 150px;
+}
+
+
 
 .nav-bar {
   background-image: url('top.jpg');
