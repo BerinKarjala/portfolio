@@ -45,7 +45,7 @@ export default function SinglePost(blocks){
     if (!singlePost) return <div>Loading...</div>
     
     return (
-        <main className="bg-gray-200 min-h-screen p-12">
+        <main className="forest-bg px-4 sm:px-6 md:px-10 lg:px-12 py-12">
             <article className="relative">
                 <header className="relative">
                     <div className="absolute h-full w-full flex items-center justify-center p-8">

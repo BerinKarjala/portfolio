@@ -18,16 +18,16 @@ export default function Project() {
         }`).then((data) => setProjectData(data)).catch(console.error);
     },[]);
   return (
-    <main className="bg-gradient-to-br from-green-900 via-emerald-800 to-lime-600 min-h-screen p-12 text-emerald-50">
+    <main className="forest-bg px-4 sm:px-6 md:px-10 lg:px-12 py-12 text-emerald-50">
       <section className="container mx-auto">
-        <h1 className="text-5xl flex justify-center text-emerald-100">My Projects</h1>
-        <h2 className="text-lg text-emerald-50 flex justify-center mb-12">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl flex justify-center text-center text-emerald-100 mb-6">My Projects</h1>
+        <h2 className="text-base sm:text-lg text-emerald-50 flex justify-center text-center mb-8 sm:mb-12">
           Welcome to my projects page!
         </h2>
-        <section className="grid grid-cols-2 gap-8">
+        <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
           {projectData && projectData.map((project, index) => {
               return (
-                <article className="relative rounded-lg shadow-xl bg-white bg-opacity-90 p-16">
+                <article className="relative rounded-lg shadow-xl bg-white bg-opacity-90 p-8 sm:p-10 lg:p-12" key={project.title || index}>
                   <h3 className="text-gray-800 text-3xl font-bold mb-2 hover:text-emerald-700">
                     <Link
                       to={project.link}
