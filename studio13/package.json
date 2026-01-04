@@ -6,6 +6,10 @@
   "main": "package.json",
   "author": "Berin Karjala <berin.karjala@outlook.com>",
   "license": "UNLICENSED",
+  "engines": {
+    "node": "18.19.x",
+    "npm": ">=9"
+  },
   "scripts": {
     "start": "sanity start",
     "build": "sanity build"
@@ -27,7 +31,9 @@
     "react-dom": "^17.0",
     "styled-components": "^5.2.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@sanity/cli": "^2.36.2"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/BerinKarjala/portfolio.git"

@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { SocialIcon } from "react-social-icons";
+import { FaGithub, FaLinkedin } from "react-icons/fa";
 
 export default function NavBar() {
   return (
@@ -37,22 +37,25 @@ export default function NavBar() {
             About Me!
           </NavLink>
           <div className="inline-flex p-2 items-centered">
-          <SocialIcon
-            url="https://www.linkedin.com/in/berin-karjala-90846842/"
-            className="mr-4"
-            target="_blank"
-            fgColor="#fff"
-            style={{ height: 35, width: 35 }}
-          />
-          <SocialIcon
-            url="https://github.com/BerinKarjala/portfolio"
-            className="mr-4"
-            target="_blank"
-            fgColor="#fff"
-            bgColor="green"
-            style={{ height: 35, width: 35 }}
-          />
-        </div>
+            <a
+              href="https://www.linkedin.com/in/berin-karjala-90846842/"
+              className="mr-4 text-white"
+              target="_blank"
+              rel="noreferrer noopener"
+              aria-label="LinkedIn"
+            >
+              <FaLinkedin size={35} />
+            </a>
+            <a
+              href="https://github.com/BerinKarjala/portfolio"
+              className="mr-4 text-white"
+              target="_blank"
+              rel="noreferrer noopener"
+              aria-label="GitHub"
+            >
+              <FaGithub size={35} />
+            </a>
+          </div>
         </nav>
       </div>
     </header>

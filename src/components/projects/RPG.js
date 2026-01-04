@@ -1,22 +1,15 @@
 
-import React, {Component} from 'react'
-import Sprite from '../sprite'
+import React, { Component } from 'react'
 
 class RPG extends Component {
-    componentDidMount(){
-        //did mount functions
-        const hello = document.querySelector("#buckle")
-        const sprite = "Hello"+<Sprite />
-       
-        
-    }
-    render(){
-        return(
-            <div className='main'>
-                <h1 id="buckle"></h1>
-                
-            </div>
-        )
-    }
+  render() {
+    return (
+      <div className='main'>
+        <h1 id="buckle" className="text-3xl font-bold text-green-100">
+          RPG demo coming soon
+        </h1>
+      </div>
+    )
+  }
 }
 export default RPG

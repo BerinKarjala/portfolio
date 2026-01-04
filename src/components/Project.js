@@ -18,17 +18,17 @@ export default function Project() {
         }`).then((data) => setProjectData(data)).catch(console.error);
     },[]);
   return (
-    <main className="bg-gradient-to-r from-purple-700 to-pink-500 min-h-screen p-12">
+    <main className="bg-gradient-to-br from-green-900 via-emerald-800 to-lime-600 min-h-screen p-12 text-emerald-50">
       <section className="container mx-auto">
-        <h1 className="text-5xl flex justify-center">My Projects</h1>
-        <h2 className="text-lg text-gray-600 flex justify-center mb-12">
+        <h1 className="text-5xl flex justify-center text-emerald-100">My Projects</h1>
+        <h2 className="text-lg text-emerald-50 flex justify-center mb-12">
           Welcome to my projects page!
         </h2>
         <section className="grid grid-cols-2 gap-8">
           {projectData && projectData.map((project, index) => {
               return (
-                <article className="relative rounded-lg shadow-xl bg-white p-16">
-                  <h3 className="text-gray-800 text-3xl font-bold mb-2 hover:text-red-700">
+                <article className="relative rounded-lg shadow-xl bg-white bg-opacity-90 p-16">
+                  <h3 className="text-gray-800 text-3xl font-bold mb-2 hover:text-emerald-700">
                     <Link
                       to={project.link}
                       alt={project.title}
@@ -56,8 +56,8 @@ export default function Project() {
                     </p>
                     <Link to={project.link}
                       rel="noopener noreferrer"
-                      targer="_blank"
-                      className="text-red-500 font-bold hover:underline hover:text-red-400"
+                      target="_blank"
+                      className="text-emerald-700 font-bold hover:underline hover:text-emerald-600"
                     >
                     View The Project{" "}
                       <span role="img" aria-label="right pointer">

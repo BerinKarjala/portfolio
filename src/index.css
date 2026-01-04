@@ -3,6 +3,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Cedarville+Cursive&display=swap');
 
+:root {
+  --forest-900: #0e2216;
+  --forest-800: #123524;
+  --forest-700: #195c3a;
+  --forest-500: #3e9b62;
+  --forest-300: #8fd4a7;
+  --forest-mist: #e8f3e7;
+}
+
+body {
+  background: radial-gradient(circle at 20% 20%, rgba(63, 141, 98, 0.12), transparent 30%),
+    radial-gradient(circle at 80% 10%, rgba(143, 212, 167, 0.08), transparent 28%),
+    linear-gradient(135deg, #0b1b12, #0f2a19 35%, #163c27 65%, #2c744b);
+}
+
 .handwriting {
   font-family: "Shadows Into Light", handwriting;
   font-weight: 600;
@@ -17,8 +32,10 @@
 
 
 .nav-bar {
-  background-image: url('top.jpg');
-  background-size:cover;
+  background-image: linear-gradient(135deg, rgba(18, 53, 36, 0.96), rgba(25, 92, 58, 0.92), rgba(66, 140, 92, 0.9));
+  background-size: cover;
+  border-bottom: 1px solid rgba(143, 212, 167, 0.35);
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.45);
 }
 
 .prose img {
@@ -41,11 +58,11 @@
   width: 420px;
   display: flex;
   flex-wrap: wrap;
-  background-color: #dcd6bc;
+  background-color: #1e3326;
   margin-left: 50px;
   margin-right:0px;
   margin-top: 20px;
-  border: 10px solid #dcd6bc;
+  border: 10px solid #24402f;
   margin-bottom: 10px;
 }
 .grid > div {
@@ -58,7 +75,7 @@
   height: 40px;
   width: 40px;
   border: 5px solid;
-  border-color: #f5f3eb #bab7a9 #bab7a9 #fff9db;
+  border-color: #345a42 #234430 #234430 #3f6d4c;
   box-sizing: border-box;
 }
 
@@ -66,8 +83,8 @@
   height: 40px;
   width: 40px;
   border: 2px solid;
-  background-color: #cecab7;
-  border-color: #9c998d;
+  background-color: #2f5140;
+  border-color: #1b3326;
   box-sizing: border-box;
 }
 
@@ -75,28 +92,33 @@
   height: 40px;
   width: 40px;
   border: 5px solid;
-  border-color: #f5f3eb #bab7a9 #bab7a9 #fff9db;
+  border-color: #345a42 #234430 #234430 #3f6d4c;
   box-sizing: border-box;
 }
 
 .one {
-  color: #e76346;
+  color: #a5f3c6;
 }
 
 .two {
-  color: #4199d3;
+  color: #7dd3fc;
 }
 
 .three {
-  color: #57da59;
+  color: #bbf7d0;
 }
 
 .four{
-  color: #bb41d3;
+  color: #bef264;
 }
 .resetbtn{
-  border: thin black solid
+  border: thin solid var(--forest-500);
+  background: linear-gradient(135deg, var(--forest-700), var(--forest-500));
+  color: var(--forest-mist);
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.35rem;
+  box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.5);
 }
 .landingImage{
-  border: thin black solid
+  border: thin solid var(--forest-500);
 }
