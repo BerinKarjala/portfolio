@@ -19,3 +19,12 @@
 ## Notes
 - Keep secrets out of git; use `.env` locally and Netlify environment variables in production.
 - Use VS Code with the recommended extensions (`.vscode/extensions.json`) and format-on-save settings (`.vscode/settings.json`).
+
+## CRA -> Vite migration plan (draft)
+1) Add Vite tooling: install `vite` + `@vitejs/plugin-react` and add `vite.config.js`.
+2) Move CRA `public/index.html` content to root `index.html` with a `#root` mount.
+3) Point `index.html` to `src/index.js` and ensure imports work in Vite.
+4) Replace scripts with `vite` (`dev`, `build`, `preview`) and remove `react-scripts`.
+5) Update env vars: rename `REACT_APP_*` to `VITE_*`.
+6) Update Netlify publish dir to `dist/` and build command to `npm run build`.
+7) Verify: `npm run dev`, `npm run build`, `npm run preview`, and Netlify deploy.
