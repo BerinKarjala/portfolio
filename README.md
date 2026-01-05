@@ -1,12 +1,12 @@
 # Portfolio + Sanity Studio
 
 ## Local development
-- Node `18.19.x` (`.nvmrc`), npm `>=9`.
+- Node `20.19.x` (`.nvmrc`), npm `>=10`.
 - Frontend (CRA):
   - Install: `npm install`
   - Dev: `npm start` (http://localhost:3000)
   - Build: `npm run build` (outputs to `build/`)
-- Sanity Studio (v2, `studio13/`):
+- Sanity Studio (v3, `studio13/`):
   - Install: `cd studio13 && npm install`
   - Dev: `npm start` (http://localhost:3333)
   - Build: `npm run build` (outputs to `studio13/dist`)
