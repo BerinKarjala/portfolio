@@ -11,6 +11,7 @@ studio13/.sanity/
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
