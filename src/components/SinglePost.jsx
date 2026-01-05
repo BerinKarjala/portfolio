@@ -7,6 +7,7 @@ import getYouTubeId from 'get-youtube-id'
 import YouTube from 'react-youtube'
 
 const builder = imageUrlBuilder(sanityClient)
+const { projectId, dataset } = sanityClient.config()
 function urlFor(source){
     return builder.image(source)
 }
@@ -64,7 +65,7 @@ export default function SinglePost(blocks){
                     <img src={singlePost.mainImage.asset.url} alt={singlePost.title} className="w-full object-cover rounded-t" style={{height: "400px"}} />
                 </header>
                 <div className="px-16 lg:px-48 py-12 lg:py-20 prose lg:prose-xl max-w-full">
-                    <BlockContent blocks={singlePost.body} projectId="jp1px5kh" dataset="production" serializers={serializers} />
+                    <BlockContent blocks={singlePost.body} projectId={projectId} dataset={dataset} serializers={serializers} />
                 </div>
             </article>
         </main>

@@ -7,32 +7,32 @@ export default function NavBar() {
     <header className="w-full nav-bar shadow-lg">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-4">
-          <nav className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-6">
+          <nav className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-5">
             <NavLink
               to="/"
               exact
               activeClassName="nav-active"
-              className="inflex-flex items-center px-2 py-1 rounded text-white hover:text-red-100 text-lg sm:text-xl font-bold tracking-widest"
+              className="inflex-flex items-center px-5 py-1 rounded nav-item text-white hover:text-red-100 text-lg sm:text-xl font-bold tracking-widest"
             >
               Berin Karjala
             </NavLink>
             <NavLink
               to="/post"
-              className="inflex-flex px-2 py-1 items-center rounded text-white hover:text-red-100 text-base sm:text-lg"
+              className="inflex-flex px-5 py-1 items-center rounded nav-item text-white hover:text-red-100 text-base sm:text-lg"
               activeClassName="nav-active"
             >
               Developer's Log
             </NavLink>
             <NavLink
               to="/project"
-              className="inflex-flex px-2 py-1 items-center rounded text-white hover:text-red-100 text-base sm:text-lg"
+              className="inflex-flex px-5 py-1 items-center rounded nav-item text-white hover:text-red-100 text-base sm:text-lg"
               activeClassName="nav-active"
             >
               Projects
             </NavLink>
             <NavLink
               to="/about"
-              className="inflex-flex px-2 py-1 items-center rounded text-white hover:text-red-100 text-base sm:text-lg"
+              className="inflex-flex px-5 py-1 items-center rounded nav-item text-white hover:text-red-100 text-base sm:text-lg"
               activeClassName="nav-active"
             >
               About Me!
