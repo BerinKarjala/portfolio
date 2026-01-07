@@ -12,27 +12,27 @@ export default function NavBar() {
               to="/"
               exact
               activeClassName="nav-active"
-              className="inflex-flex items-center px-5 py-1 rounded nav-item text-white hover:text-red-100 text-lg sm:text-xl font-bold tracking-widest"
+              className="inflex-flex items-center px-5 py-1 rounded nav-item text-white hover:text-red-100 transition duration-300 text-lg sm:text-xl font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900"
             >
               Berin Karjala
             </NavLink>
             <NavLink
               to="/post"
-              className="inflex-flex px-5 py-1 items-center rounded nav-item text-white hover:text-red-100 text-base sm:text-lg"
+              className="inflex-flex px-5 py-1 items-center rounded nav-item text-white hover:text-red-100 transition duration-300 text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900"
               activeClassName="nav-active"
             >
               Developer's Log
             </NavLink>
             <NavLink
               to="/project"
-              className="inflex-flex px-5 py-1 items-center rounded nav-item text-white hover:text-red-100 text-base sm:text-lg"
+              className="inflex-flex px-5 py-1 items-center rounded nav-item text-white hover:text-red-100 transition duration-300 text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900"
               activeClassName="nav-active"
             >
               Projects
             </NavLink>
             <NavLink
               to="/about"
-              className="inflex-flex px-5 py-1 items-center rounded nav-item text-white hover:text-red-100 text-base sm:text-lg"
+              className="inflex-flex px-5 py-1 items-center rounded nav-item text-white hover:text-red-100 transition duration-300 text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900"
               activeClassName="nav-active"
             >
               About Me!
@@ -41,7 +41,7 @@ export default function NavBar() {
           <div className="flex items-center gap-3 sm:gap-4 mt-1 sm:mt-0">
             <a
               href="https://www.linkedin.com/in/berin-karjala-90846842/"
-              className="text-white hover:text-emerald-200 transition-colors"
+              className="text-white hover:text-emerald-200 transition-colors focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900 rounded"
               target="_blank"
               rel="noreferrer noopener"
               aria-label="LinkedIn"
@@ -50,7 +50,7 @@ export default function NavBar() {
             </a>
             <a
               href="https://github.com/BerinKarjala/portfolio"
-              className="text-white hover:text-emerald-200 transition-colors"
+              className="text-white hover:text-emerald-200 transition-colors focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900 rounded"
               target="_blank"
               rel="noreferrer noopener"
               aria-label="GitHub"
