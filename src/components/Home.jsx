@@ -79,15 +79,16 @@ export default function Home() {
     .filter(Boolean);
   return (
     <main className="relative forest-bg text-green-50">
-      <div className="absolute inset-0 bg-black bg-opacity-10 pointer-events-none"></div>
+      <div className="absolute inset-0 pointer-events-none"></div>
       <section className="container mx-auto px-4 sm:px-6 md:px-8 py-10 flex justify-center relative z-10">
         <div className="w-full max-w-5xl bg-green-900 bg-opacity-40 border border-green-700 border-opacity-40 rounded-2xl shadow-2xl backdrop-filter backdrop-blur-sm p-6 sm:p-8 lg:p-10">
-          <p className="uppercase tracking-widest text-xs sm:text-sm text-green-200 text-center">
-            {content.roleLabel}
-          </p>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold mt-3 text-green-50">
             {content.title}
           </h1>
+          <hr />
+          <p className="uppercase tracking-widest text-xs sm:text-sm text-green-200 text-center">
+            {content.roleLabel}
+          </p>
           <div className="mt-4 space-y-4 text-green-100 leading-relaxed max-w-3xl">
             <p>{content.heroParagraph}</p>
             <p>{content.heroSupportingLine}</p>
