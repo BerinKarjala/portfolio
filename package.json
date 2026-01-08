@@ -20,7 +20,7 @@
     "web-vitals": "^1.1.1"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.11.10",
+    "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^11.2.6",
     "@testing-library/user-event": "^12.8.3",
     "@vitejs/plugin-react": "^5.1.2",
