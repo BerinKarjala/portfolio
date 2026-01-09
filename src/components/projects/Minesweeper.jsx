@@ -18,6 +18,7 @@ class Minsweeper extends Component {
   }
 
   componentDidMount() {
+    // Initialize sizing and a fresh game, then keep the board responsive on resize.
     this.updateCellSize();
     this.resetGame();
     window.addEventListener("resize", this.updateCellSize);
@@ -33,6 +34,7 @@ class Minsweeper extends Component {
   }
 
   updateCellSize = () => {
+    // Compute a cell size that guarantees the full grid fits the viewport.
     const grid = this.gridRef.current;
     if (!grid) return;
 
@@ -58,6 +60,7 @@ class Minsweeper extends Component {
   };
 
   resetGame = () => {
+    // Clear the board and re-create a fresh, randomized game state.
     const grid = this.gridRef.current;
     if (!grid) return;
 
@@ -73,6 +76,7 @@ class Minsweeper extends Component {
       this.flagsLeftRef.current.textContent = String(this.bombAmount);
     }
 
+    // Build and shuffle the mine layout before wiring events and counts.
     const bombsArray = Array(this.bombAmount).fill("bomb");
     const emptyArray = Array(this.width * this.width - this.bombAmount).fill(
       "valid"
@@ -96,6 +100,7 @@ class Minsweeper extends Component {
       });
     }
 
+    // Compute adjacent-mine counts after mines are placed.
     for (let i = 0; i < this.squares.length; i++) {
       if (this.squares[i].classList.contains("bomb")) {
         continue;
@@ -108,6 +113,7 @@ class Minsweeper extends Component {
   };
 
   getNeighbors = (index) => {
+    // Enumerate all valid neighbor indices (8-directional).
     const row = Math.floor(index / this.width);
     const col = index % this.width;
     const neighbors = [];
@@ -132,12 +138,14 @@ class Minsweeper extends Component {
   };
 
   countAdjacentMines = (index) => {
+    // Count mines in surrounding cells using the shared neighbor helper.
     return this.getNeighbors(index).reduce((total, neighborIndex) => {
       return total + (this.squares[neighborIndex]?.classList.contains("bomb") ? 1 : 0);
     }, 0);
   };
 
   validateCounts = () => {
+    // Optional dev-only sanity check for mine counts.
     if (!DEBUG_VALIDATE_COUNTS) return;
     for (let i = 0; i < this.squares.length; i++) {
       const square = this.squares[i];
@@ -152,6 +160,7 @@ class Minsweeper extends Component {
   };
 
   addFlag = (square) => {
+    // Toggle flag placement with right click.
     if (this.isGameOver) return;
     if (square.classList.contains("checked")) return;
 
@@ -177,6 +186,7 @@ class Minsweeper extends Component {
   };
 
   handleClick = (square) => {
+    // Handle a cell reveal; flood-fill neighbors when count is zero.
     const currentId = Number(square.id);
     if (this.isGameOver) return;
     if (square.classList.contains("checked") || square.classList.contains("flag")) {
@@ -204,6 +214,7 @@ class Minsweeper extends Component {
   };
 
   checkSquare = (currentId) => {
+    // Reveal neighboring cells (delayed to avoid deep recursion).
     const neighbors = this.getNeighbors(currentId);
     window.setTimeout(() => {
       neighbors.forEach((neighborIndex) => {
@@ -216,6 +227,7 @@ class Minsweeper extends Component {
   };
 
   gameOver = () => {
+    // Reveal all mines and freeze further interaction.
     if (this.resultRef.current) {
       this.resultRef.current.textContent = "BOOM! Game Over!";
     }
@@ -229,6 +241,7 @@ class Minsweeper extends Component {
   };
 
   checkForWin = () => {
+    // Win when all bombs are correctly flagged.
     let matches = 0;
 
     for (let i = 0; i < this.squares.length; i++) {
