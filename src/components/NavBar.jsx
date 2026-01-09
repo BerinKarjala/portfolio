@@ -17,13 +17,6 @@ export default function NavBar() {
               Berin Karjala
             </NavLink>
             <NavLink
-              to="/post"
-              className="inflex-flex px-5 py-1 items-center rounded nav-item text-white hover:text-red-100 transition duration-300 text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900"
-              activeClassName="nav-active"
-            >
-              Developer's Log
-            </NavLink>
-            <NavLink
               to="/project"
               className="inflex-flex px-5 py-1 items-center rounded nav-item text-white hover:text-red-100 transition duration-300 text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900"
               activeClassName="nav-active"
