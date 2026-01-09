@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Minesweeper Source</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+        padding: 16px;
+        font-family: "Roboto Mono", Consolas, "Courier New", monospace;
+        background: rgba(12, 24, 16, 0.92);
+        color: #e8f3e7;
+      }
+      .status {
+        font-size: 12px;
+        color: #8fd4a7;
+        margin-bottom: 8px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        line-height: 1.5;
+        font-size: 12px;
+      }
+      code {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="status" class="status">Loading source...</div>
+    <pre><code id="code"></code></pre>
+    <script>
+      (function () {
+        var status = document.getElementById("status");
+        var code = document.getElementById("code");
+        var url =
+          "https://raw.githubusercontent.com/BerinKarjala/portfolio/main/src/components/projects/Minesweeper.jsx";
+
+        fetch(url, { cache: "no-store" })
+          .then(function (response) {
+            if (!response.ok) {
+              throw new Error("HTTP " + response.status);
+            }
+            return response.text();
+          })
+          .then(function (text) {
+            code.textContent = text;
+            status.textContent = "Minesweeper.jsx";
+          })
+          .catch(function (error) {
+            status.textContent = "Unable to load source.";
+            code.textContent = error.message;
+          });
+      })();
+    </script>
+  </body>
+</html>
