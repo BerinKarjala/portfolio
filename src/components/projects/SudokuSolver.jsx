@@ -7,18 +7,22 @@ import {
 } from "./sudoku/solver";
 
 export default function SudokuSolver() {
+  // Create an empty 9x9 grid once, then reuse it for reset.
   const emptyGrid = useMemo(
     () => Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => "")),
     []
   );
   const [grid, setGrid] = useState(emptyGrid);
   const [message, setMessage] = useState("");
+  const [isSolved, setIsSolved] = useState(false);
 
+  // Keep only a single valid digit (1-9). Everything else becomes blank.
   const sanitizeCellValue = (rawValue) => {
     const digits = String(rawValue).replace(/[^1-9]/g, "");
     return digits ? digits[0] : "";
   };
 
+  // Update a single cell with sanitized input.
   const updateCell = (rowIndex, colIndex, rawValue) => {
     const nextValue = sanitizeCellValue(rawValue);
     setGrid((prevGrid) => {
@@ -26,28 +30,36 @@ export default function SudokuSolver() {
       nextGrid[rowIndex][colIndex] = nextValue;
       return nextGrid;
     });
+    setIsSolved(false);
+    setMessage("");
   };
 
+  // Handle typing in a cell.
   const handleChange = (rowIndex, colIndex) => (event) => {
     updateCell(rowIndex, colIndex, event.target.value);
   };
 
+  // Handle paste by taking only the first valid digit.
   const handlePaste = (rowIndex, colIndex) => (event) => {
     event.preventDefault();
     const pasted = event.clipboardData?.getData("text") ?? "";
     updateCell(rowIndex, colIndex, pasted);
   };
 
+  // Clear the grid and reset messaging.
   const handleReset = () => {
     setGrid(emptyGrid);
     setMessage("");
+    setIsSolved(false);
   };
 
+  // Validate the puzzle and attempt to solve it using backtracking.
   const handleSolve = () => {
     const numberGrid = toNumberGrid(grid);
 
     if (!isValidGrid(numberGrid)) {
       setMessage("Invalid puzzle: conflicting hints.");
+      setIsSolved(false);
       return;
     }
 
@@ -55,11 +67,13 @@ export default function SudokuSolver() {
 
     if (!solved) {
       setMessage("No solution found.");
+      setIsSolved(false);
       return;
     }
 
     setGrid(toUiGrid(solved));
     setMessage("Solved!");
+    setIsSolved(true);
   };
 
   return (
@@ -98,7 +112,9 @@ export default function SudokuSolver() {
                       inputMode="numeric"
                       pattern="[1-9]"
                       maxLength={1}
-                      className="h-full w-full border border-green-700 border-opacity-60 bg-green-900 bg-opacity-40 text-center text-base font-semibold text-green-100 focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900"
+                      className={`h-full w-full border border-green-700 border-opacity-60 bg-green-900 bg-opacity-40 text-center text-base font-semibold focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900 ${
+                        isSolved && value ? "text-lime-300" : "text-green-100"
+                      }`}
                       style={{
                         borderRightWidth: addRightBorder ? 2 : 1,
                         borderBottomWidth: addBottomBorder ? 2 : 1,

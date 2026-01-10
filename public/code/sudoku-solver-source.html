@@ -41,24 +41,35 @@
       (function () {
         var status = document.getElementById("status");
         var code = document.getElementById("code");
-        var url =
-          "https://raw.githubusercontent.com/BerinKarjala/portfolio/main/src/components/projects/SudokuSolver.jsx";
+        var urls = [
+          "https://raw.githubusercontent.com/BerinKarjala/portfolio/main/src/components/projects/SudokuSolver.jsx",
+          "https://raw.githubusercontent.com/BerinKarjala/portfolio/feature/sudoku-solver/src/components/projects/SudokuSolver.jsx"
+        ];
 
-        fetch(url, { cache: "no-store" })
-          .then(function (response) {
-            if (!response.ok) {
-              throw new Error("HTTP " + response.status);
-            }
-            return response.text();
-          })
-          .then(function (text) {
-            code.textContent = text;
-            status.textContent = "SudokuSolver.jsx";
-          })
-          .catch(function (error) {
+        function tryFetch(index) {
+          if (index >= urls.length) {
             status.textContent = "Unable to load source.";
-            code.textContent = error.message;
-          });
+            code.textContent = "No source file found.";
+            return;
+          }
+
+          fetch(urls[index], { cache: "no-store" })
+            .then(function (response) {
+              if (!response.ok) {
+                throw new Error("HTTP " + response.status);
+              }
+              return response.text();
+            })
+            .then(function (text) {
+              code.textContent = text;
+              status.textContent = "SudokuSolver.jsx";
+            })
+            .catch(function () {
+              tryFetch(index + 1);
+            });
+        }
+
+        tryFetch(0);
       })();
     </script>
   </body>
