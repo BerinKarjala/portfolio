@@ -1,8 +1,12 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+/* @vitest-environment jsdom */
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import App from "./App";
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+describe("App", () => {
+  it("renders the navigation links", () => {
+    render(<App />);
+    expect(screen.getByText(/projects/i)).not.toBeNull();
+    expect(screen.getByText(/about me!/i)).not.toBeNull();
+  });
 });

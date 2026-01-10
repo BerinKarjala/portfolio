@@ -5,25 +5,22 @@ import Project from "./components/Project";
 import NavBar from "./components/NavBar";
 import NotFound from "./components/NotFound";
 import Minesweeper from "./components/projects/Minesweeper";
-import RPG from "./components/projects/RPG";
-import ComponentSandbox from "./components/projects/ComponentSandbox";
+import SudokuSolver from "./components/projects/SudokuSolver";
 
 function App() {
-
-  return (    
+  return (
     <BrowserRouter>
-    <NavBar />
+      <NavBar />
       <Switch>
         <Route component={Home} path="/" exact />
         <Route component={About} path="/about" />
         <Route component={Project} path="/project" />
         <Route component={Minesweeper} path="/projects/Minesweeper" />
-        <Route component={RPG} path="/projects/RPG" />
-        <Route component={ComponentSandbox} path="/projects/ComponentSandbox" />
+        <Route component={SudokuSolver} path="/projects/SudokuSolver" />
         <Route component={NotFound} />
       </Switch>
-    </BrowserRouter>);
-  
+    </BrowserRouter>
+  );
 }
 
 export default App;
