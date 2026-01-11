@@ -1,6 +1,5 @@
 @import url("https://cdn.jsdelivr.net/npm/@tailwindcss/typography@0.2.x/dist/typography.min.css");
 @import url("https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css");
-@import url('https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Cedarville+Cursive&display=swap');
 
 :root {
@@ -41,18 +40,9 @@ body {
   box-shadow: 0 3px 0 #2f2f2f;
 }
 
-.handwriting {
-  font-family: "Shadows Into Light", handwriting;
-  font-weight: 600;
-}
 .cursive {
   font-family: "Cedarville Cursive", cursive;
 }
-.home-name {
-  font-size: 150px;
-}
-
-
 
 .nav-bar {
   background-color: #123524;
@@ -70,9 +60,6 @@ body {
   border-radius: 5px;
 }
 
-.home-name {
-  font-size:150px;
-}
 .boardBox {
   width: 100%;
   max-width: 560px;
@@ -156,16 +143,4 @@ body {
   padding: 0.35rem 0.75rem;
   border-radius: 0.35rem;
   box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.5);
-}
-.landingImage{
-  border: thin solid var(--forest-500);
-}
-.cta-button {
-  background-color: #a3e635;
-  color: #2f2f2f;
-  border: 1px solid #65a30d;
-}
-
-.cta-button:hover {
-  background-color: #84cc16;
 }

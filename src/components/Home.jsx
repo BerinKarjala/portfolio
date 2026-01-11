@@ -57,7 +57,6 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [emailTouched, setEmailTouched] = useState(false);
   const [landing, setLanding] = useState(null);
-  const [loadError, setLoadError] = useState(false);
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isEmailValid = email.length === 0 || emailPattern.test(email);
 
@@ -66,7 +65,6 @@ export default function Home() {
       .then((data) => setLanding(data))
       .catch((error) => {
         console.error(error);
-        setLoadError(true);
       });
   }, []);
 
