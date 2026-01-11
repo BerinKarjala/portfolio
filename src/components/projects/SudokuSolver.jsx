@@ -15,6 +15,7 @@ export default function SudokuSolver() {
   const [grid, setGrid] = useState(emptyGrid);
   const [message, setMessage] = useState("");
   const [isSolved, setIsSolved] = useState(false);
+  const [givenCells, setGivenCells] = useState(emptyGrid.map((row) => row.map(() => false)));
 
   // Keep only a single valid digit (1-9). Everything else becomes blank.
   const sanitizeCellValue = (rawValue) => {
@@ -32,6 +33,7 @@ export default function SudokuSolver() {
     });
     setIsSolved(false);
     setMessage("");
+    setGivenCells(emptyGrid.map((row) => row.map(() => false)));
   };
 
   // Handle typing in a cell.
@@ -51,11 +53,13 @@ export default function SudokuSolver() {
     setGrid(emptyGrid);
     setMessage("");
     setIsSolved(false);
+    setGivenCells(emptyGrid.map((row) => row.map(() => false)));
   };
 
   // Validate the puzzle and attempt to solve it using backtracking.
   const handleSolve = () => {
     const numberGrid = toNumberGrid(grid);
+    const nextGivenCells = grid.map((row) => row.map((value) => Boolean(value)));
 
     if (!isValidGrid(numberGrid)) {
       setMessage("Invalid puzzle: conflicting hints.");
@@ -74,6 +78,7 @@ export default function SudokuSolver() {
     setGrid(toUiGrid(solved));
     setMessage("Solved!");
     setIsSolved(true);
+    setGivenCells(nextGivenCells);
   };
 
   return (
@@ -91,17 +96,20 @@ export default function SudokuSolver() {
               Enter digits 1 through 9. Invalid input is ignored automatically.
             </p>
             <div
-              className="mt-6 grid w-full max-w-md mx-auto gap-0 overflow-hidden border-2 border-green-700 border-opacity-60"
+              className="mt-6 grid w-full max-w-md mx-auto gap-0 overflow-hidden border-2"
               style={{
                 gridTemplateColumns: "repeat(9, minmax(0, 1fr))",
                 gridAutoRows: "1fr",
                 aspectRatio: "1 / 1",
+                borderColor: "#33cc33",
               }}
             >
               {grid.map((row, rowIndex) =>
                 row.map((value, colIndex) => {
                   const addRightBorder = colIndex === 2 || colIndex === 5;
                   const addBottomBorder = rowIndex === 2 || rowIndex === 5;
+                  const isGiven = givenCells[rowIndex]?.[colIndex];
+                  const showSolved = isSolved && value && !isGiven;
                   return (
                     <input
                       key={`${rowIndex}-${colIndex}`}
@@ -112,12 +120,15 @@ export default function SudokuSolver() {
                       inputMode="numeric"
                       pattern="[1-9]"
                       maxLength={1}
-                      className={`h-full w-full border border-green-700 border-opacity-60 bg-green-900 bg-opacity-40 text-center text-base font-semibold focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900 ${
-                        isSolved && value ? "text-lime-300" : "text-green-100"
+                      className={`h-full w-full border border-green-700 border-opacity-60 bg-green-900 bg-opacity-40 text-center text-base focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900 ${
+                        showSolved ? "font-normal" : "font-bold text-green-100"
                       }`}
                       style={{
-                        borderRightWidth: addRightBorder ? 2 : 1,
-                        borderBottomWidth: addBottomBorder ? 2 : 1,
+                        borderRightWidth: addRightBorder ? 4 : 1,
+                        borderBottomWidth: addBottomBorder ? 4 : 1,
+                        borderRightColor: addRightBorder ? "#33cc33" : undefined,
+                        borderBottomColor: addBottomBorder ? "#33cc33" : undefined,
+                        color: showSolved ? "#33cc33" : undefined,
                       }}
                     />
                   );
