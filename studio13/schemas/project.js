@@ -1,4 +1,4 @@
-import { defineArrayMember, defineField, defineType } from 'sanity'
+import { defineField, defineType } from "sanity";
 
 export default defineType({
   name: "project",
@@ -6,46 +6,32 @@ export default defineType({
   type: "document",
   fields: [
     defineField({
-      name: "title",
+      name: "name",
+      title: "Project name",
       type: "string",
-    }),
-    defineField({
-      name: "date",
-      type: "datetime",
-    }),
-    defineField({
-      name: "place",
-      type: "string",
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: "description",
       type: "text",
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: "projectType",
-      title: "Project type",
-      type: "string",
-      options: {
-        list: [
-          {value: "personal", title: "Personal"},
-          {value: "client", title: "Client"},
-          {value: "school", title: "School"},
-        ],
-      },
+      name: "thumbnail",
+      type: "image",
+      options: { hotspot: true },
+      fields: [
+        defineField({
+          name: "alt",
+          type: "string",
+          title: "Alt text",
+        }),
+      ],
     }),
     defineField({
       name: "link",
-      type: "string",
-    }),
-    defineField({
-      name: "tags",
-      type: "array",
-      of: [
-        defineArrayMember({type: "string"}),
-      ],
-      options: {
-        layout: "tags",
-      },
+      type: "url",
+      validation: (Rule) => Rule.uri({ scheme: ["http", "https"] }),
     }),
   ],
-})
+});
