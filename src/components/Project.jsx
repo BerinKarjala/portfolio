@@ -1,76 +1,86 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import sanityClient from "../client.js";
 
 export default function Project() {
   const [projectData, setProjectData] = useState(null);
 
   useEffect(() => {
-      sanityClient.fetch(
-          `*[_type == "project"]{
-            title,
-            date,
-            place,
-            description,
-            projectType,
-            link,
-            tags
-        }`).then((data) => setProjectData(data)).catch(console.error);
-    },[]);
+    sanityClient
+      .fetch(
+        `*[_type == "project"]{
+          name,
+          description,
+          thumbnail{
+            asset->{
+              url
+            },
+            alt
+          },
+          link
+        }`
+      )
+      .then((data) => setProjectData(data))
+      .catch(console.error);
+  }, []);
+
+  const projects = Array.isArray(projectData) ? projectData : [];
+
   return (
-    <main className="forest-bg px-4 sm:px-6 md:px-10 lg:px-12 py-12 text-emerald-50">
-      <section className="container mx-auto">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl flex justify-center text-center text-emerald-100 mb-6">My Projects</h1>
-        <h2 className="text-base sm:text-lg text-emerald-50 flex justify-center text-center mb-8 sm:mb-12">
-          Welcome to my projects page!
-        </h2>
-        <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
-          {projectData && projectData.map((project, index) => {
-              return (
-                <article className="relative rounded-lg shadow-xl bg-white bg-opacity-90 p-8 sm:p-10 lg:p-12" key={project.title || index}>
-                  <h3 className="text-gray-800 text-3xl font-bold mb-2 hover:text-emerald-700">
-                    <Link
-                      to={project.link}
-                      alt={project.title}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {project.title}
-                    </Link>
-                  </h3>
-                  <div className="text-gray-500 text-xs space-x-4">
-                    <span>
-                      <strong className="font-bold">Finished on</strong>:{" "}
-                      {new Date(project.date).toLocaleDateString()}
-                    </span>
-                    <span>
-                      <strong className="font-bold">Company</strong>:{" "}
-                      {project.place}
-                    </span>
-                    <span>
-                      <strong className="font-bold">Type</strong>:{" "}
-                      {project.projectType}
-                    </span>
-                    <p className="my-6 txt-lg text-gray-700 leading-relaxed">
+    <main className="relative forest-bg text-green-50">
+      <div className="absolute inset-0 pointer-events-none"></div>
+      <section className="container mx-auto px-4 sm:px-6 md:px-8 py-10 flex justify-center relative z-10">
+        <div className="w-full max-w-5xl bg-green-900 bg-opacity-40 border border-green-700 border-opacity-40 rounded-2xl shadow-2xl backdrop-filter backdrop-blur-sm p-6 sm:p-8 lg:p-10">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold mt-3 text-green-50">
+            My Projects
+          </h1>
+          <hr />
+          <p className="uppercase tracking-widest text-xs sm:text-sm text-green-200 text-center">
+            Selected work and experiments
+          </p>
+          <div className="mt-4 space-y-4 text-green-100 leading-relaxed max-w-3xl">
+            <p>
+              A curated set of projects focused on UI clarity, reliable behavior,
+              and thoughtful technical execution.
+            </p>
+          </div>
+          <div className="mt-8 border-t border-green-700 border-opacity-40 pt-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-green-50">
+              Projects
+            </h2>
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {projects.map((project) => {
+                if (!project?.link || !project?.name) {
+                  return null;
+                }
+                return (
+                  <a
+                    key={`${project.name}-${project.link}`}
+                    href={project.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`View project: ${project.name}`}
+                    className="block h-full border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 rounded-2xl p-5 shadow-lg backdrop-filter backdrop-blur-sm transition hover:bg-opacity-40 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-2 focus-visible:ring-offset-green-900"
+                  >
+                    {project.thumbnail?.asset?.url ? (
+                      <img
+                        src={project.thumbnail.asset.url}
+                        alt={project.thumbnail.alt || project.name}
+                        className="w-full rounded-lg object-cover"
+                      />
+                    ) : null}
+                    <h3 className="mt-4 text-base sm:text-lg font-semibold text-green-100">
+                      {project.name}
+                    </h3>
+                    <p className="mt-2 text-green-100 text-sm leading-relaxed">
                       {project.description}
                     </p>
-                    <Link to={project.link}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                      className="text-emerald-700 font-bold hover:underline hover:text-emerald-600"
-                    >
-                    View The Project{" "}
-                      <span role="img" aria-label="right pointer">
-                        &#128073;
-                      </span>
-                    </Link>
-                    
-                  </div>
-                </article>
-              );
-            })}
-        </section>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </section>
     </main>
-  )
+  );
 }
