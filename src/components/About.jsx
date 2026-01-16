@@ -66,7 +66,7 @@ export default function About(){
             <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-14 py-10 lg:pt-5 relative">
                 <section className="bg-white bg-opacity-90 rounded-lg shadow-2xl flex flex-col lg:flex-row gap-8 p-6 sm:p-10 lg:p-16 xl:p-20">
                     <img src={author.image?.asset?.url} className="rounded w-24 h-24 sm:w-32 sm:h-32 lg:w-56 lg:h-56 xl:w-64 xl:h-64 lg:mr-8 object-cover" alt={author.name} />
-                    <div className="text-lg flex w-full min-w-0 flex-col justify-center text-gray-900">
+                    <div className="text-lg flex w-full min-w-0 flex-1 flex-col justify-center text-gray-900">
                         <h1 className="cursive text-6x text-emerald-800 mb-4">
                             <span className="text-emerald-900">{author.name}</span>
                         </h1>
@@ -74,13 +74,13 @@ export default function About(){
                             <BlockContent blocks={introBlocks} projectId={projectId} dataset={dataset} />
                         </div>
                         {certificates.length > 0 ? (
-                            <div className="mt-8 w-full min-w-0">
-                                <div className="flex w-full flex-wrap items-center justify-between gap-4">
+                            <div className="mt-8 w-full min-w-0 overflow-hidden">
+                                <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                                     <div>
                                         <h2 className="text-lg sm:text-xl font-semibold text-emerald-900">Certificates</h2>
                                         <p className="text-sm text-emerald-700">Click a certificate to view.</p>
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 sm:ml-auto">
                                         <button
                                             type="button"
                                             className="rounded-full border border-emerald-300 px-3 py-1 text-sm text-emerald-800 hover:border-emerald-500 hover:text-emerald-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
