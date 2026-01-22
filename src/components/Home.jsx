@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { getLandingPage } from "../client.js";
+import Seo, {
+  DEFAULT_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  SOCIAL_LINKS,
+} from "./Seo";
 
 const fallbackContent = {
   title: "Berin Karjala",
@@ -75,8 +81,48 @@ export default function Home() {
   const howIWorkParagraphs = (content.howIWorkBody || "")
     .split("\n\n")
     .filter(Boolean);
+  const heroDescription = content.heroParagraph || DEFAULT_DESCRIPTION;
+  const pageDescription =
+    heroDescription.length > 160
+      ? `${heroDescription.slice(0, 157)}...`
+      : heroDescription;
+  const personSchema = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: SITE_NAME,
+    url: SITE_URL,
+    jobTitle: "Full-Stack Developer",
+    sameAs: SOCIAL_LINKS,
+  };
+  const webSiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_NAME,
+    url: SITE_URL,
+    description: DEFAULT_DESCRIPTION,
+    inLanguage: "en",
+  };
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: "Home",
+    url: SITE_URL,
+    description: pageDescription,
+    isPartOf: {
+      "@type": "WebSite",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+  };
   return (
-    <main className="relative forest-bg text-green-50">
+    <>
+      <Seo
+        title="Berin Karjala | Full-Stack Developer Portfolio"
+        description={pageDescription}
+        path="/"
+        jsonLd={[personSchema, webSiteSchema, webPageSchema]}
+      />
+      <main className="relative forest-bg text-green-50">
       <div className="absolute inset-0 pointer-events-none"></div>
       <section className="container mx-auto px-4 sm:px-6 md:px-8 py-10 flex justify-center relative z-10">
         <div className="w-full max-w-5xl bg-green-900 bg-opacity-40 border border-green-700 border-opacity-40 rounded-2xl shadow-2xl backdrop-filter backdrop-blur-sm p-6 sm:p-8 lg:p-10">
@@ -187,6 +233,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </main>
+      </main>
+    </>
   );
 }
