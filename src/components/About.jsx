@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import sanityClient from "../client.js"
 import BlockContent from "@sanity/block-content-to-react"
+import Seo, { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL, SOCIAL_LINKS } from "./Seo"
 
 const { projectId, dataset } = sanityClient.config()
 
@@ -54,6 +55,37 @@ export default function About(){
     const shouldSplitBio = certificates.length > 0 && workIndex > -1
     const introBlocks = shouldSplitBio ? bioBlocks.slice(0, workIndex) : bioBlocks
     const workBlocks = shouldSplitBio ? bioBlocks.slice(workIndex) : []
+    const bioText = introBlocks
+        .map((block) => block?.children?.map((child) => child.text).join("") || "")
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim()
+    const pageDescription = bioText
+        ? (bioText.length > 160 ? `${bioText.slice(0, 157)}...` : bioText)
+        : DEFAULT_DESCRIPTION
+    const authorName = author?.name || SITE_NAME
+    const authorImage = author?.image?.asset?.url
+    const personSchema = {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        name: authorName,
+        url: SITE_URL,
+        jobTitle: "Full-Stack Developer",
+        sameAs: SOCIAL_LINKS,
+        image: authorImage || undefined,
+    }
+    const webPageSchema = {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: "About",
+        url: `${SITE_URL}/about`,
+        description: pageDescription,
+        isPartOf: {
+            "@type": "WebSite",
+            name: SITE_NAME,
+            url: SITE_URL,
+        },
+    }
 
     const scrollCertificates = (direction) => {
         const row = certificateRowRef.current
@@ -62,10 +94,24 @@ export default function About(){
         row.scrollBy({ left: direction * amount, behavior: "smooth" })
     }
     return (
+        <>
+        <Seo
+            title="About Berin Karjala"
+            description={pageDescription}
+            path="/about"
+            image={authorImage}
+            jsonLd={[personSchema, webPageSchema]}
+        />
         <main className="relative forest-bg text-emerald-50">
             <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-14 py-10 lg:pt-5 relative">
                 <section className="bg-white bg-opacity-90 rounded-lg shadow-2xl flex flex-col lg:flex-row gap-8 p-6 sm:p-10 lg:p-16 xl:p-20">
-                    <img src={author.image?.asset?.url} className="rounded w-24 h-24 sm:w-32 sm:h-32 lg:w-56 lg:h-56 xl:w-64 xl:h-64 lg:mr-8 object-cover" alt={author.name} />
+                    <img
+                        src={author.image?.asset?.url}
+                        className="rounded w-24 h-24 sm:w-32 sm:h-32 lg:w-56 lg:h-56 xl:w-64 xl:h-64 lg:mr-8 object-cover"
+                        alt={author.name}
+                        loading="lazy"
+                        decoding="async"
+                    />
                     <div className="text-lg flex w-full min-w-0 flex-1 flex-col justify-center text-gray-900">
                         <h1 className="cursive text-6x text-emerald-800 mb-4">
                             <span className="text-emerald-900">{author.name}</span>
@@ -127,6 +173,8 @@ export default function About(){
                                                         src={thumbnailUrl}
                                                         alt={certificate.alt || certificate.title || "Certificate thumbnail"}
                                                         className="h-24 w-full rounded-md object-cover"
+                                                        loading="lazy"
+                                                        decoding="async"
                                                     />
                                                 ) : (
                                                     <div className="flex h-24 w-full items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 text-sm font-semibold text-emerald-700">
@@ -151,6 +199,7 @@ export default function About(){
                 </section>
             </div>
         </main>
+        </>
     )
 }
 

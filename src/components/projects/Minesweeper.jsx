@@ -1,6 +1,9 @@
 import React, { Component } from "react";
+import Seo, { SITE_NAME, SITE_URL } from "../Seo";
 
 const DEBUG_VALIDATE_COUNTS = false;
+const PAGE_DESCRIPTION =
+  "Play a classic Minesweeper board and explore the game logic behind the scenes.";
 const FLAG_SYMBOL = "🚩";
 const BOMB_SYMBOL = "💣";
 
@@ -261,10 +264,47 @@ class Minsweeper extends Component {
   };
 
   render() {
+    const pageUrl = SITE_URL + "/projects/Minesweeper";
+    const webPageSchema = {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "Minesweeper",
+      url: pageUrl,
+      description: PAGE_DESCRIPTION,
+      isPartOf: {
+        "@type": "WebSite",
+        name: SITE_NAME,
+        url: SITE_URL,
+      },
+    };
+    const appSchema = {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: "Minesweeper",
+      applicationCategory: "Game",
+      operatingSystem: "Web",
+      description: PAGE_DESCRIPTION,
+      url: pageUrl,
+      author: {
+        "@type": "Person",
+        name: SITE_NAME,
+        url: SITE_URL,
+      },
+    };
     return (
-      <section className="mx-auto w-full max-w-6xl px-4 py-6">
+      <>
+        <Seo
+          title="Minesweeper Project | Berin Karjala"
+          description={PAGE_DESCRIPTION}
+          path="/projects/Minesweeper"
+          jsonLd={[webPageSchema, appSchema]}
+        />
+        <section className="mx-auto w-full max-w-6xl px-4 py-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
           <div className="w-full lg:w-1/2">
+            <h1 className="mb-3 text-center text-2xl sm:text-3xl font-semibold text-green-50">
+              Minesweeper
+            </h1>
             <div className="boardBox">
               <div
                 ref={this.gridRef}
@@ -312,6 +352,7 @@ class Minsweeper extends Component {
           </div>
         </div>
       </section>
+      </>
     );
   }
 }
