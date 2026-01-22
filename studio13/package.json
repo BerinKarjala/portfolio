@@ -12,7 +12,9 @@
   },
   "scripts": {
     "start": "sanity dev",
-    "build": "sanity build"
+    "build": "sanity build",
+    "cors:list": "sanity cors list",
+    "cors:add-local": "sanity cors add http://127.0.0.1:5173 --credentials && sanity cors add http://localhost:5173 --credentials"
   },
   "keywords": [
     "sanity"
