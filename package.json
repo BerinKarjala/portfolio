@@ -17,9 +17,13 @@
     "react-router-dom": "^5.2.0"
   },
   "devDependencies": {
-    "@testing-library/react": "^16.3.2",
+    "@tailwindcss/typography": "^0.5.10",
+    "@testing-library/react": "^12.1.5",
     "@vitejs/plugin-react": "^5.1.2",
+    "autoprefixer": "^10.4.19",
     "npm-check-updates": "^19.3.0",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.13",
     "vite": "^7.3.0",
     "vitest": "^4.0.16"
   },

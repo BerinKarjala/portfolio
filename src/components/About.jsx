@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react"
 import sanityClient from "../client.js"
 import BlockContent from "@sanity/block-content-to-react"
 import Seo, { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL, SOCIAL_LINKS } from "./Seo"
+import { cancelIdle, runWhenIdle } from "../utils/idleCallback"
 
 const { projectId, dataset } = sanityClient.config()
 
@@ -10,39 +11,51 @@ export default function About(){
     const certificateRowRef = useRef(null)
 
     useEffect(()=>{
-        sanityClient.fetch(
-            `*[_type == "author"][0]{
-                name,
-                bio,
-                image{
-                    asset->{
-                        url
-                    }
-                },
-                certificates[]{
-                    title,
-                    kind,
-                    alt,
-                    issuedBy,
-                    issuedDate,
+        let isActive = true
+        const handle = runWhenIdle(() => {
+            sanityClient.fetch(
+                `*[_type == "author"][0]{
+                    name,
+                    bio,
                     image{
                         asset->{
                             url
                         }
                     },
-                    pdf{
-                        asset->{
-                            url
-                        }
-                    },
-                    thumbnail{
-                        asset->{
-                            url
+                    certificates[]{
+                        title,
+                        kind,
+                        alt,
+                        issuedBy,
+                        issuedDate,
+                        image{
+                            asset->{
+                                url
+                            }
+                        },
+                        pdf{
+                            asset->{
+                                url
+                            }
+                        },
+                        thumbnail{
+                            asset->{
+                                url
+                            }
                         }
                     }
+                }`
+            ).then((data) => {
+                if (isActive) {
+                    setAuthor(data)
                 }
-            }`
-        ).then((data) => setAuthor(data)).catch(console.error)
+            }).catch(console.error)
+        })
+
+        return () => {
+            isActive = false
+            cancelIdle(handle)
+        }
     }, [])
     if (!author) return <div>Loading...</div>
     const certificates = Array.isArray(author.certificates) ? author.certificates : []

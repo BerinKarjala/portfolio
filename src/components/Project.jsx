@@ -1,27 +1,40 @@
 import React, { useEffect, useState } from "react";
 import sanityClient from "../client.js";
 import Seo, { SITE_NAME, SITE_URL } from "./Seo";
+import { cancelIdle, runWhenIdle } from "../utils/idleCallback";
 
 export default function Project() {
   const [projectData, setProjectData] = useState(null);
 
   useEffect(() => {
-    sanityClient
-      .fetch(
-        `*[_type == "project"]{
-          name,
-          description,
-          thumbnail{
-            asset->{
-              url
+    let isActive = true;
+    const handle = runWhenIdle(() => {
+      sanityClient
+        .fetch(
+          `*[_type == "project"]{
+            name,
+            description,
+            thumbnail{
+              asset->{
+                url
+              },
+              alt
             },
-            alt
-          },
-          link
-        }`
-      )
-      .then((data) => setProjectData(data))
-      .catch(console.error);
+            link
+          }`
+        )
+        .then((data) => {
+          if (isActive) {
+            setProjectData(data);
+          }
+        })
+        .catch(console.error);
+    });
+
+    return () => {
+      isActive = false;
+      cancelIdle(handle);
+    };
   }, []);
 
   const projects = Array.isArray(projectData) ? projectData : [];

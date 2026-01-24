@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getLandingPage } from "../client.js";
+import { cancelIdle, runWhenIdle } from "../utils/idleCallback";
 import Seo, {
   DEFAULT_DESCRIPTION,
   SITE_NAME,
@@ -67,11 +68,23 @@ export default function Home() {
   const isEmailValid = email.length === 0 || emailPattern.test(email);
 
   useEffect(() => {
-    getLandingPage()
-      .then((data) => setLanding(data))
-      .catch((error) => {
-        console.error(error);
-      });
+    let isActive = true;
+    const handle = runWhenIdle(() => {
+      getLandingPage()
+        .then((data) => {
+          if (isActive) {
+            setLanding(data);
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    });
+
+    return () => {
+      isActive = false;
+      cancelIdle(handle);
+    };
   }, []);
 
   const content = landing || fallbackContent;
