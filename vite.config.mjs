@@ -13,7 +13,7 @@ export default defineConfig({
         manualChunks: {
           react: ['react', 'react-dom'],
           router: ['react-router-dom'],
-          sanity: ['@sanity/client', '@sanity/image-url', '@sanity/block-content-to-react'],
+          sanity: ['@sanity/client', '@sanity/block-content-to-react'],
           helmet: ['react-helmet-async'],
           icons: ['react-icons'],
         },
