@@ -122,6 +122,8 @@ export default function Project() {
                           src={project.thumbnail.asset.url}
                           alt={project.thumbnail.alt || project.name}
                           className="w-full h-40 rounded-lg object-cover"
+                          width="640"
+                          height="360"
                           loading="lazy"
                           decoding="async"
                         />

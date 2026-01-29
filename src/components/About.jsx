@@ -135,7 +135,7 @@ export default function About() {
             <p className="uppercase tracking-widest text-xs sm:text-sm text-green-200 text-center">
               Background and experience
             </p>
-            <div className="mt-4 text-green-100 leading-relaxed max-w-3xl">
+            <div className="about-content mt-4 text-green-100 leading-relaxed max-w-3xl">
                 <BlockContent
                   blocks={introBlocks}
                   projectId={projectId}
@@ -213,6 +213,8 @@ export default function About() {
                                 "Certificate thumbnail"
                               }
                               className="h-24 w-full rounded-md object-cover"
+                              width="160"
+                              height="96"
                               loading="lazy"
                               decoding="async"
                             />
@@ -231,7 +233,7 @@ export default function About() {
                 </div>
               ) : null}
               {workBlocks.length > 0 ? (
-                <div className="mt-6 text-green-100 leading-relaxed">
+                <div className="about-content mt-6 text-green-100 leading-relaxed">
                   <BlockContent
                     blocks={workBlocks}
                     projectId={projectId}
