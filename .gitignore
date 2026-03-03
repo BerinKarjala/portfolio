@@ -23,3 +23,6 @@ studio13/.sanity/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# VS Code workspace file
+portfolio.code-workspace
