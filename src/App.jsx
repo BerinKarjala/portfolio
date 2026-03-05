@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
 import { HelmetProvider } from "react-helmet-async";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import NavBar from "./components/NavBar";
 
 const Home = lazy(() => import("./components/Home"));
@@ -24,14 +24,14 @@ function App() {
             </main>
           }
         >
-          <Switch>
-            <Route component={Home} path="/" exact />
-            <Route component={About} path="/about" />
-            <Route component={Project} path="/project" />
-            <Route component={Minesweeper} path="/projects/Minesweeper" />
-            <Route component={SudokuSolver} path="/projects/SudokuSolver" />
-            <Route component={NotFound} />
-          </Switch>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/project" element={<Project />} />
+            <Route path="/projects/Minesweeper" element={<Minesweeper />} />
+            <Route path="/projects/SudokuSolver" element={<SudokuSolver />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </Suspense>
       </BrowserRouter>
     </HelmetProvider>
