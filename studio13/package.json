@@ -20,21 +20,18 @@
     "sanity"
   ],
   "dependencies": {
-    "@sanity/vision": "^5.1.0",
+    "@sanity/vision": "^5.13.0",
     "get-youtube-id": "^1.0.1",
     "prop-types": "^15.7",
     "react": "^19.2.2",
     "react-dom": "^19.2.2",
     "react-youtube": "^10.1.0",
-    "sanity": "^5.5.0",
+    "sanity": "^5.13.0",
     "styled-components": "^6.1.19"
   },
   "devDependencies": {
     "@sanity/eslint-config-studio": "^6.0.0",
     "eslint": "^9.0.0"
-  },
-  "overrides": {
-    "undici": "^6.23.0"
   },
   "repository": {
     "type": "git",
