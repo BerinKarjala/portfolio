@@ -1,0 +1,184 @@
+name: Sanity Dependabot Guardrails
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/sanity-dependabot-guardrails.yml"
+  schedule:
+    - cron: "0 14 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  security-events: write
+
+jobs:
+  dismiss-dependabot-324:
+    name: Dismiss Dependabot alert 324
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dismiss alert 324 as temporary tolerable risk
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const alertNumber = 324;
+            const dismissedComment =
+              `Temporarily dismissed on ${new Date().toISOString()} because the current Sanity 5 dependency chain still resolves DOMPurify 3.3.1 and no upstream patched path is available yet. This repo now runs a bi-weekly release check to revisit this alert.`;
+
+            try {
+              const {data: alert} = await github.request(
+                "GET /repos/{owner}/{repo}/dependabot/alerts/{alert_number}",
+                {owner, repo, alert_number: alertNumber},
+              );
+
+              core.info(`Dependabot alert ${alertNumber} current state: ${alert.state}`);
+
+              if (alert.state === "dismissed") {
+                core.info(`Dependabot alert ${alertNumber} is already dismissed.`);
+                return;
+              }
+
+              await github.request(
+                "PATCH /repos/{owner}/{repo}/dependabot/alerts/{alert_number}",
+                {
+                  owner,
+                  repo,
+                  alert_number: alertNumber,
+                  state: "dismissed",
+                  dismissed_reason: "tolerable_risk",
+                  dismissed_comment: dismissedComment,
+                },
+              );
+
+              core.notice(`Dismissed Dependabot alert ${alertNumber}.`);
+            } catch (error) {
+              if (error.status === 404) {
+                core.warning(`Dependabot alert ${alertNumber} was not found. It may already be closed.`);
+                return;
+              }
+              throw error;
+            }
+
+  biweekly-sanity-release-check:
+    name: Bi-weekly Sanity release check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine bi-weekly cadence
+        id: cadence
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" != "schedule" ]]; then
+            echo "run_check=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          week_number="$(date +%V)"
+          echo "ISO week number: ${week_number}"
+
+          if (( week_number % 2 == 0 )); then
+            echo "run_check=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_check=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip notice for off-week schedule
+        if: steps.cadence.outputs.run_check != 'true'
+        run: |
+          echo "Skipping this scheduled run (off-week). Next run is next Monday on even ISO week." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Compare current vs latest Sanity package versions
+        id: versions
+        if: steps.cadence.outputs.run_check == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          current_sanity="$(node -p "const v=require('./studio13/package.json').dependencies.sanity || ''; v.replace(/^[\\^~><= ]+/, '')")"
+          current_vision="$(node -p "const v=require('./studio13/package.json').dependencies['@sanity/vision'] || ''; v.replace(/^[\\^~><= ]+/, '')")"
+
+          latest_sanity="$(npm view sanity version)"
+          latest_vision="$(npm view @sanity/vision version)"
+
+          updates_found="false"
+          if [[ "${current_sanity}" != "${latest_sanity}" || "${current_vision}" != "${latest_vision}" ]]; then
+            updates_found="true"
+          fi
+
+          {
+            echo "current_sanity=${current_sanity}"
+            echo "latest_sanity=${latest_sanity}"
+            echo "current_vision=${current_vision}"
+            echo "latest_vision=${latest_vision}"
+            echo "updates_found=${updates_found}"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## Sanity bi-weekly release check"
+            echo ""
+            echo "- sanity: ${current_sanity} -> ${latest_sanity}"
+            echo "- @sanity/vision: ${current_vision} -> ${latest_vision}"
+            echo "- updates_found: ${updates_found}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Open or update tracking issue for newer Sanity releases
+        if: steps.cadence.outputs.run_check == 'true' && steps.versions.outputs.updates_found == 'true'
+        uses: actions/github-script@v7
+        env:
+          CURRENT_SANITY: ${{ steps.versions.outputs.current_sanity }}
+          LATEST_SANITY: ${{ steps.versions.outputs.latest_sanity }}
+          CURRENT_VISION: ${{ steps.versions.outputs.current_vision }}
+          LATEST_VISION: ${{ steps.versions.outputs.latest_vision }}
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const title = "Dependency watch: Sanity releases available";
+            const body = [
+              "New Sanity package release(s) were detected by the bi-weekly workflow.",
+              "",
+              `- sanity: ${process.env.CURRENT_SANITY} -> ${process.env.LATEST_SANITY}`,
+              `- @sanity/vision: ${process.env.CURRENT_VISION} -> ${process.env.LATEST_VISION}`,
+              "",
+              "Follow-up:",
+              "1. Create an upgrade branch.",
+              "2. Update versions in `studio13/package.json`.",
+              "3. Run `npm install`, `npm audit --json`, and `npm run build` in `studio13/`.",
+              "4. Re-check Dependabot alert 324 status.",
+            ].join("\n");
+
+            const {data: issues} = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: "open",
+              per_page: 100,
+            });
+
+            const existing = issues.find((issue) => issue.title === title);
+            if (existing) {
+              await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: existing.number,
+                body,
+              });
+              core.notice(`Updated existing tracking issue #${existing.number}.`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner,
+                repo,
+                title,
+                body,
+              });
+              core.notice(`Created tracking issue #${created.data.number}.`);
+            }
+
