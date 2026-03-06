@@ -59,7 +59,19 @@ export default function About() {
       cancelIdle(handle);
     };
   }, []);
-  if (!author) return <div>Loading...</div>;
+  if (!author) {
+    return (
+      <main className="relative forest-bg text-green-50">
+        <section className="container mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-10 flex justify-center relative z-10">
+          <div className="w-full max-w-5xl bg-green-900 bg-opacity-40 border border-green-700 border-opacity-40 rounded-2xl shadow-2xl backdrop-filter backdrop-blur-sm p-4 sm:p-8 lg:p-10">
+            <p className="text-sm uppercase tracking-widest text-green-200">
+              Loading...
+            </p>
+          </div>
+        </section>
+      </main>
+    );
+  }
   const certificates = Array.isArray(author.certificates)
     ? author.certificates
     : [];
@@ -126,8 +138,8 @@ export default function About() {
       />
       <main className="relative forest-bg text-green-50">
         <div className="absolute inset-0 pointer-events-none"></div>
-        <section className="container mx-auto px-4 sm:px-6 md:px-8 py-10 flex justify-center relative z-10">
-          <div className="w-full max-w-5xl bg-green-900 bg-opacity-40 border border-green-700 border-opacity-40 rounded-2xl shadow-2xl backdrop-filter backdrop-blur-sm p-6 sm:p-8 lg:p-10">
+        <section className="container mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-10 flex justify-center relative z-10">
+          <div className="w-full max-w-5xl bg-green-900 bg-opacity-40 border border-green-700 border-opacity-40 rounded-2xl shadow-2xl backdrop-filter backdrop-blur-sm p-4 sm:p-8 lg:p-10">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold mt-3 text-green-50">
               About
             </h1>
@@ -135,7 +147,7 @@ export default function About() {
             <p className="uppercase tracking-widest text-xs sm:text-sm text-green-200 text-center">
               Background and experience
             </p>
-            <div className="about-content mt-4 text-green-100 leading-relaxed max-w-3xl">
+            <div className="about-content mt-4 text-sm sm:text-base text-green-100 leading-relaxed max-w-3xl">
                 <BlockContent
                   blocks={introBlocks}
                   projectId={projectId}
@@ -173,7 +185,7 @@ export default function About() {
                     </div>
                   </div>
                   <div
-                    className="mt-4 flex w-full max-w-full gap-4 overflow-x-auto pb-2 pr-2 scroll-smooth snap-x snap-mandatory"
+                    className="mt-4 flex w-full max-w-full gap-3 sm:gap-4 overflow-x-auto pb-2 pr-2 scroll-smooth snap-x snap-mandatory"
                     ref={certificateRowRef}
                   >
                     {certificates.map((certificate, index) => {
@@ -191,7 +203,7 @@ export default function About() {
                         <button
                           key={`${certificate.title || "certificate"}-${index}`}
                           type="button"
-                          className="flex w-40 shrink-0 snap-start flex-col items-start rounded-lg border border-green-700 border-opacity-40 bg-green-900 bg-opacity-30 p-3 text-left shadow-sm transition hover:bg-opacity-40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 disabled:cursor-not-allowed disabled:opacity-70"
+                          className="flex w-36 sm:w-40 shrink-0 snap-start flex-col items-start rounded-lg border border-green-700 border-opacity-40 bg-green-900 bg-opacity-30 p-3 text-left shadow-sm transition hover:bg-opacity-40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 disabled:cursor-not-allowed disabled:opacity-70"
                           onClick={() => {
                             if (!openUrl) return;
                             window.open(

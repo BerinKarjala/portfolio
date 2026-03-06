@@ -4,7 +4,7 @@ import { FaGithub, FaLinkedin } from "react-icons/fa";
 
 export default function NavBar() {
   const navLinkBaseClasses =
-    "inflex-flex items-center px-5 py-1 rounded nav-item text-white hover:text-red-100 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900";
+    "inline-flex items-center px-3 sm:px-5 py-1.5 sm:py-1 rounded nav-item text-white hover:text-red-100 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900";
 
   const getNavLinkClasses = (extraClasses = "") => ({ isActive }) =>
     `${navLinkBaseClasses} ${extraClasses}${isActive ? " nav-active" : ""}`;

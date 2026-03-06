@@ -137,8 +137,8 @@ export default function Home() {
       />
       <main className="relative forest-bg text-green-50">
       <div className="absolute inset-0 pointer-events-none"></div>
-      <section className="container mx-auto px-4 sm:px-6 md:px-8 py-10 flex justify-center relative z-10">
-        <div className="w-full max-w-5xl bg-green-900 bg-opacity-40 border border-green-700 border-opacity-40 rounded-2xl shadow-2xl backdrop-filter backdrop-blur-sm p-6 sm:p-8 lg:p-10">
+      <section className="container mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-10 flex justify-center relative z-10">
+        <div className="w-full max-w-5xl bg-green-900 bg-opacity-40 border border-green-700 border-opacity-40 rounded-2xl shadow-2xl backdrop-filter backdrop-blur-sm p-4 sm:p-8 lg:p-10">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold mt-3 text-green-50">
             {content.title}
           </h1>
@@ -146,7 +146,7 @@ export default function Home() {
           <p className="uppercase tracking-widest text-xs sm:text-sm text-green-200 text-center">
             {content.roleLabel}
           </p>
-          <div className="mt-4 space-y-4 text-green-100 leading-relaxed max-w-3xl">
+          <div className="mt-4 space-y-4 text-sm sm:text-base text-green-100 leading-relaxed max-w-3xl">
             <p>{content.heroParagraph}</p>
             <p>{content.heroSupportingLine}</p>
           </div>
@@ -154,7 +154,7 @@ export default function Home() {
             <h2 className="text-lg sm:text-xl font-semibold text-green-50">
               {content.coreStrengthsHeading}
             </h2>
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {strengthGroups.map((strengthGroup) => (
                 <div key={strengthGroup.heading}>
                   <h3 className="text-base sm:text-lg font-semibold text-green-100">
@@ -216,7 +216,7 @@ export default function Home() {
           <p className="mt-4 text-sm text-center text-green-100">
             {content.ctaSubtext}
           </p>
-          <div className="mt-10 border-t border-green-700 border-opacity-40 pt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="mt-10 border-t border-green-700 border-opacity-40 pt-6 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
             <div>
               <h2 className="text-lg sm:text-xl font-semibold text-green-50 text-left">
                 {content.howIWorkHeading}

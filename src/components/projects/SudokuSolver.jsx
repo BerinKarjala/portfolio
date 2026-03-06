@@ -123,7 +123,7 @@ export default function SudokuSolver() {
       <section className="mx-auto w-full max-w-6xl px-4 py-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
           <div className="w-full lg:w-1/2">
-            <div className="rounded-2xl border border-green-700 border-opacity-40 bg-green-900 bg-opacity-60 p-6 shadow-2xl backdrop-filter backdrop-blur-sm">
+            <div className="rounded-2xl border border-green-700 border-opacity-40 bg-green-900 bg-opacity-60 p-4 sm:p-6 shadow-2xl backdrop-filter backdrop-blur-sm">
               <p className="text-xs uppercase tracking-widest text-green-200">
                 Sudoku Solver
               </p>
@@ -177,7 +177,7 @@ export default function SudokuSolver() {
           </div>
           <div className="w-full lg:w-1/2">
             <div className="flex flex-col gap-6">
-              <div className="rounded-2xl border border-green-700 border-opacity-40 bg-green-900 bg-opacity-60 p-6 shadow-2xl backdrop-filter backdrop-blur-sm">
+              <div className="rounded-2xl border border-green-700 border-opacity-40 bg-green-900 bg-opacity-60 p-4 sm:p-6 shadow-2xl backdrop-filter backdrop-blur-sm">
                 <h2 className="text-xs uppercase tracking-widest text-green-200">
                   Controls
                 </h2>
