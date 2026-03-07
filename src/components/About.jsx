@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import sanityClient from "../client.js";
-import BlockContent from "@sanity/block-content-to-react";
 import Seo, {
   DEFAULT_DESCRIPTION,
   SITE_NAME,
@@ -9,10 +8,32 @@ import Seo, {
 } from "./Seo";
 import { cancelIdle, runWhenIdle } from "../utils/idleCallback";
 
-const { projectId, dataset } = sanityClient.config();
+const FALLBACK_BIO_BLOCKS = [
+  {
+    _type: "block",
+    children: [
+      {
+        _type: "span",
+        text: "About content is temporarily unavailable from the CMS. Please check back shortly.",
+      },
+    ],
+  },
+];
+const EMPTY_AUTHOR = {
+  bio: FALLBACK_BIO_BLOCKS,
+  certificates: [],
+};
+const SECTION_LABELS = new Set(["introduction", "work experience"]);
+const blockToPlainText = (block) =>
+  (block?.children || [])
+    .map((child) => child?.text || "")
+    .join("")
+    .trim();
 
 export default function About() {
-  const [author, setAuthor] = useState(null);
+  const [author, setAuthor] = useState(EMPTY_AUTHOR);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasFetchError, setHasFetchError] = useState(false);
   const certificateRowRef = useRef(null);
 
   useEffect(() => {
@@ -20,7 +41,7 @@ export default function About() {
     const handle = runWhenIdle(() => {
       sanityClient
         .fetch(
-          `*[_type == "author"][0]{
+          `*[_type == "author" && (defined(bio[0]) || defined(certificates[0]))] | order(_updatedAt desc)[0]{
                     bio,
                     certificates[]{
                         title,
@@ -48,10 +69,22 @@ export default function About() {
         )
         .then((data) => {
           if (isActive) {
-            setAuthor(data);
+            setAuthor(data || EMPTY_AUTHOR);
+            setHasFetchError(false);
           }
         })
-        .catch(console.error);
+        .catch((error) => {
+          console.error(error);
+          if (isActive) {
+            setAuthor(EMPTY_AUTHOR);
+            setHasFetchError(true);
+          }
+        })
+        .finally(() => {
+          if (isActive) {
+            setIsLoading(false);
+          }
+        });
     });
 
     return () => {
@@ -59,7 +92,7 @@ export default function About() {
       cancelIdle(handle);
     };
   }, []);
-  if (!author) {
+  if (isLoading) {
     return (
       <main className="relative forest-bg text-green-50">
         <section className="container mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-10 flex justify-center relative z-10">
@@ -72,10 +105,11 @@ export default function About() {
       </main>
     );
   }
-  const certificates = Array.isArray(author.certificates)
+  const certificates = Array.isArray(author?.certificates)
     ? author.certificates
-    : [];
-  const bioBlocks = Array.isArray(author.bio) ? author.bio : [];
+    : EMPTY_AUTHOR.certificates;
+  const cmsBioBlocks = Array.isArray(author?.bio) ? author.bio : [];
+  const bioBlocks = cmsBioBlocks.length > 0 ? cmsBioBlocks : FALLBACK_BIO_BLOCKS;
   const workIndex = bioBlocks.findIndex((block) => {
     if (block?._type !== "block") return false;
     const text =
@@ -127,6 +161,35 @@ export default function About() {
     const amount = Math.round(row.clientWidth * 0.8) || 320;
     row.scrollBy({ left: direction * amount, behavior: "smooth" });
   };
+  const renderBioBlocks = (blocks, keyPrefix) =>
+    blocks.map((block, index) => {
+      if (block?._type !== "block") {
+        return null;
+      }
+      const text = blockToPlainText(block);
+      if (!text) {
+        return <div key={`${keyPrefix}-spacer-${index}`} className="h-4" />;
+      }
+
+      const normalizedText = text.toLowerCase();
+      if (SECTION_LABELS.has(normalizedText)) {
+        return (
+          <h2
+            key={`${keyPrefix}-heading-${index}`}
+            className="mt-6 text-lg sm:text-xl font-semibold text-green-50 underline"
+          >
+            {text}
+          </h2>
+        );
+      }
+
+      return (
+        <p key={`${keyPrefix}-paragraph-${index}`} className="mt-4">
+          {text}
+        </p>
+      );
+    });
+
   return (
     <>
       <Seo
@@ -147,12 +210,14 @@ export default function About() {
             <p className="uppercase tracking-widest text-xs sm:text-sm text-green-200 text-center">
               Background and experience
             </p>
+            {hasFetchError ? (
+              <p className="mt-4 text-sm text-amber-200">
+                Could not load the latest About content from Sanity. Showing
+                fallback content.
+              </p>
+            ) : null}
             <div className="about-content mt-4 text-sm sm:text-base text-green-100 leading-relaxed max-w-3xl">
-                <BlockContent
-                  blocks={introBlocks}
-                  projectId={projectId}
-                  dataset={dataset}
-                />
+                {renderBioBlocks(introBlocks, "intro")}
             </div>
               {certificates.length > 0 ? (
                 <div className="mt-8 border-t border-green-700 border-opacity-40 pt-6 w-full min-w-0 overflow-hidden">
@@ -246,11 +311,7 @@ export default function About() {
               ) : null}
               {workBlocks.length > 0 ? (
                 <div className="about-content mt-6 text-green-100 leading-relaxed">
-                  <BlockContent
-                    blocks={workBlocks}
-                    projectId={projectId}
-                    dataset={dataset}
-                  />
+                  {renderBioBlocks(workBlocks, "work")}
                 </div>
               ) : null}
           </div>
