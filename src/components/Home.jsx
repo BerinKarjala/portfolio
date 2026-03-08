@@ -8,9 +8,12 @@ import Seo, {
   SOCIAL_LINKS,
 } from "./Seo";
 
+const CHECKMARK_SYMBOL = "\u2713";
+
 const fallbackContent = {
   title: "Berin Karjala",
-  roleLabel: "Full-Stack Developer • QA-Minded Engineer • UX-Aware Builder",
+  roleLabel:
+    "Full-Stack Developer \u2022 QA-Minded Engineer \u2022 UX-Aware Builder",
   heroParagraph:
     "I design and build calm, reliable digital experiences rooted in clarity, structure, and long-term maintainability. My background spans software quality assurance, front-end development, and systems-focused problem solving, allowing me to bridge clean user interfaces with dependable technical foundations.",
   heroSupportingLine:
@@ -50,7 +53,7 @@ const fallbackContent = {
   ],
   howIWorkHeading: "How I Work",
   howIWorkBody:
-    "I bring a quality-first mindset shaped by years of working in structured, high-compliance environments. Whether I’m writing UI code, refining content models, or validating workflows, I focus on building systems that are calm, predictable, and easy to maintain.\n\nMy background in software QA, operations coordination, and technical support informs every development decision I make. I value clear communication, careful verification, and solutions that hold up over time.",
+    "I bring a quality-first mindset shaped by years of working in structured, high-compliance environments. Whether I'm writing UI code, refining content models, or validating workflows, I focus on building systems that are calm, predictable, and easy to maintain.\n\nMy background in software QA, operations coordination, and technical support informs every development decision I make. I value clear communication, careful verification, and solutions that hold up over time.",
   currentlyOpenToHeading: "Currently Open To",
   currentlyOpenToBullets: [
     "Full-time frontend or full-stack roles",
@@ -163,7 +166,7 @@ export default function Home() {
                   <ul className="mt-2 space-y-2 text-green-100 text-sm">
                     {strengthGroup.bullets.map((bullet) => (
                       <li key={bullet} className="flex gap-2">
-                        <span className="text-green-300">✓</span>
+                        <span className="text-green-300">{CHECKMARK_SYMBOL}</span>
                         <span>{bullet}</span>
                       </li>
                     ))}
@@ -237,7 +240,7 @@ export default function Home() {
               <ul className="mt-3 space-y-2 text-green-100 text-sm text-left">
                 {content.currentlyOpenToBullets.map((bullet) => (
                   <li key={bullet} className="flex gap-2">
-                    <span className="text-green-300">✓</span>
+                    <span className="text-green-300">{CHECKMARK_SYMBOL}</span>
                     <span>{bullet}</span>
                   </li>
                 ))}

@@ -30,7 +30,11 @@ export default defineType({
     }),
     defineField({
       name: "link",
-      type: "string",
+      type: "url",
+      validation: (Rule) =>
+        Rule.uri({
+          scheme: ["http", "https"],
+        }),
     }),
   ],
 });
