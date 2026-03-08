@@ -10,6 +10,7 @@ export default defineType({
       name: 'bio',
       title: 'Bio',
       type: 'array',
+      validation: (Rule) => Rule.required().min(1),
       of: [
         defineArrayMember({
           title: 'Block',
