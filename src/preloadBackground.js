@@ -1,5 +1,8 @@
 import forestAvif1600 from "./forest-waterfall-1600.avif";
+import forestAvif2400 from "./forest-waterfall-2400.avif";
 import forestWebp1600 from "./forest-waterfall-1600.webp";
+import forestWebp2400 from "./forest-waterfall-2400.webp";
+import forestPng from "./forest-waterfall.png";
 
 const supportsAvif = () =>
   new Promise((resolve) => {
@@ -19,6 +22,9 @@ const supportsWebp = () =>
       "data:image/webp;base64,UklGRiIAAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA=";
   });
 
+const shouldUseHighDensityAsset = () =>
+  typeof window !== "undefined" && (window.devicePixelRatio || 1) > 1.5;
+
 const preloadBackgroundImage = async () => {
   if (typeof document === "undefined") {
     return;
@@ -28,6 +34,7 @@ const preloadBackgroundImage = async () => {
     return;
   }
 
+  const useHighDensityAsset = shouldUseHighDensityAsset();
   const canUseAvif = await supportsAvif();
   const canUseWebp = !canUseAvif && (await supportsWebp());
 
@@ -35,13 +42,14 @@ const preloadBackgroundImage = async () => {
   link.rel = "preload";
   link.as = "image";
   if (canUseAvif) {
-    link.href = forestAvif1600;
+    link.href = useHighDensityAsset ? forestAvif2400 : forestAvif1600;
     link.type = "image/avif";
   } else if (canUseWebp) {
-    link.href = forestWebp1600;
+    link.href = useHighDensityAsset ? forestWebp2400 : forestWebp1600;
     link.type = "image/webp";
   } else {
-    return;
+    link.href = forestPng;
+    link.type = "image/png";
   }
   link.setAttribute("fetchpriority", "high");
   link.setAttribute("data-bg-preload", "forest");
