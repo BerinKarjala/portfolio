@@ -55,20 +55,6 @@ export default function Project() {
     };
   }, []);
 
-  if (isLoading) {
-    return (
-      <main className="relative forest-bg text-green-50">
-        <section className="container mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-10 flex justify-center relative z-10">
-          <div className="w-full max-w-5xl bg-green-900 bg-opacity-40 border border-green-700 border-opacity-40 rounded-2xl shadow-2xl backdrop-filter backdrop-blur-sm p-4 sm:p-8 lg:p-10">
-            <p className="text-sm uppercase tracking-widest text-green-200">
-              Loading...
-            </p>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
   const projects = projectData.filter((project) => project?.name && project?.link);
   const projectNames = projects
     .map((project) => project?.name)
@@ -76,6 +62,9 @@ export default function Project() {
   const pageDescription = projectNames.length
     ? `Projects by ${SITE_NAME}, including ${projectNames.join(", ")}.`
     : "Selected projects focused on UI clarity, reliable behavior, and thoughtful technical execution.";
+  const emptyStateMessage = hasFetchError
+    ? "Project entries are temporarily unavailable right now."
+    : "No project entries are available right now.";
   const ogImage = projects.find((project) => project?.thumbnail?.asset?.url)
     ?.thumbnail?.asset?.url;
   const webPageSchema = {
@@ -126,8 +115,7 @@ export default function Project() {
             </p>
             {hasFetchError ? (
               <p className="mt-4 text-sm text-amber-200">
-                Could not load the latest project content from Sanity. Showing
-                fallback content.
+                Could not load the latest project content from Sanity.
               </p>
             ) : null}
             <div className="mt-4 space-y-4 text-green-100 leading-relaxed max-w-3xl">
@@ -141,7 +129,11 @@ export default function Project() {
                 Projects
               </h2>
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                {projects.length > 0 ? (
+                {isLoading ? (
+                  <div className="md:col-span-2 rounded-2xl border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 p-5 text-sm uppercase tracking-widest text-green-200 shadow-lg backdrop-filter backdrop-blur-sm">
+                    Loading project entries...
+                  </div>
+                ) : projects.length > 0 ? (
                   projects.map((project) => (
                     <a
                       key={`${project.name}-${project.link}`}
@@ -181,7 +173,7 @@ export default function Project() {
                   ))
                 ) : (
                   <div className="md:col-span-2 rounded-2xl border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 p-5 text-sm text-green-100 shadow-lg backdrop-filter backdrop-blur-sm">
-                    No project entries are available right now.
+                    {emptyStateMessage}
                   </div>
                 )}
               </div>
