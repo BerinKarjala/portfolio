@@ -3,8 +3,14 @@ import sanityClient from "../client.js";
 import Seo, { SITE_NAME, SITE_URL } from "./Seo";
 import { cancelIdle, runWhenIdle } from "../utils/idleCallback";
 
+const EMPTY_PROJECTS = [];
+const EMPTY_PROJECT_DESCRIPTION =
+  "Project details are temporarily unavailable. Please check back shortly.";
+
 export default function Project() {
-  const [projectData, setProjectData] = useState(null);
+  const [projectData, setProjectData] = useState(EMPTY_PROJECTS);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasFetchError, setHasFetchError] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -25,10 +31,22 @@ export default function Project() {
         )
         .then((data) => {
           if (isActive) {
-            setProjectData(data);
+            setProjectData(Array.isArray(data) ? data : EMPTY_PROJECTS);
+            setHasFetchError(false);
           }
         })
-        .catch(console.error);
+        .catch((error) => {
+          console.error(error);
+          if (isActive) {
+            setProjectData(EMPTY_PROJECTS);
+            setHasFetchError(true);
+          }
+        })
+        .finally(() => {
+          if (isActive) {
+            setIsLoading(false);
+          }
+        });
     });
 
     return () => {
@@ -37,14 +55,16 @@ export default function Project() {
     };
   }, []);
 
-  const projects = Array.isArray(projectData) ? projectData : [];
+  const projects = projectData.filter((project) => project?.name && project?.link);
   const projectNames = projects
     .map((project) => project?.name)
-    .filter(Boolean)
     .slice(0, 3);
   const pageDescription = projectNames.length
     ? `Projects by ${SITE_NAME}, including ${projectNames.join(", ")}.`
     : "Selected projects focused on UI clarity, reliable behavior, and thoughtful technical execution.";
+  const emptyStateMessage = hasFetchError
+    ? "Project entries are temporarily unavailable right now."
+    : "No project entries are available right now.";
   const ogImage = projects.find((project) => project?.thumbnail?.asset?.url)
     ?.thumbnail?.asset?.url;
   const webPageSchema = {
@@ -93,6 +113,11 @@ export default function Project() {
             <p className="uppercase tracking-widest text-xs sm:text-sm text-green-200 text-center">
               Selected work and experiments
             </p>
+            {hasFetchError ? (
+              <p className="mt-4 text-sm text-amber-200">
+                Could not load the latest project content from Sanity.
+              </p>
+            ) : null}
             <div className="mt-4 space-y-4 text-green-100 leading-relaxed max-w-3xl">
               <p>
                 A curated set of projects focused on UI clarity, reliable behavior,
@@ -104,11 +129,12 @@ export default function Project() {
                 Projects
               </h2>
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                {projects.map((project) => {
-                  if (!project?.link || !project?.name) {
-                    return null;
-                  }
-                  return (
+                {isLoading ? (
+                  <div className="md:col-span-2 rounded-2xl border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 p-5 text-sm uppercase tracking-widest text-green-200 shadow-lg backdrop-filter backdrop-blur-sm">
+                    Loading project entries...
+                  </div>
+                ) : projects.length > 0 ? (
+                  projects.map((project) => (
                     <a
                       key={`${project.name}-${project.link}`}
                       href={project.link}
@@ -117,26 +143,39 @@ export default function Project() {
                       aria-label={`View project: ${project.name}`}
                       className="block h-full border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 rounded-2xl p-4 sm:p-5 shadow-lg backdrop-filter backdrop-blur-sm transition hover:bg-opacity-40 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-2 focus-visible:ring-offset-green-900"
                     >
-                      {project.thumbnail?.asset?.url ? (
-                        <img
-                          src={project.thumbnail.asset.url}
-                          alt={project.thumbnail.alt || project.name}
-                          className="w-full h-36 sm:h-40 rounded-lg object-cover"
-                          width="640"
-                          height="360"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      ) : null}
+                      <div
+                        className="w-full overflow-hidden rounded-lg border border-green-700 border-opacity-30 bg-green-900 bg-opacity-40"
+                        style={{ aspectRatio: "16 / 9" }}
+                      >
+                        {project.thumbnail?.asset?.url ? (
+                          <img
+                            src={project.thumbnail.asset.url}
+                            alt={project.thumbnail.alt || project.name}
+                            className="h-full w-full object-cover"
+                            width="640"
+                            height="360"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center px-4 text-center text-sm font-semibold text-green-200">
+                            Preview unavailable
+                          </div>
+                        )}
+                      </div>
                       <h3 className="mt-4 text-base sm:text-lg font-semibold text-green-100">
                         {project.name}
                       </h3>
                       <p className="mt-2 text-green-100 text-sm leading-relaxed">
-                        {project.description}
+                        {project.description || EMPTY_PROJECT_DESCRIPTION}
                       </p>
                     </a>
-                  );
-                })}
+                  ))
+                ) : (
+                  <div className="md:col-span-2 rounded-2xl border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 p-5 text-sm text-green-100 shadow-lg backdrop-filter backdrop-blur-sm">
+                    {emptyStateMessage}
+                  </div>
+                )}
               </div>
             </div>
           </div>
