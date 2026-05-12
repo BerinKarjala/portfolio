@@ -7,7 +7,7 @@
   "author": "Berin Karjala <berin.karjala@outlook.com>",
   "license": "UNLICENSED",
   "engines": {
-    "node": "22.x",
+    "node": ">=22.13.0 <23",
     "npm": ">=10"
   },
   "scripts": {
@@ -20,18 +20,18 @@
     "sanity"
   ],
   "dependencies": {
-    "@sanity/vision": "^5.13.0",
+    "@sanity/vision": "5.13.0",
     "get-youtube-id": "^1.0.1",
     "prop-types": "^15.7",
     "react": "^19.2.2",
     "react-dom": "^19.2.2",
     "react-youtube": "^10.1.0",
-    "sanity": "^5.13.0",
+    "sanity": "5.13.0",
     "styled-components": "^6.1.19"
   },
   "devDependencies": {
     "@sanity/eslint-config-studio": "^6.0.0",
-    "eslint": "^10.0.2"
+    "eslint": "^9.39.4"
   },
   "repository": {
     "type": "git",
