@@ -13,58 +13,8 @@ on:
 permissions:
   contents: read
   issues: write
-  security-events: write
 
 jobs:
-  dismiss-dependabot-324:
-    name: Dismiss Dependabot alert 324
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dismiss alert 324 as temporary tolerable risk
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            const alertNumber = 324;
-            const dismissedComment =
-              `Temporarily dismissed on ${new Date().toISOString()} because the current Sanity 5 dependency chain still resolves DOMPurify 3.3.1 and no upstream patched path is available yet. This repo now runs a bi-weekly release check to revisit this alert.`;
-
-            try {
-              const {data: alert} = await github.request(
-                "GET /repos/{owner}/{repo}/dependabot/alerts/{alert_number}",
-                {owner, repo, alert_number: alertNumber},
-              );
-
-              core.info(`Dependabot alert ${alertNumber} current state: ${alert.state}`);
-
-              if (alert.state === "dismissed") {
-                core.info(`Dependabot alert ${alertNumber} is already dismissed.`);
-                return;
-              }
-
-              await github.request(
-                "PATCH /repos/{owner}/{repo}/dependabot/alerts/{alert_number}",
-                {
-                  owner,
-                  repo,
-                  alert_number: alertNumber,
-                  state: "dismissed",
-                  dismissed_reason: "tolerable_risk",
-                  dismissed_comment: dismissedComment,
-                },
-              );
-
-              core.notice(`Dismissed Dependabot alert ${alertNumber}.`);
-            } catch (error) {
-              if (error.status === 404) {
-                core.warning(`Dependabot alert ${alertNumber} was not found. It may already be closed.`);
-                return;
-              }
-              throw error;
-            }
-
   biweekly-sanity-release-check:
     name: Bi-weekly Sanity release check
     runs-on: ubuntu-latest
@@ -153,7 +103,7 @@ jobs:
               "1. Create an upgrade branch.",
               "2. Update versions in `studio13/package.json`.",
               "3. Run `npm install`, `npm audit --json`, and `npm run build` in `studio13/`.",
-              "4. Re-check Dependabot alert 324 status.",
+              "4. Review open Dependabot alerts for `studio13/`.",
             ].join("\n");
 
             const {data: issues} = await github.rest.issues.listForRepo({

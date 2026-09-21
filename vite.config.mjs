@@ -10,12 +10,19 @@ export default defineConfig({
     outDir: 'dist',
     rollupOptions: {
       output: {
-        manualChunks: {
-          react: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          sanity: ['@sanity/client'],
-          helmet: ['react-helmet-async'],
-          icons: ['react-icons'],
+        manualChunks(id) {
+          const normalizedId = id.replaceAll('\\', '/')
+
+          if (normalizedId.includes('/node_modules/react-router-dom/')) return 'router'
+          if (normalizedId.includes('/node_modules/react-helmet-async/')) return 'helmet'
+          if (normalizedId.includes('/node_modules/react-icons/')) return 'icons'
+          if (normalizedId.includes('/node_modules/@sanity/client/')) return 'sanity'
+          if (
+            normalizedId.includes('/node_modules/react/') ||
+            normalizedId.includes('/node_modules/react-dom/')
+          ) {
+            return 'react'
+          }
         },
       },
     },
