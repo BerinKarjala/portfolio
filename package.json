@@ -7,7 +7,7 @@
     "npm": ">=10"
   },
   "dependencies": {
-    "@sanity/client": "^7.27.0",
+    "@sanity/client": "^8.6.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-helmet-async": "3.0.0",
