@@ -32,7 +32,7 @@
     "uuid": "11.1.1"
   },
   "devDependencies": {
-    "@sanity/eslint-config-studio": "^6.0.0",
+    "@sanity/eslint-config-studio": "^7.0.0",
     "eslint": "^9.39.5"
   },
   "overrides": {
