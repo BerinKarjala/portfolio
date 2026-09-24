@@ -20,7 +20,7 @@
     "sanity"
   ],
   "dependencies": {
-    "@sanity/vision": "^5.31.2",
+    "@sanity/vision": "^6.15.0",
     "get-youtube-id": "^1.0.1",
     "prop-types": "^15.7",
     "pdfjs-dist": "5.4.624",
