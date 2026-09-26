@@ -1,12 +1,12 @@
 # Portfolio + Sanity Studio
 
 ## Local development
-- Node `22.11.x` (`.nvmrc`), npm `>=10`.
+- Node `22.22.2` (`.nvmrc`), npm `>=10`.
 - Frontend (Vite):
   - Install: `npm install`
   - Dev: `npm start` (http://localhost:3000, configured in `vite.config.mjs`)
   - Build: `npm run build` (outputs to `dist/`)
-- Sanity Studio (v5, `studio13/`):
+- Sanity Studio (v6, `studio13/`):
   - Install: `cd studio13 && npm install`
   - Dev: `npm start` (http://localhost:3333)
   - Build: `npm run build` (outputs to `studio13/dist`)
