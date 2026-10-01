@@ -20,14 +20,14 @@
     "sanity"
   ],
   "dependencies": {
-    "@sanity/vision": "^6.15.0",
+    "@sanity/vision": "^6.16.0",
     "get-youtube-id": "^1.0.1",
     "prop-types": "^15.7",
     "pdfjs-dist": "5.4.624",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-youtube": "^10.1.0",
-    "sanity": "^6.15.0",
+    "sanity": "^6.16.0",
     "styled-components": "^6.5.3",
     "uuid": "14.0.2"
   },
@@ -44,7 +44,8 @@
       "smol-toml": "1.9.0"
     },
     "@module-federation/dts-plugin": {
-      "adm-zip": "0.6.1"
+      "adm-zip": "0.6.1",
+      "undici": "7.30.0"
     },
     "@sanity/uuid": "3.0.3",
     "postcss": "8.5.28",
