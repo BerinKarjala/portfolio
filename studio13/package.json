@@ -23,7 +23,7 @@
     "@sanity/vision": "^6.16.0",
     "get-youtube-id": "^1.0.1",
     "prop-types": "^15.7",
-    "pdfjs-dist": "6.3.289",
+    "pdfjs-dist": "6.4.299",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-youtube": "^10.1.0",
