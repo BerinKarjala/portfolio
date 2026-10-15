@@ -20,14 +20,14 @@
     "sanity"
   ],
   "dependencies": {
-    "@sanity/vision": "^6.16.0",
+    "@sanity/vision": "^6.19.0",
     "get-youtube-id": "^1.0.1",
-    "prop-types": "^15.7",
     "pdfjs-dist": "6.4.299",
+    "prop-types": "^15.7",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-youtube": "^10.1.0",
-    "sanity": "^6.16.0",
+    "sanity": "^6.19.0",
     "styled-components": "^6.5.3",
     "uuid": "14.0.2"
   },
