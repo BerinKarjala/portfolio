@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import Seo, { SITE_NAME, SITE_URL } from "../Seo";
+import SourceCode from "../SourceCode";
+import minesweeperSource from "./Minesweeper.jsx?raw";
 
 const DEBUG_VALIDATE_COUNTS = false;
 const PAGE_DESCRIPTION =
@@ -325,30 +327,7 @@ class Minsweeper extends Component {
             </div>
           </div>
           <div className="w-full lg:w-1/2">
-            <div className="rounded-2xl border border-green-700 border-opacity-40 bg-green-900 bg-opacity-60 p-4 shadow-2xl backdrop-filter backdrop-blur-sm">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xs uppercase tracking-widest text-green-200">
-                  Minesweeper Source
-                </h2>
-              </div>
-              <div className="mt-3 hidden lg:block">
-                <iframe
-                  title="Minesweeper Source"
-                  src="/code/minesweeper-source.html"
-                  className="h-96 w-full rounded-lg border border-green-700 border-opacity-40 bg-green-900"
-                ></iframe>
-              </div>
-              <details className="mt-3 lg:hidden">
-                <summary className="cursor-pointer text-xs text-green-100 underline">
-                  Show code
-                </summary>
-                <iframe
-                  title="Minesweeper Source"
-                  src="/code/minesweeper-source.html"
-                  className="mt-3 h-80 w-full rounded-lg border border-green-700 border-opacity-40 bg-green-900"
-                ></iframe>
-              </details>
-            </div>
+            <SourceCode title="Minesweeper Source" files={[{ name: "Minesweeper.jsx", source: minesweeperSource }]} />
           </div>
         </div>
       </section>
