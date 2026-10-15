@@ -6,6 +6,9 @@ import {
   toUiGrid,
 } from "./sudoku/solver";
 import Seo, { SITE_NAME, SITE_URL } from "../Seo";
+import SourceCode from "../SourceCode";
+import sudokuSource from "./SudokuSolver.jsx?raw";
+import solverSource from "./sudoku/solver.js?raw";
 
 const PAGE_DESCRIPTION =
   "Solve Sudoku puzzles in the browser with clear inputs, validation, and a readable solver.";
@@ -200,30 +203,13 @@ export default function SudokuSolver() {
                   {message}
                 </p>
               </div>
-              <div className="rounded-2xl border border-green-700 border-opacity-40 bg-green-900 bg-opacity-60 p-4 shadow-2xl backdrop-filter backdrop-blur-sm">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xs uppercase tracking-widest text-green-200">
-                    Sudoku Solver Source
-                  </h2>
-                </div>
-                <div className="mt-3 hidden lg:block">
-                  <iframe
-                    title="Sudoku Solver Source"
-                    src="/code/sudoku-solver-source.html"
-                    className="h-96 w-full rounded-lg border border-green-700 border-opacity-40 bg-green-900"
-                  ></iframe>
-                </div>
-                <details className="mt-3 lg:hidden">
-                  <summary className="cursor-pointer text-xs text-green-100 underline">
-                    Show code
-                  </summary>
-                  <iframe
-                    title="Sudoku Solver Source"
-                    src="/code/sudoku-solver-source.html"
-                    className="mt-3 h-80 w-full rounded-lg border border-green-700 border-opacity-40 bg-green-900"
-                  ></iframe>
-                </details>
-              </div>
+              <SourceCode
+                title="Sudoku Solver Source"
+                files={[
+                  { name: "SudokuSolver.jsx", source: sudokuSource },
+                  { name: "sudoku/solver.js", source: solverSource },
+                ]}
+              />
             </div>
           </div>
         </div>
