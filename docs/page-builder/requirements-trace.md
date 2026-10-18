@@ -14,7 +14,7 @@ All decisions remain approved. “M1 verified” means the foundation implementa
 | Q008 | B | Desktop/tablet/mobile toggles with shared styles. | M1 foundation only — full behavior pending later milestones |
 | Q009 | B | 50 undo actions; session-only; reset on reload/switch. | M2 verified for implemented canvas contracts — Session history/coalescing/50-action tests; no persisted history |
 | Q010 | A | External URLs only; no media uploads. | M1 verified — URL allowlist; no asset upload |
-| Q011 | B | Collapsible selectable, renameable, reorderable layer hierarchy. | M2 verified for implemented canvas contracts — Searchable expandable Layers + rename/reorder/selection |
+| Q011 | B | Collapsible selectable, renameable, reorderable layer hierarchy. | M2/M3 verified for implemented editor contracts — Searchable expandable Layers, nested form/table/gallery content + rename/reorder/selection |
 | Q012 | A | Exactly one webpage per project. | M1 verified — project.test.js |
 | Q013 | B | Blank plus Portfolio, Landing, Business, Blog, Contact, Gallery. | M3 editor verified; final export/acceptance pending — Six polished editable compositions and original artwork placeholders; compiled template preview/reset pending M4 |
 | Q014 | B | Collapsible three-panel editor, toolbar, mobile drawers. | M2 verified for implemented canvas contracts — Collapsible three-panel workspace and mobile drawers |
@@ -105,7 +105,7 @@ All decisions remain approved. “M1 verified” means the foundation implementa
 | Q099 | B | Align/distribute/match compatible sizes and one history action. | M2 verified for implemented canvas contracts — Compatible absolute sibling align/distribute/match geometry |
 | Q100 | B | Validate nonempty names, auto-number duplicates, stable IDs, safe ZIP slug. | M1 foundation only — full behavior pending later milestones |
 | Q101 | B | HEX/RGB/HSL/alpha and saved swatches/recent, no advanced gradients. | M3 verified for implemented editor contracts — HEX/RGB(A)/HSL(A), alpha, local saved swatches/recent |
-| Q102 | B | Four-side spacing, linked/unlinked, borders/radius, units, computed preview. | M3 verified for implemented editor contracts — Four-side linked/unlinked spacing, borders/radii and computed style table |
+| Q102 | B | Four-side spacing, linked/unlinked, borders/radius, units, computed preview. | M3 verified for implemented editor contracts — Four-side linked/unlinked spacing, borders/radii and measured box-model preview |
 | Q103 | B | Line height, letter spacing, transforms, decoration, shadow, wrapping. | M3 verified for implemented editor contracts — Advanced typography and per-span formatting/weights/shadow/wrapping |
 | Q104 | B | Visual focal point, aspect/fit/object-position CSS, preserve URLs. | M3 verified for implemented editor contracts — Image fit, aspect and visual percentage focal-point controls |
 | Q105 | B | External URL, size/position/repeat/fallback and contrast warnings. | M3 editor verified; final export/acceptance pending — Validated HTTPS backgrounds with size/position/repeat/fallback color; contrast diagnostics pending M4 |
