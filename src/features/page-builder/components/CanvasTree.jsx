@@ -1,7 +1,10 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { useState } from "react";
 import { isContainer } from "../domain/catalog";
-import { plainText } from "../domain/project";
+import { useBuilder } from "../state/BuilderProvider";
+import ComponentContent from "./ComponentContent";
+import { RichTextEditor } from "./RichText";
+import { ownStyles, reactStyles, resolveStyles } from "../domain/styles";
 import { childrenOf, protectedSubtree } from "../domain/structure";
 
 export function DropZone({
@@ -29,24 +32,6 @@ export function DropZone({
     </div>
   );
 }
-function ImageContent({ element }) {
-  const [failed, setFailed] = useState(false);
-  return failed ? (
-    <div className="pb-image-fallback">
-      {element.props.alt || "Image unavailable"}
-      <small>Set an image URL in Content.</small>
-    </div>
-  ) : (
-    <img
-      key={element.props.src}
-      src={element.props.src}
-      alt={element.props.alt}
-      referrerPolicy="no-referrer"
-      draggable={false}
-      onError={() => setFailed(true)}
-    />
-  );
-}
 export function CanvasNode({
   id,
   project,
@@ -59,12 +44,16 @@ export function CanvasNode({
   draft,
   guides,
 }) {
+  const { state, dispatch, sendCommand, select } = useBuilder();
+  const editing = state.editor.richEditingId === id;
   const e = project.page.elements[id];
+  const masterReadOnly = !!e.instance && !state.editor.masterEdit;
+  const effective = resolveStyles(project, id);
   const blocked = readOnly || protectedSubtree(project, id);
   const selected = selection.includes(id);
   const drag = useDraggable({
     id: `element:${id}`,
-    disabled: blocked || e.positionMode !== "flow",
+    disabled: blocked || e.positionMode === "absolute",
     data: { kind: "element", id, label: e.name },
   });
   const viewport =
@@ -77,9 +66,14 @@ export function CanvasNode({
   const geometry = draft?.placements[id] || e.geometry;
   const style = {
     "--pb-control-scale": 1 / workspace.zoom,
-    ...e.styles.overrides,
+    ...reactStyles(ownStyles(project, id)),
     ...(draft?.id === id && draft.style ? draft.style : {}),
-    position: e.positionMode === "absolute" ? "absolute" : "relative",
+    position:
+      e.positionMode === "absolute"
+        ? "absolute"
+        : e.positionMode === "sticky"
+          ? "sticky"
+          : "relative",
     zIndex: e.geometry.zIndex,
     ...(e.positionMode === "absolute"
       ? {
@@ -96,17 +90,90 @@ export function CanvasNode({
   const siblings = childrenOf(project, e.parentId);
   const next = siblings[siblings.indexOf(id) + 1] || null;
   const nested = isContainer(e);
-  let content;
-  if (e.type === "heading") {
-    const Heading = `h${e.props.level}`;
-    content = <Heading>{plainText(e)}</Heading>;
-  } else if (e.type === "paragraph") content = <p>{plainText(e)}</p>;
-  else if (e.type === "link")
-    content = <span className="pb-preview-link">{e.props.text} ↗</span>;
-  else if (e.type === "image")
-    content = <ImageContent key={e.props.src} element={e} />;
-  else if (e.type === "divider") content = <hr />;
-  else if (e.type === "listItem") content = <span>• {plainText(e)}</span>;
+  const content =
+    editing && e.props.document ? (
+      <RichTextEditor
+        document={e.props.document}
+        disabled={blocked}
+        onHistory={sendCommand}
+        onChange={(document, key) =>
+          sendCommand(
+            { type: "PATCH", ids: [id], patch: { props: { document } } },
+            key ? `rich:${id}:${key}` : undefined,
+          )
+        }
+        onDone={() => {
+          dispatch({ type: "RICH_MODE", id: null });
+          requestAnimationFrame(() =>
+            document.querySelector(`[data-element-id="${id}"]`)?.focus(),
+          );
+        }}
+      />
+    ) : (
+      <ComponentContent
+        element={e}
+        styles={effective}
+        viewport={workspace.viewport}
+      />
+    );
+  const childrenContent = nested ? (
+    <div
+      data-container-id={id}
+      className="pb-node-children"
+      style={{
+        display: e.layoutMode === "grid" ? "grid" : "flex",
+        flexDirection: e.layout.direction,
+        flexWrap: e.layout.wrap ? "wrap" : "nowrap",
+        alignItems: e.layout.align,
+        justifyContent: e.layout.justify,
+        gap: effective.gap || "0",
+        gridTemplateColumns: `repeat(${Math.min(e.layout.columns, workspace.viewport < 600 ? 1 : workspace.viewport < 1024 ? 2 : 12)}, minmax(0,1fr))`,
+        minHeight: e.children.some(
+          (child) => project.page.elements[child].positionMode === "flow",
+        )
+          ? undefined
+          : "6rem",
+      }}
+    >
+      {e.children.map((child) => (
+        <CanvasNode
+          key={child}
+          id={child}
+          {...{
+            project,
+            selection,
+            selectAt,
+            pointer,
+            readOnly,
+            canDrop,
+            workspace,
+            draft,
+            guides,
+          }}
+        />
+      ))}
+      {!e.children.length && (
+        <p className="pb-container-placeholder">
+          {e.layout.group ? "Group" : e.name} · Drop elements here
+        </p>
+      )}
+      <DropZone
+        id={`inside:${id}`}
+        parentId={id}
+        label={`Inside ${e.name}`}
+        canDrop={canDrop}
+        className="pb-drop-inside"
+      />
+      {guides?.parentId === id &&
+        guides.guides.map((g, i) => (
+          <i
+            key={i}
+            className={`pb-snap-guide pb-snap-${g.axis}`}
+            style={g.axis === "x" ? { left: `${g.at}%` } : { top: `${g.at}%` }}
+          />
+        ))}
+    </div>
+  ) : null;
   const handleClick = (event) => {
     event.stopPropagation();
     selectAt(event, id);
@@ -118,13 +185,24 @@ export function CanvasNode({
       data-type={e.type}
       data-testid={`canvas-${e.type}`}
       data-selected={selected}
+      data-rich-editing={editing}
       data-locked={blocked}
       tabIndex={0}
       role="group"
       aria-label={`${e.name}${selected ? ", selected" : ""}${blocked ? ", locked" : ""}`}
       className={`pb-canvas-node ${nested ? "pb-node-container" : ""} ${drag.isDragging ? "pb-dragging" : ""}`}
       style={style}
-      onClick={handleClick}
+      onClick={(event) => {
+        if (!editing) handleClick(event);
+        else event.stopPropagation();
+      }}
+      onDoubleClick={(event) => {
+        if (e.props.document && !blocked && !masterReadOnly) {
+          event.stopPropagation();
+          select([id]);
+          dispatch({ type: "RICH_MODE", id });
+        }
+      }}
       onKeyDown={(event) => {
         if (event.target === event.currentTarget && event.key === "Enter") {
           event.stopPropagation();
@@ -142,69 +220,25 @@ export function CanvasNode({
         className="pb-drop-before"
       />
       {nested ? (
-        <div
-          data-container-id={id}
-          className="pb-node-children"
-          style={{
-            display: e.layoutMode === "grid" ? "grid" : "flex",
-            flexDirection: e.layout.direction,
-            flexWrap: e.layout.wrap ? "wrap" : "nowrap",
-            alignItems: e.layout.align,
-            justifyContent: e.layout.justify,
-            gap: e.styles.overrides.gap || "0",
-            gridTemplateColumns: `repeat(${Math.min(e.layout.columns, workspace.viewport < 600 ? 1 : workspace.viewport < 900 ? 2 : 12)}, minmax(0,1fr))`,
-            minHeight: e.children.some(
-              (child) => project.page.elements[child].positionMode === "flow",
-            )
-              ? undefined
-              : "6rem",
-          }}
-        >
-          {e.children.map((child) => (
-            <CanvasNode
-              key={child}
-              id={child}
-              {...{
-                project,
-                selection,
-                selectAt,
-                pointer,
-                readOnly,
-                canDrop,
-                workspace,
-                draft,
-                guides,
-              }}
-            />
-          ))}
-          {!e.children.length && (
-            <p className="pb-container-placeholder">
-              {e.layout.group ? "Group" : e.name} · Drop elements here
-            </p>
-          )}
-          <DropZone
-            id={`inside:${id}`}
-            parentId={id}
-            label={`Inside ${e.name}`}
-            canDrop={canDrop}
-            className="pb-drop-inside"
-          />
-          {guides?.parentId === id &&
-            guides.guides.map((g, i) => (
-              <i
-                key={i}
-                className={`pb-snap-guide pb-snap-${g.axis}`}
-                style={
-                  g.axis === "x" ? { left: `${g.at}%` } : { top: `${g.at}%` }
-                }
-              />
-            ))}
-        </div>
+        e.type === "nav" ? (
+          <nav className="pb-native-nav" aria-label={e.props.label}>
+            {workspace.viewport < 768 ? (
+              <details>
+                <summary>{e.props.menuLabel}</summary>
+                {childrenContent}
+              </details>
+            ) : (
+              childrenContent
+            )}
+          </nav>
+        ) : (
+          childrenContent
+        )
       ) : (
         content
       )}
       <div className="pb-node-controls">
-        {e.positionMode === "flow" ? (
+        {e.positionMode !== "absolute" ? (
           <button
             type="button"
             ref={drag.setActivatorNodeRef}

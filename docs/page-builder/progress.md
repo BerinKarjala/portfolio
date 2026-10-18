@@ -1,6 +1,6 @@
 # Page Builder implementation evidence
 
-Branch: `codex/page-builder`. Requirements baseline: PR #226. M1 landed in [PR #227](https://github.com/BerinKarjala/portfolio/pull/227). M2 implementation: [draft PR #228](https://github.com/BerinKarjala/portfolio/pull/228), with local, GitHub CI and Netlify preview gates passed. M3–M5 remain pending. No implementation merge or production release has been performed by Codex.
+M3 branch: `codex/page-builder-m3`. M1/M2 branch: `codex/page-builder`. Requirements baseline: PR #226. M1 landed in [PR #227](https://github.com/BerinKarjala/portfolio/pull/227). M2 landed in [PR #228](https://github.com/BerinKarjala/portfolio/pull/228), with local, GitHub CI and Netlify preview gates passed. M3 implementation and local/CI/preview gates are complete in [draft PR #229](https://github.com/BerinKarjala/portfolio/pull/229); M4–M5 remain pending. No implementation merge or production release has been performed by Codex.
 
 The approved October 18 launch layout overrides the original direct-to-editor route: portfolio project page, clickable preview on the left, existing source viewer on the right, full-viewport workspace after activation.
 
@@ -8,7 +8,7 @@ The approved October 18 launch layout overrides the original direct-to-editor ro
 
 - [x] M1 — foundation and persistence: local, GitHub CI and Netlify preview gates passed
 - [x] M2 — canvas and structural editing: local, GitHub CI and Netlify preview gates passed
-- [ ] M3 — content and design systems
+- [x] M3 — content and design systems: local, GitHub CI and Netlify preview gates passed
 - [ ] M4 — export, preview, validation and resilience
 - [ ] M5 — cross-browser evidence, teaching documentation and release
 
@@ -56,9 +56,32 @@ Local runtime: Node 22.22.2 / npm 10.9.4, clean lockfile install before implemen
 
 GitHub Actions [run 39101837094](https://github.com/BerinKarjala/portfolio/actions/runs/39101837094) passed for implementation commit `1759a29e6ca2963079a259e9515287cff720fc5a`: clean `npm ci`, **61 tests**, production build, and **44 passing browser cases with four intentional skips** across Chromium/Firefox/WebKit. The Chromium run also compared both committed visual baselines successfully. Browser reports/screenshots/traces were uploaded.
 
-Netlify Deploy Preview for PR #228 passed: [open Page Builder](https://deploy-preview-228--berinkarjala.netlify.app/projects/page-builder). The preview deployment, header and redirect checks passed. This records the deployment check; automated interaction coverage runs against the production build in CI. M1 was merged independently while M2 was underway; the feature branch incorporates that main baseline without changing the tested M2 tree. M2 remains a draft PR, unmerged, with no production release performed by Codex. This final evidence update changes documentation only.
+Netlify Deploy Preview for PR #228 passed: [open Page Builder](https://deploy-preview-228--berinkarjala.netlify.app/projects/page-builder). The preview deployment, header and redirect checks passed. This records the deployment check; automated interaction coverage runs against the production build in CI. M1 was merged independently while M2 was underway; the feature branch incorporates that main baseline without changing the tested M2 tree. M2 was subsequently merged independently by the repository owner; no production release was performed by Codex. This final evidence update changes documentation only.
 
 The browser matrix includes a CDP touchscreen case and representative visual-baseline case on Chromium only; both are explicitly skipped on Firefox/WebKit. All ordinary pointer/keyboard/mobile layout/ownership workflows run in every engine. Full visual/performance/manual-device acceptance remains M5. See [M2 contracts and verification](m2-canvas.md).
+
+## M3 deliverables and gate
+
+- [x] Full 18-type categorized palette and component previews; semantic form/table/gallery/media/icon/native-navigation controls
+- [x] Structured version-2 rich-text editor, selection-preserving contextual toolbar, inline icons/links/formatting, safe paste, composition and grapheme-aware deletion
+- [x] Global/element visual styles, state styling, colors/swatches, box model, typography, backgrounds/crop, sticky layout and responsive visibility
+- [x] Category preset inheritance/variants, effective/inherited/override display, confirmed appearance baking and transitive dependency copying
+- [x] Validated linked masters, edit/propagation/detach/removal, independent cross-project copy and local instance overrides
+- [x] Global/element effects, triggers/timing/repeats/direction, session pause/replay and reduced motion
+- [x] Six polished editable template compositions with original SVG placeholders
+- [x] Schema v3 migration, canonical graph history, ownership and last-good-save protections
+- [x] Final local unit/integration/browser checks, refreshed visual comparison and accessible workflow review
+- [x] M3 GitHub Chromium/Firefox/WebKit verification and Netlify Deploy Preview
+
+Local M3 verification on Node 22.22.2/npm 10.9.4: **102 tests across 16 files passed**; production build passed; the full **23-case Chromium suite passed**, including the seven M3 workflows. Final mobile heading/drawer refinements then passed all seven M3 workflows plus the existing mobile insertion/dialog cases and ordinary visual comparison. Two refreshed structured/Grid images, desktop rich editing, mobile inspector and all six mobile template heroes were visually reviewed. Axe scans passed for the desktop/mobile shell and the rich editing controls; new browser cases report no unhandled page errors.
+
+The first lazy-workspace unit assertion now allows five seconds for test-runtime compilation/import; ordinary behavior assertions remain unchanged. The only new packages are dev-only `@axe-core/playwright` 4.14.0 and `axe-core`; the Node >=22.12 peer/runtime contract matches this repository. No existing dependency versions changed. All 130 requirement rows remain present with selected options preserved.
+
+GitHub Actions [run 39105808514](https://github.com/BerinKarjala/portfolio/actions/runs/39105808514) passed on implementation commit `790edde6d0ff3369eaaa586393ab489451556024`: clean installation, **102 tests**, production build, **65 passing browser cases and four intentional skips** across Chromium/Firefox/WebKit. Both representative Chromium images compared successfully. All M3 cases ran in every engine, including composition/paste/discrete formatting Undo and the desktop/mobile axe scans. Browser reports, screenshots and failure traces were uploaded.
+
+Netlify [PR #229 Deploy Preview](https://deploy-preview-229--berinkarjala.netlify.app/projects/page-builder), header and redirect checks passed for that implementation. Interaction tests run against the production build in CI. M3 remains a draft PR, unmerged, with no production release performed by Codex. This final evidence update changes documentation only; the tested application is unchanged.
+
+M2 was merged independently by the repository owner during M3 implementation. M3 is isolated on `codex/page-builder-m3` from that exact main baseline. See [M3 contracts](m3-design.md). M3 browser workflows also fail on unhandled page errors; scoped axe scans cover the desktop/mobile editor and text tools. External page designs, physical device and screen-reader review remain release gates.
 
 ## Change log
 
@@ -68,9 +91,11 @@ The browser matrix includes a CDP touchscreen case and representative visual-bas
 - Fixed a browser-discovered reload race by flushing workspace state on page exit.
 - M2: added the interactive canvas, structural command/history/geometry services, Layers/inspector/camera controls and schema migration.
 - M2: added mouse/keyboard/real-touch/mobile/overlap/cancellation tests and representative visual regression images; documented contracts and remaining release gates.
+- M3: added the full semantic component/editor inventory, safe rich text, design/preset/master systems, effects, visibility/accessibility and polished template compositions.
+- M3: added component/invariant/security fixtures, rich-input and shared-design browser workflows, scoped axe checks and updated template images.
 
 ## Known limits and release gates
 
-Canvas tools are implemented in M2; full component/rich-text/style support and polished template assets remain M3; HTML/CSS compilation and complete backup/recovery reports in M4. The interactive canvas is not the final compiler-backed sandbox/export preview. The initial schema intentionally rejects unsupported component/style/master/preset data until those contracts are implemented. M1 schema version 1 and the documented unreleased v0 fixture migrate to schema version 2.
+Canvas tools are implemented in M2 and content/design systems in M3; HTML/CSS compilation and complete backup/recovery reports in M4. The interactive canvas is not the final compiler-backed sandbox/export preview. The current schema version 3 rejects unsupported component/style/master/preset data. M1 schema version 1, M2 version 2 and the documented unreleased v0 fixture migrate through validated in-memory transformations.
 
 Browser storage revision checks have no atomic cross-tab compare-and-swap and remain best effort. Project input is bounded to 4 MiB; backup files to 16 MiB. The 3 MiB storage warning estimates project records, not the browser's actual quota. Calibrated cross-browser visual/performance baselines, manual mobile/assistive-technology checks, all 130 decisions and AC-01–AC-16 remain release gates. No final release approval is implied.

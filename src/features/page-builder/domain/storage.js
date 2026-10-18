@@ -330,7 +330,14 @@ function normalizeWorkspace(value) {
     leftOpen: value?.leftOpen !== false,
     rightOpen: value?.rightOpen !== false,
     leftTab: value?.leftTab === "layers" ? "layers" : "palette",
-    inspectorTab: ["content", "layout", "page"].includes(value?.inspectorTab)
+    inspectorTab: [
+      "content",
+      "layout",
+      "style",
+      "effects",
+      "accessibility",
+      "page",
+    ].includes(value?.inspectorTab)
       ? value.inspectorTab
       : "page",
     mobilePanel: ["left", "right"].includes(value?.mobilePanel)

@@ -29,6 +29,10 @@ import CanvasInspector, { CommitField } from "./CanvasInspector";
 import { Layers, Palette } from "./CanvasLibrary";
 import { CanvasNode, DropZone } from "./CanvasTree";
 import { Modal } from "./Dialog";
+import ReusableControls from "./ReusableControls";
+import CanvasStyles from "./CanvasStyles";
+import { reactStyles } from "../domain/styles";
+import ExternalPaste from "./ExternalPaste";
 
 function keyboardCoordinates(event, { context, currentCoordinates }) {
   if (!["ArrowDown", "ArrowRight", "ArrowUp", "ArrowLeft"].includes(event.code))
@@ -92,7 +96,7 @@ const SHORTCUTS = [
 ];
 
 export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
-  const { state, select, sendCommand, report, notice, repository } =
+  const { state, select, sendCommand, report, notice, repository, dispatch } =
     useBuilder();
   const { project, selection, readOnly, past, future } = state.editor;
   const projectRef = useRef(project);
@@ -191,6 +195,26 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
     observer.observe(documentRef.current);
     return () => observer.disconnect();
   }, [readOnly]);
+  useEffect(() => {
+    if (
+      state.editor.richEditingId &&
+      window.matchMedia?.("(max-width: 760px)").matches
+    )
+      setWorkspace((ws) => ({ ...ws, mobilePanel: null }));
+  }, [state.editor.richEditingId]);
+  useEffect(() => {
+    if (
+      window.matchMedia?.("(max-width: 760px)").matches &&
+      workspace.mobilePanel
+    ) {
+      const panel = document.querySelector(
+        workspace.mobilePanel === "right"
+          ? ".pb-inspector-content"
+          : ".pb-library-content",
+      );
+      if (panel) panel.scrollTop = 0;
+    }
+  }, [workspace.mobilePanel]);
   const selectionKey = selection.join(",");
   useEffect(() => {
     if (selectionKey && previousSelection.current !== selectionKey)
@@ -407,6 +431,7 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
     copy,
     paste,
     requestDelete,
+    clipboard,
     pointer,
     cancelWidth: () => endWidth(null, true),
   };
@@ -442,7 +467,7 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
       let handled = true;
       if (modified && letter === "c") current.copy();
       else if (modified && letter === "x") current.copy(true);
-      else if (modified && letter === "v") current.paste();
+      else if (modified && letter === "v" && current.clipboard) current.paste();
       else if (modified && letter === "d")
         sendCommand({ type: "DUPLICATE", ids: current.selection });
       else if (modified && letter === "z")
@@ -535,6 +560,11 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
         },
       }}
     >
+      <CanvasStyles
+        project={project}
+        paused={state.editor.effectsPaused}
+        replay={state.editor.replayVersion}
+      />
       <div className="pb-canvas-actions">
         <button
           type="button"
@@ -702,28 +732,40 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
             >
               Layers
             </button>
+            <button
+              type="button"
+              aria-pressed={workspace.leftTab === "reusable"}
+              onClick={() => update({ leftTab: "reusable" })}
+            >
+              Reusable
+            </button>
           </div>
-          {workspace.leftTab === "palette" ? (
-            <Palette
-              {...{ add, parentId, insertion, setInsertion, recentVersion }}
-            />
-          ) : (
-            <Layers
-              expanded={workspace.expandedIds}
-              setExpanded={(expandedIds) => update({ expandedIds })}
-              reveal={reveal}
-              inspect={() => {
-                if (window.matchMedia?.("(max-width: 760px)").matches)
-                  update({ mobilePanel: "right", rightOpen: true });
-              }}
-            />
-          )}
+          <div className="pb-library-content">
+            {workspace.leftTab === "reusable" ? (
+              <ReusableControls library />
+            ) : workspace.leftTab === "palette" ? (
+              <Palette
+                {...{ add, parentId, insertion, setInsertion, recentVersion }}
+              />
+            ) : (
+              <Layers
+                expanded={workspace.expandedIds}
+                setExpanded={(expandedIds) => update({ expandedIds })}
+                reveal={reveal}
+                inspect={() => {
+                  if (window.matchMedia?.("(max-width: 760px)").matches)
+                    update({ mobilePanel: "right", rightOpen: true });
+                }}
+              />
+            )}
+          </div>
         </aside>
         <section className="pb-canvas-area" aria-label="Page canvas">
           <div className="pb-canvas-toolbar">
             <label>
               Layout width
               <select
+                aria-label="Layout width"
                 value={workspace.viewport}
                 onChange={(e) => update({ viewport: Number(e.target.value) })}
               >
@@ -783,6 +825,22 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
               Select layer
             </button>
           </div>
+          {state.editor.masterEdit && (
+            <div className="pb-master-banner">
+              Editing master ·{" "}
+              {project.masters[state.editor.masterEdit.masterId]?.name}
+              <button
+                type="button"
+                onClick={() => {
+                  dispatch({ type: "MASTER_MODE", id: null });
+                }}
+              >
+                Exit master editing
+              </button>
+            </div>
+          )}
+          <div className="pb-rich-dock" aria-label="Inline text tools" />
+          <ExternalPaste parentId={parentId} />
           <nav className="pb-breadcrumb" aria-label="Selection path">
             <button type="button" onClick={() => select([])}>
               Page
@@ -838,7 +896,7 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
                   ref={documentRef}
                   data-container-id="__page_root__"
                   className="pb-canvas-document"
-                  style={project.globalStyles}
+                  style={reactStyles(project.globalStyles)}
                 >
                   {project.page.rootElementIds.map((id) => (
                     <CanvasNode

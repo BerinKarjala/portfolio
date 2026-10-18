@@ -28,7 +28,12 @@ async function launch() {
   const launcher = screen.getByRole("button", { name: /open page builder/i });
   launcher.focus();
   fireEvent.click(launcher);
-  return screen.findByRole("dialog", { name: "Page Builder" });
+  // The first launch also compiles/loads the lazy workspace in the test runtime.
+  return screen.findByRole(
+    "dialog",
+    { name: "Page Builder" },
+    { timeout: 5000 },
+  );
 }
 async function create(name = "My website") {
   fireEvent.click(screen.getByRole("button", { name: /new project/i }));

@@ -133,7 +133,7 @@ describe("isolated project storage (AC-09, AC-10)", () => {
       calls.push(key);
       original(key, value);
     };
-    expect(repo.load(p.projectId).schemaVersion).toBe(2);
+    expect(repo.load(p.projectId).schemaVersion).toBe(3);
     expect(calls).toEqual([`${PROJECT_PREFIX}${p.projectId}`]);
   });
 

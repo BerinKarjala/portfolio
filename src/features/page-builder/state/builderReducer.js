@@ -11,6 +11,9 @@ export const initialState = {
 const snapshot = (project) => ({
   page: project.page,
   globalStyles: project.globalStyles,
+  globalEffects: project.globalEffects,
+  masters: project.masters,
+  presets: project.presets,
 });
 function commit(state, project, selection, action) {
   const editor = state.editor;
@@ -28,6 +31,18 @@ function commit(state, project, selection, action) {
       ...editor,
       project,
       selection,
+      masterEdit:
+        editor.masterEdit &&
+        selection.every(
+          (id) =>
+            project.page.elements[id]?.instance?.rootId ===
+            editor.masterEdit.rootId,
+        )
+          ? editor.masterEdit
+          : null,
+      richEditingId: selection.includes(editor.richEditingId)
+        ? editor.richEditingId
+        : null,
       dirty: true,
       status: "unsaved",
       error: "",
@@ -69,6 +84,10 @@ export function builderReducer(state, action) {
           future: [],
           historyKey: null,
           historyTime: 0,
+          masterEdit: null,
+          richEditingId: null,
+          effectsPaused: false,
+          replayVersion: 0,
         },
       };
     case "CLOSE":
@@ -86,9 +105,66 @@ export function builderReducer(state, action) {
         : ids;
       return {
         ...state,
-        editor: { ...editor, selection, commandError: "", historyKey: null },
+        editor: {
+          ...editor,
+          selection,
+          commandError: "",
+          historyKey: null,
+          richEditingId:
+            selection.length === 1 && selection[0] === editor.richEditingId
+              ? editor.richEditingId
+              : null,
+          masterEdit:
+            editor.masterEdit &&
+            selection.every(
+              (id) =>
+                editor.project.page.elements[id].instance?.rootId ===
+                editor.masterEdit.rootId,
+            )
+              ? editor.masterEdit
+              : null,
+        },
       };
     }
+    case "MASTER_MODE": {
+      const e = editor?.project.page.elements[action.id];
+      return editor
+        ? {
+            ...state,
+            editor: {
+              ...editor,
+              masterEdit: e?.instance
+                ? { masterId: e.instance.masterId, rootId: e.instance.rootId }
+                : null,
+              richEditingId: null,
+            },
+          }
+        : state;
+    }
+    case "RICH_MODE":
+      return editor
+        ? {
+            ...state,
+            editor: {
+              ...editor,
+              richEditingId: editor.readOnly ? null : action.id || null,
+            },
+          }
+        : state;
+    case "EFFECTS_PAUSE":
+      return editor
+        ? {
+            ...state,
+            editor: { ...editor, effectsPaused: !editor.effectsPaused },
+          }
+        : state;
+    case "EFFECTS_REPLAY":
+      return editor
+        ? {
+            ...state,
+            editor: { ...editor, replayVersion: editor.replayVersion + 1 },
+          }
+        : state;
     case "COMMAND": {
       if (!editor || editor.readOnly) return state;
       try {
@@ -96,7 +172,18 @@ export function builderReducer(state, action) {
         return commit(
           state,
           result.project,
-          action.command.type === "PATCH" ? editor.selection : result.selection,
+          [
+            "PATCH",
+            "STYLE",
+            "PRESET_SAVE",
+            "PRESET_REMOVE",
+            "PRESET_APPLY",
+            "GLOBAL_STYLE",
+            "GLOBAL_EFFECTS",
+            "MASTER_COPY",
+          ].includes(action.command.type)
+            ? editor.selection
+            : result.selection,
           action,
         );
       } catch (error) {
@@ -120,6 +207,8 @@ export function builderReducer(state, action) {
           error: "",
           commandError: "",
           historyKey: null,
+          masterEdit: null,
+          richEditingId: null,
           selection: editor.selection.filter((id) => project.page.elements[id]),
           past: undo
             ? editor.past.slice(0, -1)
@@ -184,7 +273,13 @@ export function builderReducer(state, action) {
       return editor
         ? {
             ...state,
-            editor: { ...editor, readOnly: true, error: action.message },
+            editor: {
+              ...editor,
+              readOnly: true,
+              error: action.message,
+              masterEdit: null,
+              richEditingId: null,
+            },
           }
         : state;
     default:
