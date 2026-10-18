@@ -9,6 +9,8 @@ import {
   protectedSubtree,
 } from "../domain/structure";
 import { useBuilder } from "../state/BuilderProvider";
+import ComponentContent from "./ComponentContent";
+import { defaultProps } from "../domain/components";
 
 function PaletteItem({
   item,
@@ -36,15 +38,40 @@ function PaletteItem({
       >
         ⠿
       </button>
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => add(item.type)}
-        aria-label={`Add ${item.name}`}
-      >
-        <strong>{item.name}</strong>
-        <small>{item.hint}</small>
-      </button>
+      <div className="pb-palette-main">
+        <button
+          type="button"
+          aria-describedby={`palette-hint-${item.type}`}
+          disabled={disabled}
+          onClick={() => add(item.type)}
+          aria-label={`Add ${item.name}`}
+        >
+          <strong>{item.name}</strong>
+        </button>
+        <small id={`palette-hint-${item.type}`}>{item.hint}</small>
+        <details className="pb-palette-preview">
+          <summary>Preview {item.name}</summary>
+          <div className="pb-component-preview">
+            {["container", "card", "nav", "list"].includes(item.type) ? (
+              <div className="pb-preview-diagram">
+                <strong>{item.name}</strong>
+                <span>Editable content</span>
+                <span>Nested components</span>
+              </div>
+            ) : (
+              <ComponentContent
+                element={{
+                  id: `preview-${item.type}`,
+                  name: item.name,
+                  type: item.type,
+                  props: defaultProps(item.type),
+                  accessibility: { label: "", decorative: false },
+                }}
+              />
+            )}
+          </div>
+        </details>
+      </div>
       <button
         type="button"
         aria-label={`${favorite ? "Unfavorite" : "Favorite"} component ${item.name}`}
@@ -111,7 +138,15 @@ export function Palette({
           onChange={(e) => setCategory(e.target.value)}
         >
           <option value="">All components</option>
-          {["Text", "Layout", "Media", "Favorites", "Recent"].map((c) => (
+          {[
+            "Text",
+            "Layout",
+            "Media",
+            "Forms",
+            "Data",
+            "Favorites",
+            "Recent",
+          ].map((c) => (
             <option key={c}>{c}</option>
           ))}
         </select>

@@ -153,7 +153,7 @@ export default function useCanvasPointer({
       ids,
       kind,
       parentId: e.parentId,
-      flow: e.positionMode === "flow",
+      flow: e.positionMode !== "absolute",
       aspect: e.geometry.aspectLocked,
       originals: Object.fromEntries(
         ids.map((key) => [key, value.project.page.elements[key].geometry]),

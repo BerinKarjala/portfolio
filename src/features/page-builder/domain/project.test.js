@@ -15,7 +15,12 @@ describe("project model (AC-01, AC-08, AC-09)", () => {
     for (let i = 0; i < 1001; i++) {
       const id = `section-${i}`;
       p.page.rootElementIds.push(id);
-      p.page.elements[id] = { ...structuredClone(section), id, children: [] };
+      p.page.elements[id] = {
+        ...structuredClone(section),
+        id,
+        htmlId: "",
+        children: [],
+      };
     }
     expect(validateProject(p)).toBe(p);
   });
@@ -171,7 +176,7 @@ describe("project model (AC-01, AC-08, AC-09)", () => {
     delete old.revision;
     const raw = JSON.stringify(old);
     const current = migrateProject(old);
-    expect(current.schemaVersion).toBe(2);
+    expect(current.schemaVersion).toBe(3);
     expect(current.status).toBe("active");
     expect(current.favorite).toBe(false);
     expect(JSON.stringify(old)).toBe(raw);

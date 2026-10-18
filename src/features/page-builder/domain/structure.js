@@ -1,6 +1,11 @@
 import { documentText, newId, validateProject } from "./project";
 import { defaultGeometry, defaultLayout } from "./canvasModel";
 import { canContain, COMPONENTS, isContainer } from "./catalog";
+import { defaultProps } from "./components";
+import { defaultEffects } from "./styles";
+import { applyDesignCommand } from "./designCommands";
+import { applyMasterCommand, LOCAL_STYLES } from "./masters";
+import { remapRichLinks } from "./richText";
 
 const ensure = (condition, message) => {
   if (!condition) throw new Error(message);
@@ -77,17 +82,6 @@ export function canMoveTo(project, ids, parentId) {
 export function makeElement(type, parentId = null) {
   const component = COMPONENTS.find((c) => c.type === type);
   ensure(component, "Unknown component.");
-  const props = {
-    container: {},
-    heading: { level: 2, document: documentText("Your heading") },
-    paragraph: { document: documentText("Write something worth sharing.") },
-    link: { text: "Explore more", href: "https://example.com" },
-    divider: {},
-    image: { src: "https://example.com/image.jpg", alt: "Describe your image" },
-    nav: {},
-    list: { ordered: false },
-    listItem: { document: documentText("List item") },
-  }[type];
   return {
     id: newId(),
     type,
@@ -97,8 +91,9 @@ export function makeElement(type, parentId = null) {
     children: [],
     layoutMode: "flex",
     positionMode: "flow",
-    props,
+    props: defaultProps(type),
     styles: {
+      states: {},
       overrides:
         type === "container"
           ? { padding: "1rem", gap: "1rem", minHeight: "8rem" }
@@ -107,6 +102,10 @@ export function makeElement(type, parentId = null) {
             : {},
     },
     presetIds: {},
+    presetVariants: {},
+    effects: defaultEffects(),
+    instance: null,
+    accessibility: { label: "", role: "", decorative: false },
     visibility: {
       globalHidden: false,
       mobile: true,
@@ -134,9 +133,50 @@ export function captureClipboard(project, ids) {
 export function applyCommand(original, command) {
   validateProject(original);
   const p = structuredClone(original);
+  if (command.type === "MASTER_COPY") validateProject(command.source);
   const elements = p.page.elements;
   let ids = selectedRoots(p, command.ids || []);
   let selection = ids;
+  // Linked instances expose placement/size/visibility/lock only outside master mode.
+  if (
+    !command.type.startsWith("MASTER") &&
+    !command.type.startsWith("PRESET")
+  ) {
+    for (const id of ids) {
+      const e = elements[id];
+      if (!e?.instance) continue;
+      const root = e.instance.rootId === id;
+      const localPatch =
+        command.type === "PATCH" &&
+        Object.entries(command.patch || {}).every(
+          ([k, v]) =>
+            ["geometry", "visibility", "locked"].includes(k) ||
+            (k === "styles" &&
+              Object.keys(v).every((key) => key === "overrides") &&
+              Object.keys(v.overrides || {}).every((key) =>
+                LOCAL_STYLES.includes(key),
+              )),
+        );
+      const localStyle =
+        command.type === "STYLE" &&
+        !command.state &&
+        Object.keys(command.styles || {})
+          .concat(command.remove || [])
+          .every((k) => LOCAL_STYLES.includes(k));
+      ensure(
+        localPatch ||
+          localStyle ||
+          ["MODE", "GEOMETRY", "ARRANGE", "DUPLICATE"].includes(command.type) ||
+          (root && ["MOVE", "DELETE", "GROUP"].includes(command.type)),
+        "Edit master or detach before changing linked content.",
+      );
+    }
+    if (command.parentId)
+      ensure(
+        !elements[command.parentId]?.instance,
+        "Edit master before inserting inside a linked component.",
+      );
+  }
   const editable = (keys = ids) =>
     keys.forEach((id) =>
       ensure(
@@ -211,6 +251,8 @@ export function applyCommand(original, command) {
   switch (command.type) {
     case "ADD": {
       const e = makeElement(command.component, command.parentId ?? null);
+      if (command.initialProps)
+        e.props = { ...e.props, ...structuredClone(command.initialProps) };
       elements[e.id] = e;
       insert([e.id], e.parentId, command.beforeId, command.index);
       selection = [e.id];
@@ -265,6 +307,8 @@ export function applyCommand(original, command) {
               "geometry",
               "visibility",
               "locked",
+              "effects",
+              "accessibility",
             ].includes(key),
           ),
         "Unsupported element change.",
@@ -286,6 +330,7 @@ export function applyCommand(original, command) {
               "layoutMode",
               "geometry",
               "visibility",
+              "effects",
             ].includes(key),
           )
         )
@@ -299,7 +344,14 @@ export function applyCommand(original, command) {
             );
             e.styles.overrides = { ...e.styles.overrides, ...value.overrides };
           } else if (
-            ["props", "layout", "geometry", "visibility"].includes(key)
+            [
+              "props",
+              "layout",
+              "geometry",
+              "visibility",
+              "effects",
+              "accessibility",
+            ].includes(key)
           )
             e[key] = { ...e[key], ...structuredClone(value) };
           else e[key] = value;
@@ -436,10 +488,17 @@ export function applyCommand(original, command) {
         e.id = map[id];
         e.parentId = map[e.parentId] || parentId;
         e.children = e.children.map((key) => map[key]);
+        if (e.instance) {
+          if (map[e.instance.rootId])
+            e.instance.rootId = map[e.instance.rootId];
+          else e.instance = null;
+        }
+        if (e.props.document)
+          e.props.document = remapRichLinks(e.props.document, anchors);
         e.htmlId = anchors[e.htmlId] || "";
         e.geometry.flowParentId = map[e.geometry.flowParentId] || e.parentId;
         if (
-          e.type === "link" &&
+          ["link", "button"].includes(e.type) &&
           e.props.href.startsWith("#") &&
           anchors[e.props.href.slice(1)]
         )
@@ -460,7 +519,7 @@ export function applyCommand(original, command) {
     case "MODE": {
       editable();
       ensure(
-        ["flow", "absolute"].includes(command.mode),
+        ["flow", "absolute", "sticky"].includes(command.mode),
         "Invalid positioning mode.",
       );
       for (const id of ids) {
@@ -504,10 +563,16 @@ export function applyCommand(original, command) {
       for (const id of ids) {
         const e = elements[id];
         ensure(
-          ["heading", "paragraph"].includes(e.type) &&
-            ["heading", "paragraph"].includes(command.component),
+          (["heading", "paragraph"].includes(e.type) &&
+            ["heading", "paragraph"].includes(command.component)) ||
+            (["button", "link"].includes(e.type) &&
+              ["button", "link"].includes(command.component)),
           "These component types cannot be converted.",
         );
+        if (["button", "link"].includes(e.type)) {
+          e.type = command.component;
+          continue;
+        }
         const doc = e.props.document;
         e.type = command.component;
         e.props =
@@ -576,7 +641,10 @@ export function applyCommand(original, command) {
       break;
     }
     default:
-      throw new Error("Unknown canvas command.");
+      selection =
+        applyDesignCommand(p, command, protectedSubtree) ??
+        applyMasterCommand(p, command, applyCommand, protectedSubtree);
+      ensure(selection !== undefined, "Unknown canvas command.");
   }
   // Retained placement references cannot point to removed containers.
   Object.values(elements).forEach((e) => {
@@ -584,7 +652,7 @@ export function applyCommand(original, command) {
       e.geometry.flowParentId = e.parentId;
   });
   validateProject(p);
-  if (JSON.stringify(p.page) === JSON.stringify(original.page))
+  if (JSON.stringify(p) === JSON.stringify(original))
     return { project: original, selection };
   return { project: p, selection };
 }

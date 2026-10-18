@@ -227,16 +227,40 @@ describe("atomic structural commands (AC-02, AC-04, AC-08)", () => {
     ).toThrow();
   });
   it("migrates stored M1 projects to the new schema without altering existing content or IDs", () => {
-    const current = createProject({ name: "M1", templateId: "portfolio" });
+    let current = createProject({ name: "M1" });
+    const container = applyCommand(current, {
+      type: "ADD",
+      component: "container",
+    });
+    current = applyCommand(container.project, {
+      type: "ADD",
+      component: "heading",
+      parentId: container.selection[0],
+    }).project;
     const legacy = structuredClone(current);
     legacy.schemaVersion = 1;
     Object.values(legacy.page.elements).forEach((e) => {
       delete e.layout;
       delete e.geometry;
+      delete e.effects;
+      delete e.instance;
+      delete e.presetVariants;
+      delete e.accessibility;
+      delete e.styles.states;
+      if (e.props.document)
+        e.props.document = {
+          version: 1,
+          nodes: e.props.document.nodes.map((n) => ({
+            type: "text",
+            text: n.text,
+          })),
+        };
+      if (e.type === "image") delete e.props.priority;
+      if (e.type === "nav") e.props = {};
     });
     const original = JSON.stringify(legacy);
     const upgraded = migrateProject(legacy);
-    expect(upgraded.schemaVersion).toBe(2);
+    expect(upgraded.schemaVersion).toBe(3);
     expect(upgraded.projectId).toBe(legacy.projectId);
     expect(upgraded.page).toEqual(current.page);
     expect(JSON.stringify(legacy)).toBe(original);

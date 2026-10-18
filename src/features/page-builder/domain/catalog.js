@@ -53,12 +53,24 @@ export const COMPONENTS = [
     category: "Text",
     hint: "Insert inside a list",
   },
+  ...[
+    ["button", "Button", "Text", "A prominent link with a clear action"],
+    ["card", "Card", "Layout", "A reusable content container"],
+    ["form", "Form", "Forms", "Labels, fields and an external HTTPS endpoint"],
+    ["table", "Table", "Data", "Semantic rows, columns and headers"],
+    ["gallery", "Gallery", "Media", "An ordered responsive image collection"],
+    ["icon", "Icon", "Media", "Searchable original inline SVG icons"],
+    ["video", "Video", "Media", "A hosted video with native controls"],
+    ["audio", "Audio", "Media", "Hosted audio with native controls"],
+    ["embed", "Embed", "Media", "Trusted YouTube, Vimeo and Maps URLs"],
+  ].map(([type, name, category, hint]) => ({ type, name, category, hint })),
 ];
 export const isContainer = (element) =>
-  !!element && ["container", "nav", "list"].includes(element.type);
+  !!element && ["container", "card", "nav", "list"].includes(element.type);
 export const canContain = (parent, type) =>
   parent?.type === "list"
     ? type === "listItem"
     : parent?.type === "nav"
-      ? type === "link"
-      : (!parent || parent.type === "container") && type !== "listItem";
+      ? ["link", "button"].includes(type)
+      : (!parent || ["container", "card"].includes(parent.type)) &&
+        type !== "listItem";

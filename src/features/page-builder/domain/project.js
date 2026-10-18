@@ -1,5 +1,27 @@
 import { TEMPLATES } from "./templates";
 import {
+  ensure as assert,
+  object,
+  text,
+  identifier,
+  safeUrl,
+} from "./validation";
+import {
+  validateStyles,
+  validatePresets,
+  validateEffects,
+  defaultEffects,
+  CATEGORIES,
+  STATES,
+} from "./styles";
+import { textDocument, richPlainText, migrateDocument } from "./richText";
+import { validateProps, defaultProps } from "./components";
+import { COMPONENTS, canContain, isContainer } from "./catalog";
+import { validateMasterLinks } from "./masters";
+import { polishTemplate } from "./templateDesign";
+export { safeUrl, validateStyles };
+
+import {
   defaultLayout,
   defaultGeometry,
   validateCanvasElement,
@@ -7,59 +29,25 @@ import {
 
 /**
  * @typedef {Object} Project
- * @property {2} schemaVersion
+ * @property {3} schemaVersion
  * @property {string} projectId Stable browser record identity, independent of its name.
  * @property {string} name
  * @property {number} revision Incremented only by the storage repository.
  * @property {"active"|"trashed"} status
  * @property {boolean} favorite
  * @property {{metadata: Object, rootElementIds: string[], elements: Object<string, Object>}} page
- * @property {Object} masters Reserved for the M3 schema extension; empty in M1.
- * @property {Object} presets Reserved for the M3 schema extension; empty in M1.
+ * @property {Object} masters Validated project-local definitions.
+ * @property {Object} presets Validated project-local definitions.
  */
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 export const MAX_JSON_BYTES = 4 * 1024 * 1024;
 export const newId = () => crypto.randomUUID();
-export const documentText = (text) => ({
-  version: 1,
-  nodes: [{ type: "text", text }],
-});
-export const plainText = (element) =>
-  element.props.document?.nodes.map((node) => node.text).join("") ||
-  element.props.text ||
-  "";
+export const documentText = textDocument;
+export const plainText = (e) =>
+  e.props.document ? richPlainText(e.props.document) : e.props.text || "";
 export const byteSize = (text) => new TextEncoder().encode(text).length;
 
-function assert(condition, message) {
-  if (!condition) throw new Error(message);
-}
-function object(value, keys, label) {
-  assert(
-    value &&
-      typeof value === "object" &&
-      !Array.isArray(value) &&
-      Object.getPrototypeOf(value) === Object.prototype,
-    `${label} must be an object.`,
-  );
-  assert(
-    Object.keys(value).every((key) => keys.includes(key)),
-    `${label} contains unsupported fields.`,
-  );
-}
-function text(value, max, label, allowEmpty = true) {
-  assert(
-    typeof value === "string" &&
-      value.length <= max &&
-      (allowEmpty || value.trim().length > 0),
-    `${label} must contain ${allowEmpty ? "at most" : "1–"} ${max} characters.`,
-  );
-}
-function identifier(value) {
-  return (
-    typeof value === "string" && /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,99}$/.test(value)
-  );
-}
 function guard(value, depth = 0, budget = { count: 0 }) {
   assert(
     depth <= 24 && ++budget.count <= 100000,
@@ -84,82 +72,6 @@ function guard(value, depth = 0, budget = { count: 0 }) {
         (typeof value === "number" && Number.isFinite(value)),
       "Invalid JSON value.",
     );
-}
-
-export function safeUrl(value, { link = false, empty = false } = {}) {
-  if (empty && value === "") return true;
-  if (
-    typeof value !== "string" ||
-    value.length > 2048 ||
-    /[\u0000-\u0020\u007f<>"'\\]/.test(value)
-  )
-    return false;
-  if (link && /^#[A-Za-z][\w:.-]*$/.test(value)) return true;
-  if (link && /^mailto:[^@?]+@[^@?]+\.[^@?]+$/.test(value)) return true;
-  if (link && /^tel:\+?[\d()-]+$/.test(value)) return true;
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" && !url.username && !url.password;
-  } catch {
-    return false;
-  }
-}
-
-export function validateStyles(styles) {
-  object(
-    styles,
-    [
-      "color",
-      "backgroundColor",
-      "fontFamily",
-      "fontSize",
-      "fontWeight",
-      "lineHeight",
-      "padding",
-      "gap",
-      "borderRadius",
-      "maxWidth",
-      "textAlign",
-      "minHeight",
-      "width",
-      "height",
-    ],
-    "Styles",
-  );
-  for (const [key, value] of Object.entries(styles)) {
-    let valid = false;
-    if (["color", "backgroundColor"].includes(key))
-      valid =
-        typeof value === "string" && /^#[\da-f]{6}([\da-f]{2})?$/i.test(value);
-    else if (key === "fontFamily")
-      valid = ["system-ui", "serif", "sans-serif", "monospace"].includes(value);
-    else if (key === "fontWeight")
-      valid = [400, 500, 600, 700, 800].includes(value);
-    else if (key === "lineHeight")
-      valid = typeof value === "number" && value >= 1 && value <= 3;
-    else if (key === "textAlign")
-      valid = ["left", "center", "right"].includes(value);
-    else
-      valid =
-        (["width", "height"].includes(key) && value === "auto") ||
-        (typeof value === "string" &&
-          /^(?:0|(?:\d{1,3}(?:\.\d{1,2})?)(?:px|rem|em|%))$/.test(value));
-    assert(valid, `Unsupported or unsafe style: ${key}.`);
-  }
-  return styles;
-}
-
-function validateDocument(doc) {
-  object(doc, ["version", "nodes"], "Rich text");
-  assert(
-    doc.version === 1 && Array.isArray(doc.nodes) && doc.nodes.length <= 1000,
-    "Unsupported rich-text structure.",
-  );
-  doc.nodes.forEach((node) => {
-    object(node, ["type", "text"], "Text node");
-    assert(node.type === "text", "Unsupported rich-text node.");
-    text(node.text, 10000, "Text");
-  });
 }
 
 /** Validate, without mutating or silently stripping unsupported/executable data.
@@ -189,6 +101,7 @@ export function validateProject(project) {
       "masters",
       "presets",
       "globalStyles",
+      "globalEffects",
       "assets",
     ],
     "Project",
@@ -219,9 +132,14 @@ export function validateProject(project) {
       typeof project.favorite === "boolean",
     "Invalid project status or favorite.",
   );
-  object(project.masters, [], "Masters (added in M3)");
-  object(project.presets, [], "Presets (added in M3)");
+  validatePresets(project.presets);
+  object(project.masters, Object.keys(project.masters || {}), "Masters");
   validateStyles(project.globalStyles);
+  validateEffects(project.globalEffects);
+  assert(
+    project.globalEffects.animation !== "inherit",
+    "Global animation cannot inherit itself.",
+  );
   object(project.assets, ["externalUrlsOnly"], "Assets");
   assert(
     project.assets.externalUrlsOnly === true,
@@ -277,6 +195,10 @@ export function validateProject(project) {
         "locked",
         "layout",
         "geometry",
+        "effects",
+        "instance",
+        "presetVariants",
+        "accessibility",
       ],
       "Element",
     );
@@ -285,17 +207,7 @@ export function validateProject(project) {
       "Element ID or parent reference is inconsistent.",
     );
     assert(
-      [
-        "container",
-        "heading",
-        "paragraph",
-        "link",
-        "divider",
-        "image",
-        "nav",
-        "list",
-        "listItem",
-      ].includes(e.type),
+      COMPONENTS.some((c) => c.type === e.type),
       "Unsupported component type.",
     );
     text(e.name, 100, "Element name", false);
@@ -313,13 +225,50 @@ export function validateProject(project) {
     );
     assert(
       ["flex", "grid"].includes(e.layoutMode) &&
-        ["flow", "absolute"].includes(e.positionMode),
+        ["flow", "absolute", "sticky"].includes(e.positionMode),
       "Unsupported layout mode in this milestone.",
     );
     validateCanvasElement(e);
-    object(e.styles, ["overrides"], "Element styles");
+    object(e.styles, ["overrides", "states"], "Element styles");
     validateStyles(e.styles.overrides);
-    object(e.presetIds, [], "Preset references");
+    object(e.styles.states, STATES, "Interaction states");
+    Object.values(e.styles.states).forEach((s) => validateStyles(s));
+    object(e.presetIds, CATEGORIES, "Preset references");
+    object(e.presetVariants, CATEGORIES, "Preset variants");
+    for (const category of CATEGORIES) {
+      if (e.presetIds[category])
+        assert(
+          project.presets[e.presetIds[category]]?.category === category,
+          "Unknown preset or category mismatch.",
+        );
+      if (e.presetVariants[category])
+        assert(
+          project.presets[e.presetIds[category]]?.variants[
+            e.presetVariants[category]
+          ],
+          "Unknown preset variant.",
+        );
+    }
+    validateEffects(e.effects);
+    assert(
+      e.instance === null || (e.instance && typeof e.instance === "object"),
+      "Invalid linked instance.",
+    );
+    object(e.accessibility, ["label", "role", "decorative"], "Accessibility");
+    text(e.accessibility.label, 200, "accessible label");
+    assert(
+      ["", "region", "banner", "main", "complementary", "contentinfo"].includes(
+        e.accessibility.role,
+      ) && typeof e.accessibility.decorative === "boolean",
+      "Invalid accessibility settings.",
+    );
+    assert(
+      e.positionMode !== "sticky" ||
+        e.type === "container" ||
+        e.type === "nav" ||
+        e.type === "card",
+      "Sticky requires a structured container.",
+    );
     object(
       e.visibility,
       ["globalHidden", "mobile", "tablet", "desktop"],
@@ -331,46 +280,14 @@ export function validateProject(project) {
       ) && typeof e.locked === "boolean",
       "Invalid visibility or lock.",
     );
-    const props = {
-      container: [],
-      nav: [],
-      heading: ["level", "document"],
-      paragraph: ["document"],
-      link: ["text", "href"],
-      divider: [],
-      image: ["src", "alt"],
-      list: ["ordered"],
-      listItem: ["document"],
-    };
-    object(e.props, props[e.type], "Component properties");
-    if (["heading", "paragraph", "listItem"].includes(e.type))
-      validateDocument(e.props.document);
-    if (e.type === "heading")
-      assert(
-        [1, 2, 3, 4, 5, 6].includes(e.props.level),
-        "Invalid heading level.",
-      );
-    if (e.type === "link") {
-      text(e.props.text, 1000, "Link text", false);
-      assert(safeUrl(e.props.href, { link: true }), "Unsafe link URL.");
-    }
-    if (e.type === "image") {
-      text(e.props.alt, 1000, "Image alt text");
-      assert(safeUrl(e.props.src), "Unsafe media URL.");
-    }
-    if (e.type === "list")
-      assert(typeof e.props.ordered === "boolean", "Invalid list type.");
-    const container = ["container", "nav", "list"].includes(e.type);
+    validateProps(e.type, e.props);
     assert(
-      container || e.children.length === 0,
+      isContainer(e) || e.children.length === 0,
       "Illegal nesting inside a leaf component.",
     );
     for (const child of e.children) {
       assert(
-        elements[child] &&
-          (e.type !== "list" || elements[child].type === "listItem") &&
-          (e.type !== "nav" || elements[child].type === "link") &&
-          (e.type === "list" || elements[child].type !== "listItem"),
+        elements[child] && canContain(e, elements[child].type),
         "Illegal semantic nesting.",
       );
       visit(child, id, depth + 1);
@@ -393,6 +310,22 @@ export function validateProject(project) {
       "Retained placement has a missing parent reference.",
     ),
   );
+  validateMasterLinks(project);
+  for (const master of Object.values(project.masters)) {
+    assert(
+      master.elements[master.rootId]?.instance === null,
+      "Master definitions cannot contain instances.",
+    );
+    validateProject({
+      ...project,
+      masters: {},
+      page: {
+        ...project.page,
+        rootElementIds: [master.rootId],
+        elements: master.elements,
+      },
+    });
+  }
   return project;
 }
 
@@ -438,7 +371,45 @@ export function migrateProject(input) {
       e.layout = defaultLayout();
       e.geometry = defaultGeometry(e.parentId);
     }
-    data.schemaVersion = SCHEMA_VERSION;
+    data.schemaVersion = 2;
+  }
+  if (data?.schemaVersion === 2) {
+    data = structuredClone(data);
+    for (const e of Object.values(data.page?.elements || {})) {
+      object(
+        e,
+        [
+          "id",
+          "type",
+          "name",
+          "htmlId",
+          "parentId",
+          "children",
+          "layoutMode",
+          "positionMode",
+          "props",
+          "styles",
+          "presetIds",
+          "visibility",
+          "locked",
+          "layout",
+          "geometry",
+        ],
+        "Schema-2 element",
+      );
+      if (e.props.document)
+        e.props.document = migrateDocument(e.props.document);
+      if (e.type === "image") e.props = { ...e.props, priority: false };
+      if (e.type === "nav")
+        e.props = { label: "Navigation", menuLabel: "Menu", ...e.props };
+      e.styles.states = {};
+      e.presetVariants = {};
+      e.effects = defaultEffects();
+      e.instance = null;
+      e.accessibility = { label: "", role: "", decorative: false };
+    }
+    data.globalEffects = defaultEffects("none");
+    data.schemaVersion = 3;
   }
   return validateProject(data);
 }
@@ -473,6 +444,7 @@ export function createProject({
     },
     masters: {},
     presets: {},
+    globalEffects: defaultEffects("none"),
     globalStyles: {
       backgroundColor: "#ffffff",
       color: "#17251d",
@@ -491,8 +463,12 @@ export function createProject({
       children: [],
       layoutMode: "flex",
       positionMode: "flow",
-      props,
-      styles: { overrides },
+      props: { ...defaultProps(type), ...props },
+      styles: { overrides, states: {} },
+      presetVariants: {},
+      effects: defaultEffects(),
+      instance: null,
+      accessibility: { label: "", role: "", decorative: false },
       presetIds: {},
       visibility: {
         globalHidden: false,
@@ -549,6 +525,7 @@ export function createProject({
         { fontWeight: 700 },
       );
   });
+  polishTemplate(project, template, add);
   return validateProject(project);
 }
 
@@ -571,6 +548,7 @@ export function duplicateProject(project, name = `${project.name} copy`) {
       e.parentId = e.parentId ? map[e.parentId] : null;
       e.geometry.flowParentId = map[e.geometry.flowParentId] || null;
       e.children = e.children.map((id) => map[id]);
+      if (e.instance) e.instance.rootId = map[e.instance.rootId];
       return [e.id, e];
     }),
   );

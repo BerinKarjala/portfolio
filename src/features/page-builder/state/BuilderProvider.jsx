@@ -17,6 +17,7 @@ import {
   StorageConflictError,
 } from "../domain/storage";
 import { builderReducer, initialState } from "./builderReducer";
+import { localInstanceCommand } from "../domain/masters";
 
 const BuilderContext = createContext(null);
 export function useBuilder() {
@@ -344,7 +345,21 @@ export default function BuilderProvider({ children }) {
         dispatch(
           typeof command === "string"
             ? { type: command }
-            : { type: "COMMAND", command, historyKey },
+            : {
+                type: "COMMAND",
+                command:
+                  editor.masterEdit &&
+                  !command.type.startsWith("MASTER") &&
+                  !localInstanceCommand(editor.project, command)
+                    ? {
+                        type: "MASTER_EDIT",
+                        masterId: editor.masterEdit.masterId,
+                        instanceRoot: editor.masterEdit.rootId,
+                        command,
+                      }
+                    : command,
+                historyKey,
+              },
         );
       } catch (error) {
         dispatch({ type: "READ_ONLY", message: error.message });

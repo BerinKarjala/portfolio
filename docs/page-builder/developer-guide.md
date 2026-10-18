@@ -1,4 +1,4 @@
-# Page Builder foundation and canvas
+# Page Builder architecture and implementation
 
 ## Integration
 
@@ -9,9 +9,9 @@ The gallery prefers a matching Sanity project document and supplies a bundled ca
 ## State and boundaries
 
 - `state/BuilderProvider.jsx` owns the injected browser repository, React Context/reducer, one-second autosave, lease heartbeat, storage/BroadcastChannel notifications, and unsaved-work guards.
-- `state/builderReducer.js` holds canonical in-memory project edits. Viewport, scroll, dashboard view and sort are separate workspace/preferences state, not content edits. No history snapshots are stored.
+- `state/builderReducer.js` holds canonical in-memory project edits. Viewport, scroll, dashboard view and sort are separate workspace/preferences state, not content edits. No history snapshots are persisted. Session history snapshots page, styles, presets, masters and global effects.
 - `domain/project.js` creates, clones, migrates and strictly validates projects. Element trees exclude the page root when measuring the maximum depth of four. Every element must be reachable exactly once, with matching parent/child references and unique HTML IDs. Whole-project duplication remaps internal IDs while retaining document-local HTML anchor IDs.
-- `domain/templates.js` contains immutable blank plus six starter definitions. They are initial content foundations; M3 adds the complete component inventory and polished assets.
+- `domain/templates.js` contains immutable blank plus six starter definitions. `templateDesign.js` composes the six polished samples with editable components and original curated SVG placeholders.
 - `domain/storage.js` is the only durable-data adapter. Inject a Storage-compatible object and clock for deterministic tests.
 - `domain/backups.js` produces versioned project/collection JSON, previews duplicates and invalid entries, and restores selected entries as independent copies. Naming collisions receive numbered suffixes. Newly created records are rolled back after batch failures if they have not changed; retained copies are identified if rollback fails.
 - `browser/files.js` contains browser-only file operations. Preview text uses React escaping; no user HTML is inserted into the DOM.
@@ -30,11 +30,11 @@ Project payload size is measured as approximately two bytes per localStorage cod
 
 ## Schema and import safety
 
-The current schema is version 2 (see the [M2 canvas contracts](m2-canvas.md)); it supports the safe component subset: container, heading, paragraph, link, divider, image, nav, list and listItem. Basic versioned rich-text documents contain text nodes. Masters/presets must be empty through M2; advanced components/styles/rich text require explicit schema extensions in M3. Unsupported properties are rejected, not silently discarded. URL and CSS values use allowlists. Imports reject prototype keys, unsupported versions, executable properties, cycles, illegal nesting, duplicate IDs and broken tree references.
+The current schema is version 3; see [M3 data and design contracts](m3-design.md). It supports all 18 palette types, validated version-2 structured rich text, effects/accessibility, preset graphs/variants and project-local linked masters. `styles.js`, `richText.js`, `components.js`, `masters.js` and `designCommands.js` isolate the pure contracts. Unsupported properties are rejected. URL, component and CSS values use allowlists; no user HTML enters the editing DOM. Imports reject prototype keys, unsupported versions, executable properties, cycles, illegal nesting, duplicate IDs and broken references.
 
 Each canonical project is limited to 4 MiB of JSON for input/serialization safety; collection files to 16 MiB. JSON complexity also has a traversal budget. There is no separate element-count limit. Oversized backups ask users to split selected projects instead of producing files that cannot be imported.
 
-Version 1 (M1) migrates to version 2 by adding validated layout/geometry defaults without changing existing content. The additional older shape is the documented **unreleased development v0 fixture**: the same canonical project shape with `schemaVersion: 0` and optional `status`, `favorite`, `revision`. Migration defaults these to `active`, `false`, `0`, validates the new object, checks the original stored bytes again, then performs exactly one replacement. This is a tested migration mechanism, not a claim of compatibility with a previously released builder or arbitrary third-party JSON.
+Version 1 (M1) migrates through version 2 geometry defaults, then version 3 effects/styles/rich-text defaults, without changing existing content/IDs. Version 2 (M2) records migrate directly to version 3. The additional older shape is the documented **unreleased development v0 fixture**: the same canonical project shape with `schemaVersion: 0` and optional `status`, `favorite`, `revision`. Migration defaults these to `active`, `false`, `0`, validates the new object, checks the original stored bytes again, then performs exactly one replacement. This is a tested migration mechanism, not a claim of compatibility with a previously released builder or arbitrary third-party JSON.
 
 Raw project objects and version-1 `page-builder-project` / `page-builder-collection` envelopes are accepted. Preview performs no writes. Users choose valid entries and confirm restore. Copies receive new project/element IDs; existing records are preserved. Recovery downloads from an invalid in-progress metadata edit may themselves need correction before import; they intentionally preserve the unfinished data.
 
@@ -50,6 +50,6 @@ npx playwright install --with-deps chromium firefox webkit
 npm run test:e2e
 ```
 
-The browser tests use the production build through `vite preview`, desktop and 390px layouts, real downloads, reload recovery, quota failure injection, and two tabs sharing origin storage. Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` only when intentionally testing an installed Chromium binary. HTML reports, screenshots and failure traces live in ignored `playwright-report/` and `test-results/`; CI uploads them as artifacts. Screenshot attachments are review evidence, not approved visual regression baselines. M5 adds calibrated visual/performance gates and manual mobile/assistive-technology evidence.
+The browser tests use the production build through `vite preview`, desktop and 390px layouts, real downloads, reload recovery, quota failure injection, and two tabs sharing origin storage. Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` only when intentionally testing an installed Chromium binary. HTML reports, screenshots and failure traces live in ignored `playwright-report/` and `test-results/`; CI uploads them as artifacts. Two reviewed Chromium canvas regression baselines are committed; ordinary runs compare them without update mode. Other screenshot attachments are review evidence, not approved release screenshots. Automated axe scans cover the editor shell and rich-text tools; user-authored canvas styling is excluded. M5 adds calibrated visual/performance gates and manual mobile/assistive-technology evidence.
 
-The M2 canvas is interactive and does not claim export parity: M4 replaces final Preview with the shared HTML/CSS compiler in a sandboxed iframe. No HTML/CSS export is offered before that compiler is implemented.
+The editing canvas is interactive and does not claim export parity: M4 replaces final Preview with the shared HTML/CSS compiler in a sandboxed iframe. No HTML/CSS export is offered before that compiler is implemented.

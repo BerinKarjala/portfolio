@@ -1,4 +1,12 @@
-import { useEffect, useState } from "react";
+import { CommitField } from "./CommitField";
+export { CommitField } from "./CommitField";
+import ContentInspector from "./ContentInspector";
+import DesignInspector, {
+  GlobalStylesInspector,
+  EffectsInspector,
+  AccessibilityInspector,
+} from "./DesignInspector";
+import ReusableControls from "./ReusableControls";
 import { useBuilder } from "../state/BuilderProvider";
 import { documentText, plainText } from "../domain/project";
 import { isContainer } from "../domain/catalog";
@@ -10,39 +18,6 @@ import {
   protectedSubtree,
 } from "../domain/structure";
 
-export function CommitField({
-  label,
-  value,
-  onCommit,
-  type = "text",
-  ...props
-}) {
-  const [draft, setDraft] = useState(value ?? "");
-  useEffect(() => setDraft(value ?? ""), [value]);
-  return (
-    <label>
-      {label}
-      <input
-        {...props}
-        type={type}
-        value={draft}
-        placeholder={value === undefined ? "Mixed" : props.placeholder}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={() => {
-          if (String(draft) !== String(value ?? ""))
-            onCommit(type === "number" ? Number(draft) : draft);
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") event.currentTarget.blur();
-          if (event.key === "Escape") {
-            event.stopPropagation();
-            setDraft(value ?? "");
-          }
-        }}
-      />
-    </label>
-  );
-}
 export function PageSettings() {
   const { state, editMetadata } = useBuilder();
   const { project, readOnly } = state.editor;
@@ -96,6 +71,11 @@ export function PageSettings() {
           Allow search engine indexing
         </label>
       </fieldset>
+      <GlobalStylesInspector />
+      <details>
+        <summary>Global page effects</summary>
+        <EffectsInspector global />
+      </details>
     </>
   );
 }
@@ -107,12 +87,13 @@ export default function CanvasInspector({
   requestDelete,
 }) {
   const { state, sendCommand, select } = useBuilder();
-  const { project, selection, readOnly } = state.editor;
+  const { project, selection, readOnly, masterEdit } = state.editor;
   const nodes = selection
     .map((id) => project.page.elements[id])
     .filter(Boolean);
   const first = nodes[0];
   const locked = nodes.some((e) => isLocked(project, e.id));
+  const linkedReadOnly = nodes.some((e) => e.instance && !masterEdit);
   const transformLocked = nodes.some((e) => protectedSubtree(project, e.id));
   const mixed = (getter) =>
     nodes.every((e) => getter(e) === getter(first)) ? getter(first) : undefined;
@@ -133,20 +114,22 @@ export default function CanvasInspector({
   return (
     <>
       <div className="pb-inspector-tabs" aria-label="Inspector views">
-        {["content", "layout", "page"].map((name) => (
-          <button
-            type="button"
-            key={name}
-            aria-pressed={tab === name}
-            onClick={() => setTab(name)}
-          >
-            {name === "page"
-              ? "Page"
-              : name === "layout"
-                ? "Layout"
-                : "Content"}
-          </button>
-        ))}
+        {["content", "layout", "style", "effects", "accessibility", "page"].map(
+          (name) => (
+            <button
+              type="button"
+              key={name}
+              aria-pressed={tab === name}
+              onClick={() => setTab(name)}
+            >
+              {name === "page"
+                ? "Page"
+                : name === "layout"
+                  ? "Layout"
+                  : name[0].toUpperCase() + name.slice(1)}
+            </button>
+          ),
+        )}
       </div>
       {tab === "page" ? (
         <PageSettings />
@@ -168,7 +151,7 @@ export default function CanvasInspector({
               edit them.
             </p>
           )}
-          <fieldset disabled={readOnly || locked}>
+          <fieldset disabled={readOnly || locked || linkedReadOnly}>
             <CommitField
               label="Element name"
               value={mixed((e) => e.name)}
@@ -181,6 +164,7 @@ export default function CanvasInspector({
                   <label>
                     Text content
                     <textarea
+                      aria-label="Text content"
                       value={mixed(plainText) ?? ""}
                       placeholder={
                         mixed(plainText) === undefined
@@ -204,6 +188,7 @@ export default function CanvasInspector({
                   <label>
                     Text type
                     <select
+                      aria-label="Text type"
                       value={mixed((e) => e.type) || ""}
                       onChange={(e) =>
                         sendCommand({
@@ -225,6 +210,7 @@ export default function CanvasInspector({
                   <label>
                     Heading level
                     <select
+                      aria-label="Heading level"
                       value={mixed((e) => e.props.level) || ""}
                       onChange={(e) =>
                         patch({ props: { level: Number(e.target.value) } })
@@ -241,7 +227,7 @@ export default function CanvasInspector({
                     </select>
                   </label>
                 )}
-                {nodes.every((e) => e.type === "link") && (
+                {nodes.every((e) => ["link", "button"].includes(e.type)) && (
                   <>
                     <CommitField
                       label="Link text"
@@ -276,6 +262,7 @@ export default function CanvasInspector({
                   <label>
                     List type
                     <select
+                      aria-label="List type"
                       value={
                         mixed((e) => e.props.ordered) === undefined
                           ? "mixed"
@@ -292,6 +279,13 @@ export default function CanvasInspector({
                       <option value="true">Numbered</option>
                     </select>
                   </label>
+                )}
+                {nodes.length === 1 && (
+                  <ContentInspector
+                    key={first.id}
+                    element={first}
+                    patch={patch}
+                  />
                 )}
                 <CommitField
                   label="HTML section ID"
@@ -357,8 +351,26 @@ export default function CanvasInspector({
                   </option>
                   <option value="flow">Structured flow</option>
                   <option value="absolute">Free-form in parent</option>
+                  {nodes.every(isContainer) && (
+                    <option value="sticky">Sticky in flow</option>
+                  )}
                 </select>
               </label>
+              {nodes.every((e) => e.positionMode === "sticky") && (
+                <>
+                  <CommitField
+                    label="Sticky top offset"
+                    value={mixed((e) => e.styles.overrides.top || "0")}
+                    onCommit={(top) =>
+                      patch({ styles: { overrides: { top } } })
+                    }
+                  />
+                  <p className="pb-warning">
+                    Sticky positioning is limited by parent overflow and
+                    stacking contexts.
+                  </p>
+                </>
+              )}
               {nodes.every((e) => e.positionMode === "absolute") ? (
                 <>
                   <div className="pb-field-grid">
@@ -421,6 +433,7 @@ export default function CanvasInspector({
                   <label>
                     Layout engine
                     <select
+                      aria-label="Layout engine"
                       value={mixed((e) => e.layoutMode) || ""}
                       onChange={(e) => patch({ layoutMode: e.target.value })}
                     >
@@ -436,6 +449,7 @@ export default function CanvasInspector({
                       <label>
                         Direction
                         <select
+                          aria-label="Direction"
                           value={mixed((e) => e.layout.direction) || ""}
                           onChange={(e) =>
                             patch({ layout: { direction: e.target.value } })
@@ -479,6 +493,7 @@ export default function CanvasInspector({
                   <label>
                     Align children
                     <select
+                      aria-label="Align children"
                       value={mixed((e) => e.layout.align) || ""}
                       onChange={(e) =>
                         patch({ layout: { align: e.target.value } })
@@ -497,6 +512,7 @@ export default function CanvasInspector({
                   <label>
                     Distribute children
                     <select
+                      aria-label="Distribute children"
                       value={mixed((e) => e.layout.justify) || ""}
                       onChange={(e) =>
                         patch({ layout: { justify: e.target.value } })
@@ -551,6 +567,12 @@ export default function CanvasInspector({
               </label>
             </fieldset>
           )}
+          {tab === "style" && <DesignInspector nodes={nodes} />}
+          {tab === "effects" && <EffectsInspector nodes={nodes} />}
+          {tab === "accessibility" && (
+            <AccessibilityInspector nodes={nodes} patch={patch} />
+          )}
+          <ReusableControls />
           <div className="pb-inspector-actions">
             <button
               type="button"
