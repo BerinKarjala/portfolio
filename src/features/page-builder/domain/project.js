@@ -1,8 +1,13 @@
 import { TEMPLATES } from "./templates";
+import {
+  defaultLayout,
+  defaultGeometry,
+  validateCanvasElement,
+} from "./canvasModel";
 
 /**
  * @typedef {Object} Project
- * @property {1} schemaVersion
+ * @property {2} schemaVersion
  * @property {string} projectId Stable browser record identity, independent of its name.
  * @property {string} name
  * @property {number} revision Incremented only by the storage repository.
@@ -13,7 +18,7 @@ import { TEMPLATES } from "./templates";
  * @property {Object} presets Reserved for the M3 schema extension; empty in M1.
  */
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 export const MAX_JSON_BYTES = 4 * 1024 * 1024;
 export const newId = () => crypto.randomUUID();
 export const documentText = (text) => ({
@@ -116,6 +121,8 @@ export function validateStyles(styles) {
       "maxWidth",
       "textAlign",
       "minHeight",
+      "width",
+      "height",
     ],
     "Styles",
   );
@@ -134,8 +141,9 @@ export function validateStyles(styles) {
       valid = ["left", "center", "right"].includes(value);
     else
       valid =
-        typeof value === "string" &&
-        /^(?:0|(?:\d{1,3}(?:\.\d{1,2})?)(?:px|rem|em|%))$/.test(value);
+        (["width", "height"].includes(key) && value === "auto") ||
+        (typeof value === "string" &&
+          /^(?:0|(?:\d{1,3}(?:\.\d{1,2})?)(?:px|rem|em|%))$/.test(value));
     assert(valid, `Unsupported or unsafe style: ${key}.`);
   }
   return styles;
@@ -267,6 +275,8 @@ export function validateProject(project) {
         "presetIds",
         "visibility",
         "locked",
+        "layout",
+        "geometry",
       ],
       "Element",
     );
@@ -302,9 +312,11 @@ export function validateProject(project) {
       "Invalid child references.",
     );
     assert(
-      ["flex", "grid"].includes(e.layoutMode) && e.positionMode === "flow",
+      ["flex", "grid"].includes(e.layoutMode) &&
+        ["flow", "absolute"].includes(e.positionMode),
       "Unsupported layout mode in this milestone.",
     );
+    validateCanvasElement(e);
     object(e.styles, ["overrides"], "Element styles");
     validateStyles(e.styles.overrides);
     object(e.presetIds, [], "Preset references");
@@ -375,23 +387,60 @@ export function validateProject(project) {
     seen.size === Object.keys(elements).length,
     "Every element must be reachable; orphan elements are invalid.",
   );
+  Object.values(elements).forEach((e) =>
+    assert(
+      !e.geometry.flowParentId || elements[e.geometry.flowParentId],
+      "Retained placement has a missing parent reference.",
+    ),
+  );
   return project;
 }
 
 export function migrateProject(input) {
   guard(input);
-  if (input?.schemaVersion === 0) {
-    // Only the documented, unreleased v0 development fixture is supported.
-    const migrated = {
-      ...structuredClone(input),
+  let data = input;
+  if (data?.schemaVersion === 0)
+    data = {
+      ...structuredClone(data),
       schemaVersion: 1,
-      status: input.status ?? "active",
-      favorite: input.favorite ?? false,
-      revision: input.revision ?? 0,
+      status: data.status ?? "active",
+      favorite: data.favorite ?? false,
+      revision: data.revision ?? 0,
     };
-    return validateProject(migrated);
+  if (data?.schemaVersion === 1) {
+    data = structuredClone(data);
+    object(
+      data.page?.elements,
+      Object.keys(data.page?.elements || {}),
+      "Elements",
+    );
+    for (const e of Object.values(data.page.elements)) {
+      object(
+        e,
+        [
+          "id",
+          "type",
+          "name",
+          "htmlId",
+          "parentId",
+          "children",
+          "layoutMode",
+          "positionMode",
+          "props",
+          "styles",
+          "presetIds",
+          "visibility",
+          "locked",
+        ],
+        "Legacy element",
+      );
+      assert(e.positionMode === "flow", "Unsupported legacy positioning.");
+      e.layout = defaultLayout();
+      e.geometry = defaultGeometry(e.parentId);
+    }
+    data.schemaVersion = SCHEMA_VERSION;
   }
-  return validateProject(input);
+  return validateProject(data);
 }
 
 export function createProject({
@@ -402,7 +451,7 @@ export function createProject({
   assert(template, "Unknown template.");
   const timestamp = new Date().toISOString();
   const project = {
-    schemaVersion: 1,
+    schemaVersion: SCHEMA_VERSION,
     projectId: newId(),
     name: name.trim(),
     createdAt: timestamp,
@@ -452,6 +501,8 @@ export function createProject({
         desktop: true,
       },
       locked: false,
+      layout: defaultLayout(),
+      geometry: defaultGeometry(parent),
     };
     (parent
       ? project.page.elements[parent].children
@@ -518,6 +569,7 @@ export function duplicateProject(project, name = `${project.name} copy`) {
     Object.values(result.page.elements).map((e) => {
       e.id = map[e.id];
       e.parentId = e.parentId ? map[e.parentId] : null;
+      e.geometry.flowParentId = map[e.geometry.flowParentId] || null;
       e.children = e.children.map((id) => map[id]);
       return [e.id, e];
     }),

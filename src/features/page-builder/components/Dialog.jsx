@@ -27,6 +27,7 @@ export default function Dialog({
   }, []);
 
   function keyDown(event) {
+    if (event.defaultPrevented) return;
     if (event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation();
