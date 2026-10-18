@@ -8,6 +8,7 @@ const About = lazy(() => import("./components/About"));
 const Project = lazy(() => import("./components/Project"));
 const Minesweeper = lazy(() => import("./components/projects/Minesweeper"));
 const SudokuSolver = lazy(() => import("./components/projects/SudokuSolver"));
+const PageBuilderProject = lazy(() => import("./features/page-builder/PageBuilderProject"));
 const NotFound = lazy(() => import("./components/NotFound"));
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
             <Route path="/project" element={<Project />} />
             <Route path="/projects/Minesweeper" element={<Minesweeper />} />
             <Route path="/projects/SudokuSolver" element={<SudokuSolver />} />
+            <Route path="/projects/page-builder" element={<PageBuilderProject />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
