@@ -142,10 +142,10 @@ All decisions remain approved. “M1 verified” means the foundation implementa
 | AC-01 | Creation, local persistence and six starter structures verified; polished assets M3. |
 | AC-08 | M1 component/property/schema/URL/tree validation verified; expanded inventory and export validation M3/M4. |
 | AC-09 | Record isolation, migration, autosave failures, JSON copy restore and collection rollback verified; final backup reports/resilience M4. |
-| AC-10 | Lease ownership, immediate takeover and stale revisions verified in unit and real two-tab Chromium tests; cross-browser CI configured. |
+| AC-10 | Lease ownership, immediate takeover and stale revisions verified in unit and real two-tab Chromium tests; Chromium/Firefox/WebKit smoke CI passed. |
 | AC-13 | M1 launcher/dialog keyboard, focus return and mobile sizing verified; canvas/drag/AT workflows pending. |
 | AC-14 | Approximate thumbnails avoid stored screenshot assets; media fallback foundation present. Full external resource checks M4. |
-| AC-15 | Unit/build + Playwright smoke CI configured; calibrated cross-browser visual/performance baselines M5. |
+| AC-15 | Unit/build + Chromium/Firefox/WebKit smoke CI passed; calibrated cross-browser visual/performance baselines M5. |
 | AC-16 | Draft PR, requirements trace and milestone evidence present; final sign-off pending. |
 
 AC-02–AC-07 and AC-11–AC-12 require canvas, design systems and compiler milestones.

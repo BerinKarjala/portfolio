@@ -1,12 +1,12 @@
 # Page Builder implementation evidence
 
-Branch: `codex/page-builder`. Requirements baseline: PR #226. Implementation continues in a draft PR; M2–M5 remain pending. No implementation merge or production release has been performed by Codex.
+Branch: `codex/page-builder`. Requirements baseline: PR #226. Implementation: [draft PR #227](https://github.com/BerinKarjala/portfolio/pull/227). M2–M5 remain pending. No implementation merge or production release has been performed by Codex.
 
 The approved October 18 launch layout overrides the original direct-to-editor route: portfolio project page, clickable preview on the left, existing source viewer on the right, full-viewport workspace after activation.
 
 ## Milestones
 
-- [ ] M1 — foundation and persistence: implemented; final CI/preview verification in progress
+- [x] M1 — foundation and persistence: local, GitHub CI and Netlify preview gates passed
 - [ ] M2 — canvas and structural editing
 - [ ] M3 — content and design systems
 - [ ] M4 — export, preview, validation and resilience
@@ -22,7 +22,7 @@ The approved October 18 launch layout overrides the original direct-to-editor ro
 - [x] Versioned project/collection JSON; selective copy restore, duplicate preview, validation reports and failure rollback foundation
 - [x] Error recovery; separate workspace/preferences; width/scroll flush on page exit
 - [x] Unit/integration tests, production build, Chromium smoke workflows
-- [ ] GitHub cross-browser CI and implementation Netlify Deploy Preview verified
+- [x] GitHub cross-browser CI and implementation Netlify Deploy Preview verified
 
 ## Verification
 
@@ -34,7 +34,10 @@ Local runtime: Node 22.22.2 / npm 10.9.4, clean lockfile install before implemen
 - Production build: passed; existing routes and lazy-loaded chunks preserved.
 - Browser foundation: **6 Chromium scenarios passed** against the production build: launcher/focus, autosave/reload/JSON copy restore, real two-tab takeover, quota recovery/download/exit guard, 390px dialogs/Escape, gallery fallback and both game routes.
 - Screenshots reviewed: portfolio launch layout, starter settings/layout and mobile template selection. Screenshots are review evidence, not approved visual baselines.
-- GitHub Actions matrix configured for the same smoke cases on Chromium, Firefox and WebKit, with reports/screenshots/traces uploaded. Final remote results pending.
+- GitHub Actions [run 39098233550](https://github.com/BerinKarjala/portfolio/actions/runs/39098233550) passed for implementation commit `7c69fff`: clean `npm ci`, 45 tests, build, and 18 browser cases (six each on Chromium, Firefox and WebKit). Browser reports/screenshots/traces were uploaded.
+- Netlify Deploy Preview for PR #227 passed: [open the project](https://deploy-preview-227--berinkarjala.netlify.app/projects/page-builder). No production deployment was requested or performed by Codex.
+- Requirements check: all 130 JSON records, specification table rows and implementation-trace rows are present; selected options/domains/descriptions match. No existing dependency versions changed; Playwright added three dev packages.
+- This evidence update changes documentation only; the tested implementation is unchanged.
 
 ## Change log
 
