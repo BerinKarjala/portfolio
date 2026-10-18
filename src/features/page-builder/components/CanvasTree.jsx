@@ -99,7 +99,7 @@ export function CanvasNode({
         onChange={(document, key) =>
           sendCommand(
             { type: "PATCH", ids: [id], patch: { props: { document } } },
-            `rich:${id}:${key}`,
+            key ? `rich:${id}:${key}` : undefined,
           )
         }
         onDone={() => {

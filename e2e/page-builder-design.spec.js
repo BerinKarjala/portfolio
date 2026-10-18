@@ -101,6 +101,18 @@ test("rich formatting preserves selections across toolbar focus, safe paste, his
   await selectText(page, 6, 11);
   await page.getByRole("button", { name: "Bold", exact: true }).click();
   await expect(editor.locator("strong")).toHaveText("world");
+  await page.getByRole("button", { name: "Italic", exact: true }).click();
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await expect(
+    page.getByTestId("canvas-paragraph").locator("strong"),
+  ).toHaveText("world");
+  await expect(page.getByTestId("canvas-paragraph").locator("em")).toHaveCount(
+    0,
+  );
+  await page
+    .getByRole("button", { name: "Edit rich text", exact: true })
+    .click();
+  await selectText(page, 6, 11);
   await page
     .getByLabel("Rich text link URL", { exact: true })
     .fill("https://example.com/about");

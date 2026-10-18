@@ -195,7 +195,13 @@ export function RichTextEditor({
         setError("Select text to format.");
         return;
       }
-      commit(formatRange(doc, start, end, value), { start, end }, "format");
+      commit(
+        formatRange(doc, start, end, value),
+        { start, end },
+        value.styles
+          ? `format:${Object.keys(value.styles).join(",")}:${start}:${end}`
+          : undefined,
+      );
     } catch (e) {
       setError(e.message);
     }
@@ -424,7 +430,7 @@ export function RichTextEditor({
             commit(
               insertInlineIcon(doc, start, end, icon, ""),
               { start: start + 1, end: start + 1 },
-              "icon",
+              undefined,
             );
           } catch (e) {
             setError(e.message);
