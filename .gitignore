@@ -8,6 +8,8 @@ studio13/.sanity/
 
 # testing
 /coverage
+/playwright-report
+/test-results
 
 # production
 /build
