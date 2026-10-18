@@ -5,6 +5,9 @@ import { downloadText, fileName, readJSONFile } from "../browser/files";
 import { useBuilder } from "../state/BuilderProvider";
 import { Modal } from "./Dialog";
 import { Thumbnail } from "./PagePreview";
+import { createProject } from "../domain/project";
+import { compileProject } from "../exporters/compiler";
+import SandboxPreview from "./SandboxPreview";
 
 export default function Dashboard() {
   const headingRef = useRef(null);
@@ -39,6 +42,21 @@ export default function Dashboard() {
   const [preview, setPreview] = useState(null);
   const [restoreSelection, setRestoreSelection] = useState(new Set());
   const [modalError, setModalError] = useState("");
+  const [allowPartial, setAllowPartial] = useState(false);
+  const [restoreReport, setRestoreReport] = useState(null);
+  const [showTemplatePreview, setShowTemplatePreview] = useState(false);
+  const templatePreview = useMemo(
+    () =>
+      showTemplatePreview && modal?.type === "create"
+        ? compileProject(
+            createProject({
+              name: TEMPLATES.find((t) => t.id === template).name,
+              templateId: template,
+            }),
+          )
+        : null,
+    [showTemplatePreview, template, modal?.type],
+  );
   const projects = useMemo(
     () =>
       state.projects
@@ -89,6 +107,7 @@ export default function Dashboard() {
   }
   function showModal(value) {
     setModalError("");
+    setShowTemplatePreview(false);
     setModal(value);
     setName(value.project?.name || "");
   }
@@ -112,6 +131,8 @@ export default function Dashboard() {
         repository.list().projects,
       );
       setPreview(result);
+      setAllowPartial(false);
+      setRestoreReport(null);
       setRestoreSelection(
         new Set(
           result.entries
@@ -555,6 +576,25 @@ export default function Dashboard() {
                   </div>
                 </fieldset>
               )}
+              {modal.type === "create" && (
+                <div className="pb-template-preview">
+                  <button
+                    type="button"
+                    aria-expanded={showTemplatePreview}
+                    onClick={() => setShowTemplatePreview((v) => !v)}
+                  >
+                    {showTemplatePreview
+                      ? "Hide template preview"
+                      : "Preview selected template"}
+                  </button>
+                  {templatePreview && (
+                    <SandboxPreview
+                      compiled={templatePreview}
+                      title="Template preview"
+                    />
+                  )}
+                </div>
+              )}
               {modalError && (
                 <p role="alert" className="pb-warning">
                   {modalError}
@@ -613,6 +653,50 @@ export default function Dashboard() {
         </Modal>
       )}
 
+      {restoreReport && (
+        <Modal
+          title="Restore report"
+          onClose={() => {
+            setRestoreReport(null);
+            setModalError("");
+          }}
+        >
+          {modalError && (
+            <p role="alert" className="pb-warning">
+              {modalError}
+            </p>
+          )}
+          <p>Existing saved projects were preserved.</p>
+          <ul>
+            {restoreReport.map((row, i) => (
+              <li key={i}>
+                <strong>
+                  {row.name} · {row.status}
+                </strong>
+                <p>{row.message}</p>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => {
+              downloadText(
+                JSON.stringify(
+                  {
+                    kind: "page-builder-restore-report",
+                    entries: restoreReport,
+                  },
+                  null,
+                  2,
+                ),
+                "page-builder-restore-report.json",
+              );
+            }}
+          >
+            Download restore report
+          </button>
+        </Modal>
+      )}
       {preview && (
         <Modal title="Review JSON restore" onClose={() => setPreview(null)}>
           <p>
@@ -649,6 +733,18 @@ export default function Dashboard() {
             ))}
           </div>
           {!preview.entries.length && <p>No projects in this backup.</p>}
+          <label className="pb-checkbox">
+            <input
+              type="checkbox"
+              checked={allowPartial}
+              onChange={(e) => setAllowPartial(e.target.checked)}
+            />
+            Keep successful copies if some restores fail
+          </label>
+          <p>
+            By default, a failed batch rolls back newly added copies where
+            possible. Existing projects are always preserved.
+          </p>
           {modalError && (
             <p role="alert" className="pb-warning">
               {modalError}
@@ -664,14 +760,20 @@ export default function Dashboard() {
               disabled={!restoreSelection.size}
               onClick={() => {
                 try {
-                  restore(
+                  const result = restore(
                     preview.entries.filter((entry) =>
                       restoreSelection.has(entry.index),
                     ),
+                    { allowPartial },
                   );
+                  setRestoreReport(result.report);
                   setPreview(null);
                 } catch (error) {
                   setModalError(error.message);
+                  if (error.report) {
+                    setRestoreReport(error.report);
+                    setPreview(null);
+                  }
                   publish();
                 }
               }}

@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import { createProject, duplicateProject, newId } from "../domain/project";
-import { restoreBackup, uniqueName } from "../domain/backups";
+import { restoreBackupDetailed, uniqueName } from "../domain/backups";
 import {
   browserStorage,
   createRepository,
@@ -290,13 +290,14 @@ export default function BuilderProvider({ children }) {
     publish();
     notice("Project permanently deleted.");
   }
-  function restore(entries) {
-    const projects = restoreBackup(repository, entries);
+  function restore(entries, options) {
+    const result = restoreBackupDetailed(repository, entries, options);
+    const projects = result.created;
     publish();
     notice(
       `Restored ${projects.length} independent ${projects.length === 1 ? "copy" : "copies"}. Existing records were preserved.`,
     );
-    return projects;
+    return result;
   }
   function takeOver() {
     const editor = stateRef.current.editor;

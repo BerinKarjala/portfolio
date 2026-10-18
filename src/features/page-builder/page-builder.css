@@ -755,3 +755,127 @@
     transition: none;
   }
 }
+
+/* Standalone preview/code/export workspace. Authored CSS stays inside its iframe. */
+.pb-root .pb-export-workspace {
+  padding: 1.25rem;
+  min-width: 0;
+}
+.pb-root .pb-export-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.pb-root .pb-export-main,
+.pb-root .pb-export-review {
+  min-width: 0;
+  border: 1px solid var(--pb-border);
+  border-radius: 0.7rem;
+  background: var(--pb-panel);
+  padding: 1rem;
+}
+.pb-root .pb-preview-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  align-items: center;
+  padding: 0.8rem 0;
+}
+.pb-root .pb-preview-toolbar label {
+  margin: 0;
+}
+.pb-root .pb-preview-toolbar input {
+  width: 6rem;
+}
+.pb-root .pb-preview-toolbar span {
+  font-size: 0.8rem;
+  color: var(--pb-muted);
+}
+.pb-root .pb-preview-stage {
+  min-width: 0;
+  padding: 12px;
+  overflow: auto;
+  background: #26362c;
+  border-radius: 0.4rem;
+}
+.pb-root .pb-preview-sized {
+  margin: 0;
+  position: relative;
+}
+.pb-root .pb-preview-stage iframe {
+  border: 0;
+  background: white;
+  transform-origin: top left;
+  display: block;
+  max-width: none;
+}
+.pb-root .pb-preview-resizer {
+  cursor: ew-resize;
+  touch-action: none;
+  text-align: center;
+  padding: 0.7rem;
+  border: 1px solid var(--pb-border);
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+}
+.pb-root .pb-code-scroll {
+  overflow: auto;
+  max-height: 65vh;
+  background: #0c1610;
+  border-radius: 0.3rem;
+  padding: 1rem 0.7rem;
+  font:
+    12px/1.6 ui-monospace,
+    monospace;
+}
+.pb-root .pb-code-scroll ol {
+  list-style: decimal;
+  margin: 0;
+  padding-left: 3.5em;
+}
+.pb-root .pb-code-scroll li {
+  white-space: pre;
+  padding-left: 0.7rem;
+  color: #e0eee4;
+  min-height: 1.6em;
+}
+.pb-root .pb-code-scroll li::marker {
+  color: #a8bbae;
+}
+.pb-root .pb-code-token {
+  color: #b0edc5;
+}
+.pb-root .pb-diagnostics {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  max-height: 45vh;
+  overflow: auto;
+}
+.pb-root .pb-diagnostics li {
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--pb-border);
+}
+.pb-root .pb-diagnostics p {
+  font-size: 0.85rem;
+}
+.pb-root .pb-export-review > button {
+  margin: 0.5rem 0;
+  width: 100%;
+}
+.pb-root .pb-export-review details button {
+  display: block;
+  margin: 0.5rem 0;
+}
+.pb-root .pb-template-preview {
+  margin: 1rem 0;
+}
+@media (max-width: 960px) {
+  .pb-root .pb-export-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pb-root .pb-export-workspace {
+    padding: 0.7rem;
+  }
+}

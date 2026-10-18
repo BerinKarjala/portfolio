@@ -25,6 +25,7 @@ import {
 import { clamp, rectToGeometry } from "../domain/geometry";
 import useCanvasCamera, { isTextInput } from "../hooks/useCanvasCamera";
 import useCanvasPointer from "../hooks/useCanvasPointer";
+import ErrorBoundary from "./ErrorBoundary";
 import CanvasInspector, { CommitField } from "./CanvasInspector";
 import { Layers, Palette } from "./CanvasLibrary";
 import { CanvasNode, DropZone } from "./CanvasTree";
@@ -741,23 +742,25 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
             </button>
           </div>
           <div className="pb-library-content">
-            {workspace.leftTab === "reusable" ? (
-              <ReusableControls library />
-            ) : workspace.leftTab === "palette" ? (
-              <Palette
-                {...{ add, parentId, insertion, setInsertion, recentVersion }}
-              />
-            ) : (
-              <Layers
-                expanded={workspace.expandedIds}
-                setExpanded={(expandedIds) => update({ expandedIds })}
-                reveal={reveal}
-                inspect={() => {
-                  if (window.matchMedia?.("(max-width: 760px)").matches)
-                    update({ mobilePanel: "right", rightOpen: true });
-                }}
-              />
-            )}
+            <ErrorBoundary panelName="Library">
+              {workspace.leftTab === "reusable" ? (
+                <ReusableControls library />
+              ) : workspace.leftTab === "palette" ? (
+                <Palette
+                  {...{ add, parentId, insertion, setInsertion, recentVersion }}
+                />
+              ) : (
+                <Layers
+                  expanded={workspace.expandedIds}
+                  setExpanded={(expandedIds) => update({ expandedIds })}
+                  reveal={reveal}
+                  inspect={() => {
+                    if (window.matchMedia?.("(max-width: 760px)").matches)
+                      update({ mobilePanel: "right", rightOpen: true });
+                  }}
+                />
+              )}
+            </ErrorBoundary>
           </div>
         </aside>
         <section className="pb-canvas-area" aria-label="Page canvas">
@@ -980,11 +983,13 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
           >
             Close inspector
           </button>
-          <CanvasInspector
-            tab={workspace.inspectorTab}
-            setTab={(inspectorTab) => update({ inspectorTab })}
-            {...{ placements, requestDelete }}
-          />
+          <ErrorBoundary panelName="Inspector">
+            <CanvasInspector
+              tab={workspace.inspectorTab}
+              setTab={(inspectorTab) => update({ inspectorTab })}
+              {...{ placements, requestDelete }}
+            />
+          </ErrorBoundary>
         </aside>
       </div>
       {Object.keys(project.page.elements).length > 200 && (

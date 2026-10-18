@@ -1,7 +1,13 @@
 import { MAX_BACKUP_BYTES } from "../domain/backups";
 
-export function downloadText(text, filename) {
-  const blob = new Blob([text], { type: "application/json;charset=utf-8" });
+export function downloadText(
+  text,
+  filename,
+  type = "application/json;charset=utf-8",
+) {
+  downloadBlob(new Blob([text], { type }), filename);
+}
+export function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;

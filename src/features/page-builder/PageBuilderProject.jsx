@@ -69,8 +69,8 @@ export default function PageBuilderProject() {
               </button>
               <p className="mt-4 text-xs leading-relaxed text-green-100">
                 Arrange, nest, and resize elements on a visual canvas. Save
-                projects locally and download JSON backups. HTML/CSS export is
-                coming next.
+                projects locally, preview responsive layouts, and download
+                standalone HTML/CSS or editable JSON backups.
               </p>
             </section>
           </div>

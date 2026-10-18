@@ -9,6 +9,22 @@ export default class ErrorBoundary extends Component {
     this.props.onError?.();
   }
   render() {
+    if (this.state.failed && this.props.panelName)
+      return (
+        <section className="pb-recovery" role="alert">
+          <h3>{this.props.panelName} is unavailable</h3>
+          <p>
+            The rest of the editor is still available. Retry this panel or
+            download project JSON before restarting.
+          </p>
+          <button
+            type="button"
+            onClick={() => this.setState({ failed: false })}
+          >
+            Retry {this.props.panelName.toLowerCase()}
+          </button>
+        </section>
+      );
     if (this.state.failed)
       return (
         <section className="pb-recovery" role="alert">

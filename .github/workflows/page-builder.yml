@@ -42,4 +42,5 @@ jobs:
           path: |
             playwright-report/
             test-results/
+            e2e/page-builder-export.spec.js-snapshots/
           retention-days: 14

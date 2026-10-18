@@ -2,14 +2,26 @@ import { useEffect, useRef, useState } from "react";
 import { useBuilder } from "../state/BuilderProvider";
 import { downloadText, fileName } from "../browser/files";
 import CanvasEditor from "./CanvasEditor";
+import ExportWorkspace from "./ExportWorkspace";
 
 export default function Editor() {
-  const { state, repository, back, saveNow, takeOver, editMetadata, report } =
-    useBuilder();
+  const {
+    state,
+    repository,
+    back,
+    saveNow,
+    takeOver,
+    select,
+    dispatch,
+    report,
+  } = useBuilder();
   const { project, readOnly, dirty, status, error } = state.editor;
   const [workspace, setWorkspace] = useState(() =>
     repository.workspace(project.projectId),
   );
+  const [mode, setMode] = useState("edit");
+  const [observedFailures, setObservedFailures] = useState([]);
+  const previewButton = useRef(null);
   const scrollRef = useRef(null);
   const headingRef = useRef(null);
   const workspaceRef = useRef(workspace);
@@ -84,7 +96,21 @@ export default function Editor() {
     }
   }
   return (
-    <div className="pb-editor">
+    <div
+      className="pb-editor"
+      onErrorCapture={(event) => {
+        const target = event.target;
+        const elementId =
+          target.closest?.("[data-element-id]")?.dataset.elementId;
+        const url = target.currentSrc || target.src;
+        if (elementId && url)
+          setObservedFailures((current) =>
+            current.some((f) => f.elementId === elementId && f.url === url)
+              ? current
+              : [...current, { elementId, url }],
+          );
+      }}
+    >
       <div className="pb-editor-toolbar">
         <button type="button" aria-label="Back to projects" onClick={back}>
           ← Back to projects
@@ -100,6 +126,17 @@ export default function Editor() {
         >
           {statusLabel}
         </span>
+        <button
+          ref={previewButton}
+          type="button"
+          className="pb-primary"
+          onClick={() => {
+            dispatch({ type: "RICH_MODE", id: null });
+            setMode(mode === "edit" ? "export" : "edit");
+          }}
+        >
+          {mode === "edit" ? "Preview and export" : "Back to editor"}
+        </button>
         <button type="button" onClick={exportDraft}>
           {dirty ? "Download unsaved JSON" : "Download project JSON"}
         </button>
@@ -130,7 +167,39 @@ export default function Editor() {
           {state.editor.commandError}
         </p>
       )}
-      <CanvasEditor {...{ workspace, setWorkspace, scrollRef }} />
+      {mode === "edit" ? (
+        <CanvasEditor {...{ workspace, setWorkspace, scrollRef }} />
+      ) : (
+        <ExportWorkspace
+          project={project}
+          observedFailures={observedFailures}
+          onLocate={(id) => {
+            select([id]);
+            const expanded = new Set(workspace.expandedIds);
+            let at = project.page.elements[id];
+            while (at?.parentId) {
+              expanded.add(at.parentId);
+              at = project.page.elements[at.parentId];
+            }
+            setWorkspace((current) => ({
+              ...current,
+              leftOpen: true,
+              leftTab: "layers",
+              rightOpen: true,
+              mobilePanel: window.matchMedia?.("(max-width: 760px)").matches
+                ? "right"
+                : null,
+              expandedIds: [...expanded],
+            }));
+            setMode("edit");
+            requestAnimationFrame(() =>
+              document
+                .querySelector(`[data-element-id="${id}"]`)
+                ?.scrollIntoView({ block: "center", inline: "nearest" }),
+            );
+          }}
+        />
+      )}
     </div>
   );
 }
