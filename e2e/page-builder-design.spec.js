@@ -124,18 +124,21 @@ test("rich formatting preserves selections across toolbar focus, safe paste, his
   await editor.press("End");
   await editor.press("!");
   await expect(editor).toContainText("!");
-  await editor.evaluate((root) => {
+  const clipboardText = await editor.evaluate((root) => {
     const data = new DataTransfer();
-    data.setData("text/plain", "<script>literal</script>");
-    data.setData("text/html", "<img src=x onerror=alert(1)>");
-    root.dispatchEvent(
-      new ClipboardEvent("paste", {
-        bubbles: true,
-        cancelable: true,
-        clipboardData: data,
-      }),
-    );
+    const event = new ClipboardEvent("paste", {
+      bubbles: true,
+      cancelable: true,
+      clipboardData: data,
+    });
+    // Gecko creates its own transfer for constructed ClipboardEvents.
+    // Populate the actual event payload in every engine, then assert it below.
+    event.clipboardData.setData("text/plain", "<script>literal</script>");
+    event.clipboardData.setData("text/html", "<img src=x onerror=alert(1)>");
+    root.dispatchEvent(event);
+    return event.clipboardData.getData("text/plain");
   });
+  expect(clipboardText).toBe("<script>literal</script>");
   await expect(editor).toContainText("<script>literal</script>");
   await expect(editor.locator("img,script")).toHaveCount(0);
   await editor.press("ControlOrMeta+z");
