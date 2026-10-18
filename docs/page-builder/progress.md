@@ -1,13 +1,13 @@
 # Page Builder implementation evidence
 
-Branch: `codex/page-builder`. Requirements baseline: PR #226. Implementation: [draft PR #227](https://github.com/BerinKarjala/portfolio/pull/227). M2 is implemented with local verification; remote M2 gates are in progress. M3–M5 remain pending. No implementation merge or production release has been performed by Codex.
+Branch: `codex/page-builder`. Requirements baseline: PR #226. M1 landed in [PR #227](https://github.com/BerinKarjala/portfolio/pull/227). M2 implementation: [draft PR #228](https://github.com/BerinKarjala/portfolio/pull/228), with local, GitHub CI and Netlify preview gates passed. M3–M5 remain pending. No implementation merge or production release has been performed by Codex.
 
 The approved October 18 launch layout overrides the original direct-to-editor route: portfolio project page, clickable preview on the left, existing source viewer on the right, full-viewport workspace after activation.
 
 ## Milestones
 
 - [x] M1 — foundation and persistence: local, GitHub CI and Netlify preview gates passed
-- [ ] M2 — canvas and structural editing: implementation/local checks complete; CI/preview verification pending
+- [x] M2 — canvas and structural editing: local, GitHub CI and Netlify preview gates passed
 - [ ] M3 — content and design systems
 - [ ] M4 — export, preview, validation and resilience
 - [ ] M5 — cross-browser evidence, teaching documentation and release
@@ -52,7 +52,11 @@ Local runtime: Node 22.22.2 / npm 10.9.4, clean lockfile install before implemen
 - [x] Schema v2 with validated M1/v0 migration; last-good storage protections retained
 - [x] Local **61 unit/integration tests across 12 files**, production build and **16 Chromium browser scenarios** passed
 - [x] Reviewed and committed representative structured/Grid Chromium visual baselines; ordinary CI compares them without updating
-- [ ] M2 GitHub Chromium/Firefox/WebKit verification and Netlify Deploy Preview
+- [x] M2 GitHub Chromium/Firefox/WebKit verification and Netlify Deploy Preview
+
+GitHub Actions [run 39101837094](https://github.com/BerinKarjala/portfolio/actions/runs/39101837094) passed for implementation commit `1759a29e6ca2963079a259e9515287cff720fc5a`: clean `npm ci`, **61 tests**, production build, and **44 passing browser cases with four intentional skips** across Chromium/Firefox/WebKit. The Chromium run also compared both committed visual baselines successfully. Browser reports/screenshots/traces were uploaded.
+
+Netlify Deploy Preview for PR #228 passed: [open Page Builder](https://deploy-preview-228--berinkarjala.netlify.app/projects/page-builder). The preview deployment, header and redirect checks passed. This records the deployment check; automated interaction coverage runs against the production build in CI. M1 was merged independently while M2 was underway; the feature branch incorporates that main baseline without changing the tested M2 tree. M2 remains a draft PR, unmerged, with no production release performed by Codex. This final evidence update changes documentation only.
 
 The browser matrix includes a CDP touchscreen case and representative visual-baseline case on Chromium only; both are explicitly skipped on Firefox/WebKit. All ordinary pointer/keyboard/mobile layout/ownership workflows run in every engine. Full visual/performance/manual-device acceptance remains M5. See [M2 contracts and verification](m2-canvas.md).
 
