@@ -3,6 +3,7 @@ import sanityClient from "../client.js";
 import Seo, { SITE_NAME, SITE_URL } from "./Seo";
 import { cancelIdle, runWhenIdle } from "../utils/idleCallback";
 import sudokuPreview from "../assets/sudoku-solver-preview.svg";
+import { includePageBuilder, PAGE_BUILDER_PATH } from "../features/page-builder/gallery";
 
 const EMPTY_PROJECTS = [];
 const EMPTY_PROJECT_DESCRIPTION =
@@ -56,8 +57,9 @@ export default function Project() {
     };
   }, []);
 
-  const projects = projectData
-    .filter((project) => project?.name && project?.link)
+  const projects = includePageBuilder(
+    projectData.filter((project) => project?.name && project?.link)
+  )
     .map((project) =>
       /\/projects\/SudokuSolver\/?$/i.test(project.link.split(/[?#]/)[0])
         ? {
@@ -146,13 +148,14 @@ export default function Project() {
                   <div className="md:col-span-2 rounded-2xl border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 p-5 text-sm uppercase tracking-widest text-green-200 shadow-lg backdrop-filter backdrop-blur-sm">
                     Loading project entries...
                   </div>
-                ) : projects.length > 0 ? (
+                ) : null}
+                {projects.length > 0 ? (
                   projects.map((project) => (
                     <a
                       key={`${project.name}-${project.link}`}
                       href={project.link}
-                      target="_blank"
-                      rel="noreferrer noopener"
+                      target={project.link === PAGE_BUILDER_PATH ? undefined : "_blank"}
+                      rel={project.link === PAGE_BUILDER_PATH ? undefined : "noreferrer noopener"}
                       aria-label={`View project: ${project.name}`}
                       className="block h-full border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 rounded-2xl p-4 sm:p-5 shadow-lg backdrop-filter backdrop-blur-sm transition hover:bg-opacity-40 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-2 focus-visible:ring-offset-green-900"
                     >

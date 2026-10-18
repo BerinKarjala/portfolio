@@ -1,5 +1,5 @@
 /* @vitest-environment jsdom */
-import { render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { HelmetProvider } from "react-helmet-async";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -42,6 +42,7 @@ describe("Project", () => {
   });
 
   afterEach(() => {
+    cleanup();
     vi.restoreAllMocks();
   });
 
@@ -62,7 +63,7 @@ describe("Project", () => {
     });
   });
 
-  it("shows the fetch error state without claiming fallback entries exist", async () => {
+  it("shows the fetch error while retaining the bundled Page Builder project", async () => {
     const consoleErrorSpy = vi
       .spyOn(console, "error")
       .mockImplementation(() => undefined);
@@ -73,11 +74,34 @@ describe("Project", () => {
     expect(
       await screen.findByText(/could not load the latest project content from sanity/i)
     ).not.toBeNull();
-    expect(
-      screen.getByText(/project entries are temporarily unavailable right now/i)
-    ).not.toBeNull();
+    expect(screen.getByRole("link", { name: "View project: HTML Page Builder" }).getAttribute("href")).toBe("/projects/page-builder");
     expect(screen.queryByText(/showing fallback content/i)).toBeNull();
 
     consoleErrorSpy.mockRestore();
+  });
+
+  it("uses CMS Page Builder content without creating a duplicate gallery card", async () => {
+    fetchMock.mockResolvedValueOnce([{ name: "My Page Builder", link: "https://berinkarjala.netlify.app/projects/page-builder/", description: "CMS description" }, { name: "Sudoku Solver", link: "/projects/SudokuSolver" }]);
+    renderProject();
+    expect(await screen.findByRole("link", { name: "View project: My Page Builder" })).not.toBeNull();
+    expect(screen.queryByRole("link", { name: "View project: HTML Page Builder" })).toBeNull();
+    expect(screen.getByRole("link", { name: "View project: Sudoku Solver" })).not.toBeNull();
+  });
+
+  it("shows the updated Sudoku preview alongside the bundled Page Builder card", async () => {
+    fetchMock.mockResolvedValueOnce([
+      {
+        name: "Sudoku Solver",
+        link: "/projects/SudokuSolver",
+        thumbnail: { asset: { url: "/old-placeholder.png" } },
+      },
+    ]);
+
+    renderProject();
+
+    const sudoku = await screen.findByRole("link", { name: "View project: Sudoku Solver" });
+    expect(sudoku.querySelector("img").getAttribute("src")).toContain("sudoku-solver-preview.svg");
+    expect(screen.getByRole("link", { name: "View project: HTML Page Builder" }).getAttribute("href"))
+      .toBe("/projects/page-builder");
   });
 });

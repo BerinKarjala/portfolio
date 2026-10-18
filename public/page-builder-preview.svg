@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <title>Page Builder workspace illustration</title>
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#142b20"/><stop offset="1" stop-color="#08130e"/></linearGradient></defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <circle cx="1020" cy="100" r="330" fill="#2d7549" opacity=".15"/>
+  <g font-family="system-ui,sans-serif">
+    <text x="72" y="100" fill="#83d7a1" font-size="17" letter-spacing="5">AN IDEA. A CANVAS. YOURS.</text>
+    <text x="68" y="180" fill="#effaf2" font-size="66" font-weight="700">Build something</text>
+    <text x="68" y="256" fill="#effaf2" font-size="66" font-weight="700">worth sharing.</text>
+    <rect x="65" y="320" width="1070" height="490" rx="14" fill="#0d1812" stroke="#3a5b46" stroke-width="2"/>
+    <path d="M65 368H1135M265 368V810M940 368V810" stroke="#304538" stroke-width="2"/>
+    <circle cx="92" cy="345" r="5" fill="#69d593"/><circle cx="112" cy="345" r="5" fill="#435e4c"/><circle cx="132" cy="345" r="5" fill="#435e4c"/>
+    <text x="180" y="351" fill="#eaf5ec" font-size="16" font-weight="700">Page Builder</text>
+    <text x="88" y="407" fill="#a6c3ad" font-size="13" letter-spacing="2">COMPONENTS</text>
+    <g fill="#192e21" stroke="#35523d"><rect x="86" y="430" width="157" height="56" rx="6"/><rect x="86" y="500" width="157" height="56" rx="6"/><rect x="86" y="570" width="157" height="56" rx="6"/><rect x="86" y="640" width="157" height="56" rx="6"/></g>
+    <g fill="#d5eadd" font-size="15"><text x="105" y="465">T  Heading</text><text x="105" y="535">¶  Paragraph</text><text x="105" y="605">▧  Image</text><text x="105" y="675">▣  Container</text></g>
+    <rect x="303" y="407" width="598" height="360" rx="3" fill="#f4f5ec"/>
+    <rect x="303" y="407" width="598" height="218" fill="#23533a"/>
+    <text x="340" y="452" fill="#abd5b6" font-size="11" letter-spacing="3">YOUR NEXT CHAPTER</text>
+    <text x="340" y="505" fill="#ffffff" font-size="35" font-weight="700">A little imagination.</text>
+    <text x="340" y="550" fill="#ffffff" font-size="35" font-weight="700">A world of possibility.</text>
+    <rect x="340" y="577" width="134" height="25" rx="4" fill="#d4f4a4"/>
+    <g fill="#dce5d7"><rect x="338" y="651" width="160" height="78" rx="4"/><rect x="521" y="651" width="160" height="78" rx="4"/><rect x="704" y="651" width="160" height="78" rx="4"/></g>
+    <text x="963" y="407" fill="#a6c3ad" font-size="13" letter-spacing="2">INSPECTOR</text>
+    <g fill="#86a28e" font-size="12"><text x="963" y="456">LAYOUT</text><text x="963" y="559">APPEARANCE</text><text x="963" y="682">SPACING</text></g>
+    <g fill="#192e21" stroke="#35523d"><rect x="963" y="474" width="148" height="40" rx="5"/><rect x="963" y="579" width="148" height="45" rx="5"/><rect x="963" y="700" width="148" height="40" rx="5"/></g>
+    <rect x="975" y="590" width="23" height="23" rx="3" fill="#69d593"/>
+    <text x="1010" y="606" fill="#cde1d3" font-size="13">#69D593</text>
+    <text x="600" y="859" fill="#98b8a2" font-size="16" text-anchor="middle">REACT  /  LOCAL PROJECTS  /  YOUR CREATIVE SPACE</text>
+  </g>
+</svg>

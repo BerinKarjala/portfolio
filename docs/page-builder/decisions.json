@@ -1,0 +1,788 @@
+{
+  "specification": "HTML Page Builder",
+  "decisionsFinalized": "2026-10-17",
+  "status": "approved_requirements_not_implemented",
+  "totalDecisions": 130,
+  "decisions": [
+    {
+      "id": "Q001",
+      "option": "C",
+      "domain": "Layout architecture",
+      "requirement": "Hybrid structured Flex/Grid default; optional child absolute positioning."
+    },
+    {
+      "id": "Q002",
+      "option": "B",
+      "domain": "Free-form coordinate model",
+      "requirement": "Percentage coordinates relative to parent."
+    },
+    {
+      "id": "Q003",
+      "option": "B",
+      "domain": "Nesting",
+      "requirement": "Maximum four levels."
+    },
+    {
+      "id": "Q004",
+      "option": "B",
+      "domain": "Project persistence",
+      "requirement": "Named projects with browser autosave, JSON import/export, HTML/CSS export."
+    },
+    {
+      "id": "Q005",
+      "option": "C",
+      "domain": "Component inventory",
+      "requirement": "Advanced semantic component palette, media, forms, tables, gallery, icons, reusable units."
+    },
+    {
+      "id": "Q006",
+      "option": "B",
+      "domain": "Export interactions",
+      "requirement": "Native HTML behavior; no exported JavaScript; external form endpoint."
+    },
+    {
+      "id": "Q007",
+      "option": "B",
+      "domain": "CSS editing",
+      "requirement": "Advanced visual CSS controls, no raw CSS input."
+    },
+    {
+      "id": "Q008",
+      "option": "B",
+      "domain": "Responsive previews",
+      "requirement": "Desktop/tablet/mobile toggles with shared styles."
+    },
+    {
+      "id": "Q009",
+      "option": "B",
+      "domain": "History",
+      "requirement": "50 undo actions; session-only; reset on reload/switch."
+    },
+    {
+      "id": "Q010",
+      "option": "A",
+      "domain": "Media storage",
+      "requirement": "External URLs only; no media uploads."
+    },
+    {
+      "id": "Q011",
+      "option": "B",
+      "domain": "Layers",
+      "requirement": "Collapsible selectable, renameable, reorderable layer hierarchy."
+    },
+    {
+      "id": "Q012",
+      "option": "A",
+      "domain": "Page scope",
+      "requirement": "Exactly one webpage per project."
+    },
+    {
+      "id": "Q013",
+      "option": "B",
+      "domain": "Starter templates",
+      "requirement": "Blank plus Portfolio, Landing, Business, Blog, Contact, Gallery."
+    },
+    {
+      "id": "Q014",
+      "option": "B",
+      "domain": "Editor shell",
+      "requirement": "Collapsible three-panel editor, toolbar, mobile drawers."
+    },
+    {
+      "id": "Q015",
+      "option": "C",
+      "domain": "Input modalities",
+      "requirement": "Full mouse/touch/keyboard drag/drop, long press, drop zones, autoscroll."
+    },
+    {
+      "id": "Q016",
+      "option": "B",
+      "domain": "Reusable masters",
+      "requirement": "Within-project linked instances, master update and detach."
+    },
+    {
+      "id": "Q017",
+      "option": "B",
+      "domain": "Generated code viewer",
+      "requirement": "Read-only HTML/CSS with highlights, line numbers, copy."
+    },
+    {
+      "id": "Q018",
+      "option": "B",
+      "domain": "Validation",
+      "requirement": "HTML/accessibility warning panel, highlights, reject unsafe values."
+    },
+    {
+      "id": "Q019",
+      "option": "B",
+      "domain": "Page metadata",
+      "requirement": "Title, description, lang, viewport, favicon, global styles, indexing."
+    },
+    {
+      "id": "Q020",
+      "option": "B",
+      "domain": "State management",
+      "requirement": "React Context + useReducer + hooks, no Zustand."
+    },
+    {
+      "id": "Q021",
+      "option": "B",
+      "domain": "TDD",
+      "requirement": "Vitest, React Testing Library, Playwright across workflows."
+    },
+    {
+      "id": "Q022",
+      "option": "B",
+      "domain": "Editor visual theme",
+      "requirement": "Professional neutral dark shell with green accent, no theme toggle."
+    },
+    {
+      "id": "Q023",
+      "option": "B",
+      "domain": "Dashboard",
+      "requirement": "Project CRUD, thumbnails, dates, template/JSON entry, browser-local."
+    },
+    {
+      "id": "Q024",
+      "option": "B",
+      "domain": "Autosave",
+      "requirement": "Approximately one-second debounce, status, warnings, quota handling."
+    },
+    {
+      "id": "Q025",
+      "option": "B",
+      "domain": "Resize and snapping",
+      "requirement": "Resize handles, alignment guides, snapping with modifier override."
+    },
+    {
+      "id": "Q026",
+      "option": "B",
+      "domain": "Trusted embeds",
+      "requirement": "YouTube/Vimeo/Maps via constrained safe URLs and sandbox; no arbitrary HTML."
+    },
+    {
+      "id": "Q027",
+      "option": "B",
+      "domain": "Export readability",
+      "requirement": "Semantic formatted HTML/CSS with descriptive classes and comments."
+    },
+    {
+      "id": "Q028",
+      "option": "B",
+      "domain": "Inline text editing",
+      "requirement": "Double-click/tap editable content, Inspector sync, undo."
+    },
+    {
+      "id": "Q029",
+      "option": "B",
+      "domain": "Internal clipboard",
+      "requirement": "Copy/cut/paste/duplicate entire nested structures with new IDs."
+    },
+    {
+      "id": "Q030",
+      "option": "B",
+      "domain": "Style management",
+      "requirement": "Global styles, user presets and per-element overrides."
+    },
+    {
+      "id": "Q031",
+      "option": "B",
+      "domain": "Portfolio integration",
+      "requirement": "Sanity gallery card, full-screen route /projects/page-builder, Netlify integration."
+    },
+    {
+      "id": "Q032",
+      "option": "B",
+      "domain": "Preview",
+      "requirement": "Isolated sandbox iframe live preview, device modes, no form submit."
+    },
+    {
+      "id": "Q033",
+      "option": "B",
+      "domain": "Editor performance",
+      "requirement": "Throttled drag, debounced preview, 200+ elements warning, no cap."
+    },
+    {
+      "id": "Q034",
+      "option": "B",
+      "domain": "Drag engine",
+      "requirement": "Library for structured movement + Pointer Events for free-form, unified reducer."
+    },
+    {
+      "id": "Q035",
+      "option": "A",
+      "domain": "Language",
+      "requirement": "JavaScript/JSX with JSDoc; no TypeScript migration."
+    },
+    {
+      "id": "Q036",
+      "option": "B",
+      "domain": "Delivery phases",
+      "requirement": "Five test-gated milestones, feature branch, final release only."
+    },
+    {
+      "id": "Q037",
+      "option": "B",
+      "domain": "PR workflow",
+      "requirement": "Early draft PR, milestone review/checklists/changelog, Netlify Preview, approval."
+    },
+    {
+      "id": "Q038",
+      "option": "B",
+      "domain": "Developer learning",
+      "requirement": "Read-only React source viewer and architecture/reducer/testing/export tutorials."
+    },
+    {
+      "id": "Q039",
+      "option": "B",
+      "domain": "CI baseline",
+      "requirement": "GitHub Actions npm ci, tests, Playwright, build, export checks/artifacts."
+    },
+    {
+      "id": "Q040",
+      "option": "B",
+      "domain": "Browser support",
+      "requirement": "Current desktop Chrome/Edge/Firefox/Safari and mobile Chrome/Safari."
+    },
+    {
+      "id": "Q041",
+      "option": "C",
+      "domain": "Website export delivery",
+      "requirement": "ZIP default exactly index.html and styles.css; individual downloads optional."
+    },
+    {
+      "id": "Q042",
+      "option": "B",
+      "domain": "JSON versioning",
+      "requirement": "Versioned schema validation and migration; import as new copy."
+    },
+    {
+      "id": "Q043",
+      "option": "B",
+      "domain": "Responsive generation",
+      "requirement": "Auto Flex/Grid responsiveness, shared styles/media queries, overflow warnings."
+    },
+    {
+      "id": "Q044",
+      "option": "B",
+      "domain": "Onboarding",
+      "requirement": "Optional first-run guide, tooltips and restart, locally saved completion."
+    },
+    {
+      "id": "Q045",
+      "option": "B",
+      "domain": "Forms",
+      "requirement": "Native GET/POST external endpoints and validation, preview submit blocked."
+    },
+    {
+      "id": "Q046",
+      "option": "B",
+      "domain": "Canvas dragging",
+      "requirement": "Dedicated element move handles, resize handles, long press; double-click text."
+    },
+    {
+      "id": "Q047",
+      "option": "B",
+      "domain": "Mode switching",
+      "requirement": "Retain structured insertion point and free-form coordinates with undo."
+    },
+    {
+      "id": "Q048",
+      "option": "B",
+      "domain": "Icon library",
+      "requirement": "Safe curated searchable inline SVG with style/a11y, no export dependencies."
+    },
+    {
+      "id": "Q049",
+      "option": "B",
+      "domain": "Fonts",
+      "requirement": "System fonts, curated Google Fonts, CSS imports, offline fallbacks."
+    },
+    {
+      "id": "Q050",
+      "option": "A",
+      "domain": "Publishing",
+      "requirement": "Download files only; users manage hosting; no integrated publishing guide."
+    },
+    {
+      "id": "Q051",
+      "option": "B",
+      "domain": "Tables",
+      "requirement": "Visual semantic rows/columns/headers/styles, responsive scroll."
+    },
+    {
+      "id": "Q052",
+      "option": "B",
+      "domain": "Galleries",
+      "requirement": "Responsive external-image grid, aspect ratios, captions, hover, reorder."
+    },
+    {
+      "id": "Q053",
+      "option": "B",
+      "domain": "Navigation",
+      "requirement": "Responsive native details/summary menu without JavaScript."
+    },
+    {
+      "id": "Q054",
+      "option": "C",
+      "domain": "Advanced Layers",
+      "requirement": "Direct z-index numeric, reorder, locks, visibility, stacking warnings."
+    },
+    {
+      "id": "Q055",
+      "option": "C",
+      "domain": "Multi-selection and groups",
+      "requirement": "Batch selection/editing and persistent nested grouping to level four."
+    },
+    {
+      "id": "Q056",
+      "option": "B",
+      "domain": "Overflow",
+      "requirement": "Configurable overflow visible/hidden/auto by axis, visible default."
+    },
+    {
+      "id": "Q057",
+      "option": "B",
+      "domain": "Canvas camera",
+      "requirement": "Zoom 50–200%, fit/reset, Ctrl-wheel/space-pan/pinch."
+    },
+    {
+      "id": "Q058",
+      "option": "B",
+      "domain": "Global visibility",
+      "requirement": "Hidden persisted in JSON, omitted in Preview/export; locked visible."
+    },
+    {
+      "id": "Q059",
+      "option": "B",
+      "domain": "Hierarchical locking",
+      "requirement": "Inherited protection and independently protected descendants."
+    },
+    {
+      "id": "Q060",
+      "option": "B",
+      "domain": "Master deletion",
+      "requirement": "Confirm; detach instances preserving appearance; undo."
+    },
+    {
+      "id": "Q061",
+      "option": "B",
+      "domain": "Master editing",
+      "requirement": "Edit master through linked instance; propagate, exit/detach."
+    },
+    {
+      "id": "Q062",
+      "option": "B",
+      "domain": "Instance overrides",
+      "requirement": "Placement/size/visibility/lock/z-index local; content/styles shared master."
+    },
+    {
+      "id": "Q063",
+      "option": "B",
+      "domain": "Animations",
+      "requirement": "Curated CSS animation and hover transition presets; reduced motion."
+    },
+    {
+      "id": "Q064",
+      "option": "B",
+      "domain": "Animation triggers",
+      "requirement": "Load/hover/focus/active and repeats/direction/pause/replay in editor."
+    },
+    {
+      "id": "Q065",
+      "option": "B",
+      "domain": "Link manager",
+      "requirement": "Stable section targets, approved external links, mailto/tel, missing-target warnings."
+    },
+    {
+      "id": "Q066",
+      "option": "B",
+      "domain": "CSS sizing",
+      "requirement": "px/%/rem/em/auto, min/max, aspect locks, percent coordinates."
+    },
+    {
+      "id": "Q067",
+      "option": "B",
+      "domain": "Flex/Grid controls",
+      "requirement": "Visual direction, alignment, gap, wrap, columns, responsive presets."
+    },
+    {
+      "id": "Q068",
+      "option": "B",
+      "domain": "Inspector tabs",
+      "requirement": "Content, Layout, Style, Effects, Accessibility; contextual active tab."
+    },
+    {
+      "id": "Q069",
+      "option": "B",
+      "domain": "Multi-edit values",
+      "requirement": "Mixed-value indicators, compatible batch properties, protected locks."
+    },
+    {
+      "id": "Q070",
+      "option": "C",
+      "domain": "Preset inheritance",
+      "requirement": "Cascading preset graphs, variants, inherited/effective/overridden property view."
+    },
+    {
+      "id": "Q071",
+      "option": "B",
+      "domain": "Preset categories",
+      "requirement": "One active preset per Typography/Layout/Appearance/Effects; parent inheritance."
+    },
+    {
+      "id": "Q072",
+      "option": "B",
+      "domain": "Preset removal",
+      "requirement": "Confirm then bake effective styles, update descendants, remove refs/no cycles."
+    },
+    {
+      "id": "Q073",
+      "option": "B",
+      "domain": "Builder accessibility",
+      "requirement": "Target WCAG 2.2 AA for editor, keyboard/screen reader/reduced motion."
+    },
+    {
+      "id": "Q074",
+      "option": "A",
+      "domain": "Browser database",
+      "requirement": "localStorage exclusively for projects and preferences."
+    },
+    {
+      "id": "Q075",
+      "option": "B",
+      "domain": "Multi-tab conflicts",
+      "requirement": "Active editor/read-only tabs, owner conflict and revision checks."
+    },
+    {
+      "id": "Q076",
+      "option": "A",
+      "domain": "Editing takeover",
+      "requirement": "Immediate take over without old-tab acknowledgement; unsaved loss warning."
+    },
+    {
+      "id": "Q077",
+      "option": "B",
+      "domain": "Storage management",
+      "requirement": "Estimate usage, warn, manual cleanup/backup, no auto deletion."
+    },
+    {
+      "id": "Q078",
+      "option": "B",
+      "domain": "Delete nested container",
+      "requirement": "Delete all or unwrap/keep children, position recalculation, one undo."
+    },
+    {
+      "id": "Q079",
+      "option": "B",
+      "domain": "Reparenting",
+      "requirement": "Intelligent mode-aware move, preserve visual position and valid references."
+    },
+    {
+      "id": "Q080",
+      "option": "B",
+      "domain": "Duplicate refs",
+      "requirement": "Regenerate IDs and remap links within duplicated subtree."
+    },
+    {
+      "id": "Q081",
+      "option": "B",
+      "domain": "Undo granularity",
+      "requirement": "Group typing, dragging, resizing, sliders and batch edits by intent."
+    },
+    {
+      "id": "Q082",
+      "option": "B",
+      "domain": "Template reset",
+      "requirement": "Remember origin, confirm reset, optional duplicate backup, immutable templates."
+    },
+    {
+      "id": "Q083",
+      "option": "B",
+      "domain": "Template selection",
+      "requirement": "Interactive sandbox preview with viewports, no unsafe navigation/submission."
+    },
+    {
+      "id": "Q084",
+      "option": "B",
+      "domain": "Palette organization",
+      "requirement": "Search, category filter, preview, favorites and recent use."
+    },
+    {
+      "id": "Q085",
+      "option": "B",
+      "domain": "Insertion UX",
+      "requirement": "Select inserted node, open relevant Inspector, placeholders and hints."
+    },
+    {
+      "id": "Q086",
+      "option": "B",
+      "domain": "Type conversion",
+      "requirement": "Safe heading/paragraph, button/link, list conversion; compatible properties."
+    },
+    {
+      "id": "Q087",
+      "option": "B",
+      "domain": "Export preflight",
+      "requirement": "Critical errors block; warnings confirm; affected-element navigation."
+    },
+    {
+      "id": "Q088",
+      "option": "B",
+      "domain": "Keyboard shortcuts",
+      "requirement": "Context-aware shortcuts, searchable reference, focus conflict protection."
+    },
+    {
+      "id": "Q089",
+      "option": "B",
+      "domain": "Dashboard organization",
+      "requirement": "Search/sort/template filter/favorites/grid-list, local preferences."
+    },
+    {
+      "id": "Q090",
+      "option": "B",
+      "domain": "Thumbnails",
+      "requirement": "Lazy approximate thumbnails from component structure, no screenshot assets."
+    },
+    {
+      "id": "Q091",
+      "option": "A",
+      "domain": "Export accessibility",
+      "requirement": "Basic semantic HTML, alt, labels, native controls and warnings only."
+    },
+    {
+      "id": "Q092",
+      "option": "B",
+      "domain": "External resource failures",
+      "requirement": "Placeholders, warnings, fallback fonts and URL correction actions."
+    },
+    {
+      "id": "Q093",
+      "option": "B",
+      "domain": "Export performance",
+      "requirement": "Lazy/priority loading, dimensions, CSS dedup/prune, font swap, no JS."
+    },
+    {
+      "id": "Q094",
+      "option": "B",
+      "domain": "Corrupted projects",
+      "requirement": "Independent records, isolate errors, download raw, JSON restore."
+    },
+    {
+      "id": "Q095",
+      "option": "B",
+      "domain": "Trash",
+      "requirement": "Manual restore/delete, never auto purge, storage shown."
+    },
+    {
+      "id": "Q096",
+      "option": "B",
+      "domain": "Cross-project components",
+      "requirement": "Copy independent master between projects, no cross-project live links."
+    },
+    {
+      "id": "Q097",
+      "option": "B",
+      "domain": "Preset copy dependencies",
+      "requirement": "Copy transitive preset graph and styles, fresh IDs, preserve appearance."
+    },
+    {
+      "id": "Q098",
+      "option": "B",
+      "domain": "Responsive widths",
+      "requirement": "Resizable preview plus Mobile 390/Tablet 768/Desktop 1280 and fixed breakpoints."
+    },
+    {
+      "id": "Q099",
+      "option": "B",
+      "domain": "Multi-element geometry",
+      "requirement": "Align/distribute/match compatible sizes and one history action."
+    },
+    {
+      "id": "Q100",
+      "option": "B",
+      "domain": "Project naming",
+      "requirement": "Validate nonempty names, auto-number duplicates, stable IDs, safe ZIP slug."
+    },
+    {
+      "id": "Q101",
+      "option": "B",
+      "domain": "Color editing",
+      "requirement": "HEX/RGB/HSL/alpha and saved swatches/recent, no advanced gradients."
+    },
+    {
+      "id": "Q102",
+      "option": "B",
+      "domain": "Box model",
+      "requirement": "Four-side spacing, linked/unlinked, borders/radius, units, computed preview."
+    },
+    {
+      "id": "Q103",
+      "option": "B",
+      "domain": "Typography",
+      "requirement": "Line height, letter spacing, transforms, decoration, shadow, wrapping."
+    },
+    {
+      "id": "Q104",
+      "option": "B",
+      "domain": "Image crop",
+      "requirement": "Visual focal point, aspect/fit/object-position CSS, preserve URLs."
+    },
+    {
+      "id": "Q105",
+      "option": "B",
+      "domain": "Background images",
+      "requirement": "External URL, size/position/repeat/fallback and contrast warnings."
+    },
+    {
+      "id": "Q106",
+      "option": "B",
+      "domain": "Interaction states",
+      "requirement": "Normal/hover/focus/active/disabled styling with CSS transitions."
+    },
+    {
+      "id": "Q107",
+      "option": "B",
+      "domain": "Sticky positioning",
+      "requirement": "Supported sticky header/section offsets; no fixed viewport."
+    },
+    {
+      "id": "Q108",
+      "option": "B",
+      "domain": "Element search",
+      "requirement": "Search page content/type/name/ID, select/highlight/expand/scroll."
+    },
+    {
+      "id": "Q109",
+      "option": "B",
+      "domain": "Form editor",
+      "requirement": "Visual fields and constraints, native validation, avoid actual preview submit."
+    },
+    {
+      "id": "Q110",
+      "option": "B",
+      "domain": "Form privacy/security",
+      "requirement": "HTTPS external endpoints, GET warnings, no visitor value persistence."
+    },
+    {
+      "id": "Q111",
+      "option": "B",
+      "domain": "HTML5 media",
+      "requirement": "Native video/audio controls, hosted URLs, poster/captions, autoplay restrictions."
+    },
+    {
+      "id": "Q112",
+      "option": "B",
+      "domain": "Responsive visibility",
+      "requirement": "Breakpoint show/hide CSS vs global omission from export."
+    },
+    {
+      "id": "Q113",
+      "option": "A",
+      "domain": "Measurement aids",
+      "requirement": "Existing smart guides/snapping only; no rulers or grid overlay."
+    },
+    {
+      "id": "Q114",
+      "option": "B",
+      "domain": "Import security",
+      "requirement": "Strict schema/component/CSS/URL/refs sanitization; reject executable data."
+    },
+    {
+      "id": "Q115",
+      "option": "B",
+      "domain": "External paste",
+      "requirement": "Smart text/link/image suggestions; plain text and sanitized safe URLs."
+    },
+    {
+      "id": "Q116",
+      "option": "B",
+      "domain": "Workspace recovery",
+      "requirement": "Restore viewport, zoom, scroll, panels, selection; not in-progress edits/history."
+    },
+    {
+      "id": "Q117",
+      "option": "B",
+      "domain": "Overlap selection",
+      "requirement": "Alt/Option cycling, touch layer menu, breadcrumbs, inspect locks."
+    },
+    {
+      "id": "Q118",
+      "option": "C",
+      "domain": "Rich-text formatting",
+      "requirement": "Per-span formatting/fonts/colors/highlight, links, icons, superscript/subscript."
+    },
+    {
+      "id": "Q119",
+      "option": "A",
+      "domain": "SEO/social",
+      "requirement": "Basic SEO only; no social metadata or advanced SEO editor."
+    },
+    {
+      "id": "Q120",
+      "option": "B",
+      "domain": "Rich-text interaction",
+      "requirement": "Dedicated inline editing mode, contextual toolbar, selection preservation."
+    },
+    {
+      "id": "Q121",
+      "option": "B",
+      "domain": "Rich-text serialization",
+      "requirement": "Versioned validated structured JSON AST; semantic safe HTML generation."
+    },
+    {
+      "id": "Q122",
+      "option": "A",
+      "domain": "Offline architecture",
+      "requirement": "Online-first; continue open-session local editing; no service worker/PWA."
+    },
+    {
+      "id": "Q123",
+      "option": "B",
+      "domain": "Nesting legality",
+      "requirement": "Prevent invalid semantic placement rather than permit then flag."
+    },
+    {
+      "id": "Q124",
+      "option": "B",
+      "domain": "Runtime error handling",
+      "requirement": "Isolated React error boundaries and safe saved-data recovery."
+    },
+    {
+      "id": "Q125",
+      "option": "B",
+      "domain": "CSS class names",
+      "requirement": "Stable, descriptive, collision-safe and deterministic export classes."
+    },
+    {
+      "id": "Q126",
+      "option": "C",
+      "domain": "Visual testing",
+      "requirement": "Automated Chromium/Firefox/WebKit cross-browser baselines and performance checks."
+    },
+    {
+      "id": "Q127",
+      "option": "B",
+      "domain": "Schema migration",
+      "requirement": "Validate new record before single-write replacement; leave original on failure."
+    },
+    {
+      "id": "Q128",
+      "option": "C",
+      "domain": "Collection backups",
+      "requirement": "Complete/selective JSON backup/restore, preview, duplicate compare, detailed report."
+    },
+    {
+      "id": "Q129",
+      "option": "B",
+      "domain": "Template assets",
+      "requirement": "Polished original samples using safe CSS/inline SVG assets and placeholders."
+    },
+    {
+      "id": "Q130",
+      "option": "B",
+      "domain": "Release acceptance",
+      "requirement": "Full 130-item checklist, mapped tests, milestone evidence, user sign-off."
+    }
+  ]
+}
