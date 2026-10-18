@@ -34,7 +34,8 @@ async function dragMouse(page, handle, target) {
   await page.mouse.down();
   await page.mouse.move(x + 8, y, { steps: 2 });
   await expect(page.locator(".pb-drag-overlay")).toBeVisible();
-  await target.scrollIntoViewIfNeeded();
+  // Programmatic scrolling during a pressed gesture changes browser drag coordinates.
+  await expect(target).toBeInViewport();
   const to = await target.boundingBox();
   await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, {
     steps: 12,
@@ -45,6 +46,7 @@ async function dragMouse(page, handle, target) {
 test("mouse palette drag inserts a node and its move handle reparents it without changing identity", async ({
   page,
 }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await boot(page);
   await add(page, "Container");
   const container = page.getByTestId("canvas-container");
