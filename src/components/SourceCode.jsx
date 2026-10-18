@@ -17,12 +17,12 @@ function SourceListing({ files, className = "" }) {
   );
 }
 
-export default function SourceCode({ title, files }) {
+export default function SourceCode({ title, files, fillHeight = false }) {
   return (
-    <div className="rounded-2xl border border-green-700 border-opacity-40 bg-green-900 bg-opacity-60 p-4 shadow-2xl backdrop-filter backdrop-blur-sm">
+    <div className={`rounded-2xl border border-green-700 border-opacity-40 bg-green-900 bg-opacity-60 p-4 shadow-2xl backdrop-filter backdrop-blur-sm ${fillHeight ? "lg:flex lg:min-h-0 lg:flex-col" : ""}`}>
       <h2 className="text-xs uppercase tracking-widest text-green-200">{title}</h2>
-      <div className="mt-3 hidden lg:block">
-        <SourceListing files={files} />
+      <div className={`mt-3 hidden lg:block ${fillHeight ? "lg:relative lg:min-h-0 lg:flex-1" : ""}`}>
+        <SourceListing files={files} className={fillHeight ? "lg:absolute lg:inset-0 lg:h-full" : ""} />
       </div>
       <details className="mt-3 lg:hidden">
         <summary className="cursor-pointer text-xs text-green-100 underline">Show code</summary>

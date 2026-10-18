@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import sanityClient from "../client.js";
 import Seo, { SITE_NAME, SITE_URL } from "./Seo";
 import { cancelIdle, runWhenIdle } from "../utils/idleCallback";
+import sudokuPreview from "../assets/sudoku-solver-preview.svg";
 import { includePageBuilder, PAGE_BUILDER_PATH } from "../features/page-builder/gallery";
 
 const EMPTY_PROJECTS = [];
@@ -56,7 +57,20 @@ export default function Project() {
     };
   }, []);
 
-  const projects = includePageBuilder(projectData.filter((project) => project?.name && project?.link));
+  const projects = includePageBuilder(
+    projectData.filter((project) => project?.name && project?.link)
+  )
+    .map((project) =>
+      /\/projects\/SudokuSolver\/?$/i.test(project.link.split(/[?#]/)[0])
+        ? {
+            ...project,
+            thumbnail: {
+              asset: { url: sudokuPreview },
+              alt: "Sudoku Solver with board and controls on the left and source code on the right",
+            },
+          }
+        : project
+    );
   const projectNames = projects
     .map((project) => project?.name)
     .slice(0, 3);

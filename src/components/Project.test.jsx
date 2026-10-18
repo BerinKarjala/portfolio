@@ -87,4 +87,21 @@ describe("Project", () => {
     expect(screen.queryByRole("link", { name: "View project: HTML Page Builder" })).toBeNull();
     expect(screen.getByRole("link", { name: "View project: Sudoku Solver" })).not.toBeNull();
   });
+
+  it("shows the updated Sudoku preview alongside the bundled Page Builder card", async () => {
+    fetchMock.mockResolvedValueOnce([
+      {
+        name: "Sudoku Solver",
+        link: "/projects/SudokuSolver",
+        thumbnail: { asset: { url: "/old-placeholder.png" } },
+      },
+    ]);
+
+    renderProject();
+
+    const sudoku = await screen.findByRole("link", { name: "View project: Sudoku Solver" });
+    expect(sudoku.querySelector("img").getAttribute("src")).toContain("sudoku-solver-preview.svg");
+    expect(screen.getByRole("link", { name: "View project: HTML Page Builder" }).getAttribute("href"))
+      .toBe("/projects/page-builder");
+  });
 });
