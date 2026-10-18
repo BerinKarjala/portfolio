@@ -202,6 +202,19 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
     )
       setWorkspace((ws) => ({ ...ws, mobilePanel: null }));
   }, [state.editor.richEditingId]);
+  useEffect(() => {
+    if (
+      window.matchMedia?.("(max-width: 760px)").matches &&
+      workspace.mobilePanel
+    ) {
+      const panel = document.querySelector(
+        workspace.mobilePanel === "right"
+          ? ".pb-inspector-content"
+          : ".pb-library-content",
+      );
+      if (panel) panel.scrollTop = 0;
+    }
+  }, [workspace.mobilePanel]);
   const selectionKey = selection.join(",");
   useEffect(() => {
     if (selectionKey && previousSelection.current !== selectionKey)
@@ -727,23 +740,25 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
               Reusable
             </button>
           </div>
-          {workspace.leftTab === "reusable" ? (
-            <ReusableControls library />
-          ) : workspace.leftTab === "palette" ? (
-            <Palette
-              {...{ add, parentId, insertion, setInsertion, recentVersion }}
-            />
-          ) : (
-            <Layers
-              expanded={workspace.expandedIds}
-              setExpanded={(expandedIds) => update({ expandedIds })}
-              reveal={reveal}
-              inspect={() => {
-                if (window.matchMedia?.("(max-width: 760px)").matches)
-                  update({ mobilePanel: "right", rightOpen: true });
-              }}
-            />
-          )}
+          <div className="pb-library-content">
+            {workspace.leftTab === "reusable" ? (
+              <ReusableControls library />
+            ) : workspace.leftTab === "palette" ? (
+              <Palette
+                {...{ add, parentId, insertion, setInsertion, recentVersion }}
+              />
+            ) : (
+              <Layers
+                expanded={workspace.expandedIds}
+                setExpanded={(expandedIds) => update({ expandedIds })}
+                reveal={reveal}
+                inspect={() => {
+                  if (window.matchMedia?.("(max-width: 760px)").matches)
+                    update({ mobilePanel: "right", rightOpen: true });
+                }}
+              />
+            )}
+          </div>
         </aside>
         <section className="pb-canvas-area" aria-label="Page canvas">
           <div className="pb-canvas-toolbar">

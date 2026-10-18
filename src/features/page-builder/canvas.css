@@ -1003,3 +1003,25 @@
 .pb-root .pb-box-size {
   background: #182d22;
 }
+@media (max-width: 760px) {
+  .pb-root .pb-canvas-left[data-mobile-open="true"],
+  .pb-root .pb-canvas-right[data-mobile-open="true"] {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .pb-root .pb-canvas-left .pb-mobile-close,
+  .pb-root .pb-canvas-right .pb-mobile-close,
+  .pb-root .pb-canvas-left .pb-inspector-tabs,
+  .pb-root .pb-canvas-right .pb-inspector-tabs {
+    position: static;
+    flex-shrink: 0;
+  }
+  .pb-root .pb-library-content,
+  .pb-root .pb-inspector-content {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding-bottom: 1rem;
+  }
+}
