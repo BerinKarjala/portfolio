@@ -1,6 +1,6 @@
 # Page Builder implementation evidence
 
-Current M4 branch: `codex/page-builder-m4`, [PR #232](https://github.com/BerinKarjala/portfolio/pull/232), started from merged M3 commit `229c170` and updated with `main` commit `d7c0751`. Requirements baseline: PR #226. M1 landed in [PR #227](https://github.com/BerinKarjala/portfolio/pull/227), M2 in [PR #228](https://github.com/BerinKarjala/portfolio/pull/228), and M3 in [PR #229](https://github.com/BerinKarjala/portfolio/pull/229), independently merged by the repository owner. M4 implementation and local/CI/preview gates are complete; M5 and final release approval remain pending. Codex has not merged or triggered a production deployment.
+Current M5 branch: `codex/page-builder-m5`, [draft PR #233](https://github.com/BerinKarjala/portfolio/pull/233), starts from M4 owner merge `00f074c`. Requirements baseline: PR #226. M1 landed in [PR #227](https://github.com/BerinKarjala/portfolio/pull/227), M2 in [PR #228](https://github.com/BerinKarjala/portfolio/pull/228), M3 in [PR #229](https://github.com/BerinKarjala/portfolio/pull/229), and M4 in [PR #232](https://github.com/BerinKarjala/portfolio/pull/232), independently merged by the repository owner. M5 implementation/automated verification proceeds below; manual acceptance and final approval remain open. Codex has not merged or triggered a production deployment. Earlier milestone descriptions retain their historical evidence.
 
 The approved October 18 launch layout overrides the original direct-to-editor route: portfolio project page, clickable preview on the left, existing source viewer on the right, full-viewport workspace after activation.
 
@@ -135,3 +135,22 @@ Native table refinement: exported tables now have a separate labelled, keyboard-
 
 
 Preview anchor correction: an actual section-link click exposed that `srcdoc` resolves relative fragments against the portfolio URL. Preview now rewrites validated section links to `about:srcdoc#...`; final files retain ordinary `#...` links. The browser workflow clicks the section link and verifies that the target and document remain inside the opaque preview. Inert external links retain their normal underline via shared CSS. The prior table/URL build passed in [run 39111520442](https://github.com/BerinKarjala/portfolio/actions/runs/39111520442); final branch checks cover this preview-only correction too. Unit count remains 125 and no snapshots are skipped or updated in CI.
+
+
+## M5 deliverables and release gate
+
+- [x] Optional first-run guide, keyboard/focus hint, restart and local completion independent of dashboard preferences
+- [x] Confirmed remembered-origin reset, optional independent backup of current/unsaved work, backup-failure protection and one-action Undo
+- [x] Actual read-only source without duplicate entry; on-page teaching introduction and four architecture/reducer/testing/export tutorials
+- [x] All 130 canonical decisions guarded against omissions/changes; all AC-01–AC-16 mapped with explicit evidence and remaining manual work
+- [x] Shared-runner large-page regression ceilings, production raw/gzip budgets, reduced-motion/state/sticky/asset-failure browser checks
+- [ ] Final-head unit/build/budget and Chromium/Firefox/WebKit comparison run plus Netlify checks verified
+- [ ] Current browser, physical-device and assistive-technology matrix, final screenshots/threshold review and explicit user release approval
+
+M5 TDD first reproduced a missing reset module, then passed identity/template immutability/one-action Undo/read-only tests. Focused integration tests verify saved guide settings, restart, backup quota failure preserving the exact original record/current state, and successful independent copies/Undo. Three new browser cases cover mobile guide axe/focus/persistence, template reset/cancellation/copy/reload and generated sticky/hover/focus/reduced-motion/remote-font-image failures. Existing nine export images remain unchanged; ordinary CI compares them normally.
+
+M4's final implementation run [39112228452](https://github.com/BerinKarjala/portfolio/actions/runs/39112228452) passed 125 unit/integration tests and 86 browser cases with four intentional engine-specific skips, no flaky retries, plus build and Netlify checks. That result predates M5 and is not evidence for new M5 behavior. See [M5 release candidate](m5-release.md) for budget calibration, the full acceptance map, known limits and unperformed manual checks.
+
+Change log: M5 adds onboarding, safe original-template reset, teaching notes/tutorials, trace/build guards, runtime ceilings and release-state documentation. No approved requirement was removed. Release acceptance is deliberately separate from implemented/automated coverage.
+
+Local M5 verification: the full 129-test suite passed before the final additional optional-copy/ownership regression; all three focused M5 integration cases then passed. The production build and trace/raw/gzip budget checks passed. All **33 Chromium workflows passed** against the production build; local functional verification used `--ignore-snapshots` because canonical images use CI fonts. CI retains ordinary snapshot comparisons and no baseline images were changed. Desktop launcher and mobile guide appearance were inspected locally. Physical-device/AT acceptance remains tracked in [issue #234](https://github.com/BerinKarjala/portfolio/issues/234).

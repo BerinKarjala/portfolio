@@ -50,3 +50,11 @@ Review **Preflight** before downloading. Critical errors block all output. Use *
 Collection restores show a downloadable per-project **Restore report**. The default is to roll back newly added copies after a batch failure where possible. Choose **Keep successful copies if some restores fail** only when you want partial recovery. A report identifies any copy that could not be rolled back. Existing saved projects are preserved in either mode.
 
 If the Library or Inspector fails, retry that panel. A critical canvas failure pauses saving and offers stored-data and unsaved JSON recovery before restarting. **Copy diagnostics** and **Download diagnostics** in export review contain diagnostic codes only, without your page content or URLs.
+
+## Quick guide and template reset
+
+On your first visit, the optional **Start quick guide** offer introduces the five main workflows. **Dismiss quick guide** remembers that choice locally; **Skip for now** closes the current guide. **Finish guide** saves completion in this browser. **Quick guide** in the workspace header restarts it at any time. Hover or focus that button for a short hint; Escape dismisses the hint or open guide and returns focus.
+
+In the editor, **Reset to original template** restores the template originally chosen for that project. Confirm the named template before replacing content, metadata, presets, shared components and styling. The project name, favorite and identity remain. **Create an independent copy of my current work first** is selected initially and includes unsaved edits. If that copy fails, reset stops. Download JSON first if you need a backup outside browser storage. Uncheck the option only if you do not need another local copy.
+
+Reset is one Undo action in this session. Undo does not delete its backup copy. A reset still needs autosave; check the save status before closing. Read-only projects require takeover before resetting. The built-in templates are immutable; your edits and resets never change them.

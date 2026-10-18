@@ -6,6 +6,7 @@ on:
       - "src/**"
       - "public/**"
       - "e2e/**"
+      - "scripts/check-page-builder-*.mjs"
       - "package*.json"
       - "*config*"
       - ".nvmrc"
@@ -31,8 +32,10 @@ jobs:
           node-version-file: ".nvmrc"
           cache: npm
       - run: npm ci
+      - run: npm run check:page-builder
       - run: npm test
       - run: npm run build
+      - run: npm run check:page-builder:build
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4

@@ -494,6 +494,11 @@ test("250 components remain editable and export preview timings are observable w
       .length,
   }));
   expect(metrics.scripts).toBe(0);
+  // Regression ceilings calibrated above M4's slowest successful shared-runner observation.
+  expect(opened - start).toBeLessThan(12000);
+  expect(previewed - opened).toBeLessThan(5000);
+  expect(metrics.nodes).toBeLessThanOrEqual(600);
+  expect(metrics.htmlBytes).toBeLessThanOrEqual(60000);
   await testInfo.attach("large-page-metrics", {
     body: Buffer.from(
       JSON.stringify(

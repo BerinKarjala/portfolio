@@ -226,23 +226,46 @@ export function createRepository(storage, { now = Date.now } = {}) {
     try {
       const p = JSON.parse(read(PREFERENCES_KEY));
       return {
+        guideCompleted: p?.guideCompleted === true,
+        guideDismissed: p?.guideDismissed === true,
         view: p?.view === "list" ? "list" : "grid",
         sort: ["updated", "name", "created"].includes(p?.sort)
           ? p.sort
           : "updated",
       };
     } catch {
-      return { view: "grid", sort: "updated" };
+      return {
+        view: "grid",
+        sort: "updated",
+        guideCompleted: false,
+        guideDismissed: false,
+      };
     }
   }
   function savePreferences(p) {
+    const previous = preferences();
     write(
       PREFERENCES_KEY,
       JSON.stringify({
-        view: p.view === "list" ? "list" : "grid",
-        sort: ["updated", "name", "created"].includes(p.sort)
-          ? p.sort
-          : "updated",
+        ...previous,
+        ...(typeof p.guideCompleted === "boolean"
+          ? { guideCompleted: p.guideCompleted }
+          : {}),
+        ...(typeof p.guideDismissed === "boolean"
+          ? { guideDismissed: p.guideDismissed }
+          : {}),
+        view:
+          p.view === undefined
+            ? previous.view
+            : p.view === "list"
+              ? "list"
+              : "grid",
+        sort:
+          p.sort === undefined
+            ? previous.sort
+            : ["updated", "name", "created"].includes(p.sort)
+              ? p.sort
+              : "updated",
       }),
     );
   }
