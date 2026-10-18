@@ -1,6 +1,6 @@
 # Page Builder implementation evidence
 
-Current M4 branch: `codex/page-builder-m4`, draft [PR #232](https://github.com/BerinKarjala/portfolio/pull/232), based on merged M3 commit `229c170`. Requirements baseline: PR #226. M1 landed in [PR #227](https://github.com/BerinKarjala/portfolio/pull/227), M2 in [PR #228](https://github.com/BerinKarjala/portfolio/pull/228), and M3 in [PR #229](https://github.com/BerinKarjala/portfolio/pull/229), independently merged by the repository owner. M4 is being verified; M5 and final release approval remain pending. Codex has not merged or triggered a production deployment.
+Current M4 branch: `codex/page-builder-m4`, [PR #232](https://github.com/BerinKarjala/portfolio/pull/232), started from merged M3 commit `229c170` and updated with `main` commit `d7c0751`. Requirements baseline: PR #226. M1 landed in [PR #227](https://github.com/BerinKarjala/portfolio/pull/227), M2 in [PR #228](https://github.com/BerinKarjala/portfolio/pull/228), and M3 in [PR #229](https://github.com/BerinKarjala/portfolio/pull/229), independently merged by the repository owner. M4 implementation and local/CI/preview gates are complete; M5 and final release approval remain pending. Codex has not merged or triggered a production deployment.
 
 The approved October 18 launch layout overrides the original direct-to-editor route: portfolio project page, clickable preview on the left, existing source viewer on the right, full-viewport workspace after activation.
 
@@ -9,7 +9,7 @@ The approved October 18 launch layout overrides the original direct-to-editor ro
 - [x] M1 — foundation and persistence: local, GitHub CI and Netlify preview gates passed
 - [x] M2 — canvas and structural editing: local, GitHub CI and Netlify preview gates passed
 - [x] M3 — content and design systems: local, GitHub CI and Netlify preview gates passed
-- [ ] M4 — export, preview, validation and resilience
+- [x] M4 — export, preview, validation and resilience: local, GitHub CI and Netlify preview gates passed
 - [ ] M5 — cross-browser evidence, teaching documentation and release
 
 ## M1 deliverables
@@ -93,6 +93,8 @@ M2 was merged independently by the repository owner during M3 implementation. Th
 - M2: added mouse/keyboard/real-touch/mobile/overlap/cancellation tests and representative visual regression images; documented contracts and remaining release gates.
 - M3: added the full semantic component/editor inventory, safe rich text, design/preset/master systems, effects, visibility/accessibility and polished template compositions.
 - M3: added component/invariant/security fixtures, rich-input and shared-design browser workflows, scoped axe checks and updated template images.
+- M4: added shared compilation, sandbox/device/template previews, generated code, preflight and two-file downloads; completed recovery reports and per-engine export regression evidence.
+- M4: corrected coalesced pointer release handling, reviewed nine CI-native exported-page baselines, and retained the latest upstream portfolio changes.
 
 ## M4 deliverables and gate
 
@@ -104,14 +106,20 @@ M2 was merged independently by the repository owner during M3 implementation. Th
 - [x] Two-file UTF-8 ZIP/CRC32, safe filename slug and individual HTML/CSS downloads
 - [x] Observed resource warnings/correction, isolated panels, critical autosave pause and saved/unsaved JSON recovery
 - [x] Detailed collection restore report, default rollback and explicit partial-retention choice
-- [x] Local **122 unit/integration tests across 19 files**, production build and **30 Chromium scenarios** passed
-- [ ] Final GitHub Chromium/Firefox/WebKit verification, reviewed per-engine exported-page baselines and Netlify preview evidence
+- [x] Local **123 unit/integration tests across 19 files**, production build and **30 Chromium scenarios** passed
+- [x] GitHub Chromium/Firefox/WebKit verification, reviewed per-engine exported-page baselines and Netlify preview evidence
 
 TDD began with missing compiler modules; the initial six compiler/delivery tests then passed. The expanded compiler suite covers safe text/attribute/style contexts, all component semantics, rich text, IDs, deterministic classes, CSS/font/keyframe pruning, URL punctuation, hidden subtrees, breakpoint visibility, warning gates and a 250-component fixture. Integration tests cover current-input invalidation, code viewer isolation, panel retries and critical failure recovery beyond the autosave interval. Existing quota/migration/ownership and last-good-byte tests remain passing.
 
 Seven new browser cases run in each engine. They cover sandbox parent/navigation/form isolation, native menu resizing, no persisted visitor values, ZIP names/CRCs and individual-file equivalence, every compiled node's preview/export computed layout at 390/768/1280px, warning navigation, no-write template preview, desktop/mobile axe, damaged records/restore reports and observable large-page timings. Existing game/gallery/canvas/rich-text/storage workflows are retained. The four intentional skips remain limited to the two Chromium-specific CDP/canvas cases on the other engines.
 
-M4 adds three exported-page baselines per engine. These are implementation regression evidence, not user-approved final design screenshots. Details: [M4 contracts](m4-export.md). Baseline acquisition [run 39108980299](https://github.com/BerinKarjala/portfolio/actions/runs/39108980299) verified the full interaction matrix and produced images for review. Its three failures were the expected exported-page baseline comparisons/initialization. All nine actual CI images were visually reviewed and committed; local system-font rasterization differs, so these CI-native images are canonical. The runner is fixed to Ubuntu 24.04 and browser versions come from the lockfile. The same run exposed a WebKit width-resize flake (passed on retry): the release coordinate was not committed when the final move was coalesced. The fix snapshots gesture zoom, applies the pointer-up coordinate and retains cancellation rollback; a regression test verifies all three behaviors without creating content history. Final ordinary CI must pass after this baseline/fix commit.
+M4 adds three exported-page baselines per engine. These are implementation regression evidence, not user-approved final design screenshots. Details: [M4 contracts](m4-export.md). Baseline acquisition [run 39108980299](https://github.com/BerinKarjala/portfolio/actions/runs/39108980299) verified the full interaction matrix and produced images for review. Its three failures were the expected exported-page baseline comparisons/initialization. All nine actual CI images were visually reviewed and committed; local system-font rasterization differs, so these CI-native images are canonical. The runner is fixed to Ubuntu 24.04 and browser versions come from the lockfile. The same run exposed a WebKit width-resize flake (passed on retry): the release coordinate was not committed when the final move was coalesced. The fix snapshots gesture zoom, applies the pointer-up coordinate and retains cancellation rollback; a regression test verifies all three behaviors without creating content history. Implementation [run 39109781875](https://github.com/BerinKarjala/portfolio/actions/runs/39109781875) passed on feature head `a45b4c394c73b924bb07e03d84746fe71eb03523`: clean install, **123 tests across 19 files**, production build, **86 browser cases passed, four intentional skips, no flaky retries**. All nine exported-page baselines and both earlier Chromium canvas images compared successfully. The seven M4 cases passed in every engine, including native pointer resizing and cancellation. Desktop/mobile export-workspace screenshots from all three engines were also reviewed.
+
+The owner updated `main` during M4 with portfolio/gallery/Sudoku/source-panel changes and one additional test. The M4 branch incorporates `d7c0751` without conflicts; its combined application/workflow/browser-test tree was compared with CI's tested merge tree and matches. This explains the change from the original worktree's 122 tests to 123. The evidence update changes documentation only relative to that tested combined application.
+
+Netlify [PR #232 Deploy Preview](https://deploy-preview-232--berinkarjala.netlify.app/projects/page-builder), header and redirect checks passed on the implementation. Automated interactions use the production build in CI; this records deployment checks rather than a separate live-site interaction run. The PR remains unmerged; final release acceptance is separate.
+
+The 250-component CI fixture observed open/preview times of Chromium **1467/269ms**, Firefox **1959/424ms**, and WebKit **4022/1093ms**, with 511 preview DOM nodes, 44,788 preview-document UTF-8 bytes and zero scripts. These are observations from one shared CI runner, not calibrated budgets or performance guarantees. Reports, preview/export screenshots, measurements and baseline files are available as run artifacts.
 
 ## Known limits and release gates
 

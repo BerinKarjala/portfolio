@@ -32,7 +32,7 @@ Collection restore defaults to best-effort rollback of newly added records after
 
 ## Verification
 
-Tests began with a missing compiler, then progressed through compiler, UI and browser integration. Local verification: **122 unit/integration tests across 19 files**, production build, and the seven new Chromium workflows passed. Full regression, Firefox/WebKit evidence and reviewed visual baselines are recorded in `progress.md` once complete.
+Tests began with a missing compiler, then progressed through compiler, UI and browser integration. Local verification: **123 unit/integration tests across 19 files**, production build, and the seven new Chromium workflows passed. The final combined CI passed **86 browser cases with four intentional engine-specific skips**, including all nine reviewed per-engine exported-page baselines, with no flaky retries. The latest upstream portfolio changes are included; `progress.md` records exact commit/run and preview evidence.
 
 The M4 browser suite verifies sandbox isolation, native menus/forms, no persisted visitor values, all download modes, ZIP CRCs/names, warning navigation, template preview without writes, scoped desktop/mobile axe checks, corruption/restore reports and a 250-component page. Preview/export comparisons inspect each compiled node's computed typography, color, background, display, spacing and document-space bounds at all three device widths. Exported-page screenshots use separate per-engine baselines; screenshots of the preview are retained for review. Performance measurements report open/preview duration, DOM count and HTML size without inventing release timing budgets.
 
