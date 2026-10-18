@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import Seo from "../../components/Seo";
 import SourceCode from "../../components/SourceCode";
 import "./page-builder.css";
+import "./canvas.css";
 import projectSource from "./PageBuilderProject.jsx?raw";
 
 const BuilderWorkspace = lazy(() => import("./BuilderWorkspace"));
@@ -67,9 +68,9 @@ export default function PageBuilderProject() {
                 </span>
               </button>
               <p className="mt-4 text-xs leading-relaxed text-green-100">
-                Foundation preview: projects, starter templates, JSON backups,
-                and local saving. Canvas editing and HTML/CSS export follow in
-                later milestones.
+                Arrange, nest, and resize elements on a visual canvas. Save
+                projects locally and download JSON backups. HTML/CSS export is
+                coming next.
               </p>
             </section>
           </div>

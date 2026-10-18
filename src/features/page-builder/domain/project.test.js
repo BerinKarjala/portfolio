@@ -171,7 +171,7 @@ describe("project model (AC-01, AC-08, AC-09)", () => {
     delete old.revision;
     const raw = JSON.stringify(old);
     const current = migrateProject(old);
-    expect(current.schemaVersion).toBe(1);
+    expect(current.schemaVersion).toBe(2);
     expect(current.status).toBe("active");
     expect(current.favorite).toBe(false);
     expect(JSON.stringify(old)).toBe(raw);

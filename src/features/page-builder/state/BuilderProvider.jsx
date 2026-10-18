@@ -203,7 +203,12 @@ export default function BuilderProvider({ children }) {
       if (project.status !== "active")
         throw new Error("Restore the project from Trash before opening it.");
       const editable = repository.acquire(id, token);
-      dispatch({ type: "OPEN", project, readOnly: !editable });
+      dispatch({
+        type: "OPEN",
+        project,
+        readOnly: !editable,
+        selection: repository.workspace(id).selectedIds,
+      });
       try {
         channel.current?.postMessage({ type: "changed" });
       } catch {
@@ -327,6 +332,30 @@ export default function BuilderProvider({ children }) {
       dispatch({ type: "READ_ONLY", message: error.message });
     }
   }
+  const sendCommand = useCallback(
+    (command, historyKey) => {
+      const editor = stateRef.current.editor;
+      if (!editor || editor.readOnly) return;
+      try {
+        if (!repository.owns(editor.project.projectId, token))
+          throw new StorageConflictError(
+            "Another tab owns this project. Download unsaved JSON before taking over.",
+          );
+        dispatch(
+          typeof command === "string"
+            ? { type: command }
+            : { type: "COMMAND", command, historyKey },
+        );
+      } catch (error) {
+        dispatch({ type: "READ_ONLY", message: error.message });
+      }
+    },
+    [repository, token],
+  );
+  const select = useCallback(
+    (ids, toggle = false) => dispatch({ type: "SELECT", ids, toggle }),
+    [],
+  );
   return (
     <BuilderContext.Provider
       value={{
@@ -348,6 +377,8 @@ export default function BuilderProvider({ children }) {
         saveNow,
         takeOver,
         editMetadata,
+        sendCommand,
+        select,
       }}
     >
       {children}

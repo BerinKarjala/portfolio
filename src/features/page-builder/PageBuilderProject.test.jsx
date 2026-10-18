@@ -74,9 +74,14 @@ describe("portfolio launcher and dashboard (AC-01, AC-09, AC-13)", () => {
     await create();
     const title = screen.getByLabelText("Page title");
     fireEvent.change(title, { target: { value: "My saved page" } });
-    expect(screen.getByRole("status").textContent).toMatch(/unsaved/i);
+    expect(
+      screen.getByRole("status", { name: "Save status" }).textContent,
+    ).toMatch(/unsaved/i);
     await waitFor(
-      () => expect(screen.getByRole("status").textContent).toMatch(/^saved/i),
+      () =>
+        expect(
+          screen.getByRole("status", { name: "Save status" }).textContent,
+        ).toMatch(/^saved/i),
       { timeout: 2500 },
     );
     fireEvent.click(screen.getByRole("button", { name: "Back to projects" }));
@@ -165,7 +170,9 @@ describe("portfolio launcher and dashboard (AC-01, AC-09, AC-13)", () => {
     });
     await waitFor(
       () =>
-        expect(screen.getByRole("status").textContent).toMatch(/save failed/i),
+        expect(
+          screen.getByRole("status", { name: "Save status" }).textContent,
+        ).toMatch(/save failed/i),
       { timeout: 2500 },
     );
     expect(repo.load(saved.projectId)).toEqual(saved);
@@ -234,7 +241,9 @@ describe("portfolio launcher and dashboard (AC-01, AC-09, AC-13)", () => {
     fireEvent.change(screen.getByLabelText("Layout width"), {
       target: { value: "390" },
     });
-    expect(screen.getByRole("status").textContent).toMatch(/^saved/i);
+    expect(
+      screen.getByRole("status", { name: "Save status" }).textContent,
+    ).toMatch(/^saved/i);
     fireEvent.click(screen.getByRole("button", { name: "Back to projects" }));
     fireEvent.click(screen.getByRole("button", { name: "Open Workspace" }));
     expect(screen.getByLabelText("Layout width").value).toBe("390");

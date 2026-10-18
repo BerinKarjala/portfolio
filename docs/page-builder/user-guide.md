@@ -1,8 +1,8 @@
-# Page Builder: foundation preview
+# Page Builder: project and canvas guide
 
 Open **Projects → HTML Page Builder**. The left preview launches the workspace full screen; the right panel displays the implementation source. Use **Close** or Escape to return to the portfolio project page.
 
-Choose **New project**, enter a name, and select Blank, Portfolio, Landing, Business, Blog, Contact or Gallery. You can edit page title, description, language, favicon URL and indexing settings. Changes save about one second after you stop typing. A read-only starter layout shows the initial page; canvas tools and website export arrive in later milestones.
+Choose **New project**, enter a name, and select Blank, Portfolio, Landing, Business, Blog, Contact or Gallery. You can edit page title, description, language, favicon URL and indexing settings. Changes save about one second after you stop typing. Use Components to add elements, move handles to arrange them, and Layers to inspect or reorder them. Canvas editing is active; downloadable HTML/CSS arrives in a later milestone.
 
 The dashboard supports search, template filtering, favorites, sorting, and grid/list views. Rename and duplicate projects from their cards. Trash retains deleted projects indefinitely; restore them or explicitly delete them permanently. Browser storage usage includes Trash.
 
@@ -17,3 +17,14 @@ When another tab owns the project, settings are read-only. **Take over editing**
 Damaged or unsupported saved records appear under **Stored data needs attention**. Download their original stored data before deleting them. Import a known-good JSON backup to restore an independent project copy. Raw diagnostic recovery data is for manual recovery and is not a normal project backup.
 
 An already-open session can continue offline using local storage. Reopening the app offline is not guaranteed. Close/back actions and page-exit events try to flush pending changes, but browser/process termination can skip these events. Download backups regularly.
+
+
+Choose **Content** to rename an element or edit its initial text/link/image settings. **Layout** changes its parent, flow sizing, Flex/Grid behavior, free-form placement, z-index or visibility. Advanced rich text, styling and the full component inventory come next.
+
+Move components with a mouse, touch long press, or keyboard: focus a drag/move handle, press Space, use arrows to choose a drop target, then Space/Enter to drop. Escape cancels. Add buttons, Layers reorder controls and the **Move into** selector offer alternatives. Nest at most four levels; illegal or locked targets are blocked.
+
+Select several elements with Shift/Ctrl/Command click, or checkboxes in Layers. Use Group/Ungroup or internal Copy/Cut/Paste; shortcuts follow the same rules and leave text fields to the browser. Delete a container and choose whether to keep its children. Locked descendants protect themselves from parent operations. Undo/Redo keeps up to 50 actions for this open session and resets after reload/project switching.
+
+Free-form positions are percentages of the parent. Drag the move handle or resize corner, or enter numbers in Layout. Alt bypasses snapping; Shift preserves resize proportions. Alignment/distribution/match-size tools apply to compatible free-form siblings. For overlapping elements, use Alt/Option click, **Select layer**, breadcrumbs or Layers.
+
+Choose a viewport preset, enter a custom width, or drag the canvas edge. Zoom with the slider, Fit/100%, or Ctrl/Command wheel. Pan with Space-drag/middle-drag, or touch background gestures; pinch zoom uses two fingers. Viewport/zoom/scroll/panels/selection are restored separately from the page and do not create undo actions. On mobile, **Library / Layers** and **Inspector** open drawers.

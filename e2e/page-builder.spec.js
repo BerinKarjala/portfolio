@@ -60,7 +60,9 @@ test("template project survives autosave, reload, and JSON copy restore", async 
   await page
     .getByLabel("Page title", { exact: true })
     .fill("Saved portfolio title");
-  await expect(page.getByRole("status")).toHaveText("Saved in this browser");
+  await expect(page.getByRole("status", { name: "Save status" })).toHaveText(
+    "Saved in this browser",
+  );
   await page.getByLabel("Layout width").selectOption("390");
   await testInfo.attach("starter-layout", {
     body: await page.screenshot(),
@@ -117,12 +119,27 @@ test("takeover makes the other tab read-only and a stale tab reloads the saved r
   await second
     .getByLabel("Page title", { exact: true })
     .fill("Latest owner title");
-  await expect(second.getByRole("status")).toHaveText("Saved in this browser");
+  await expect(second.getByRole("status", { name: "Save status" })).toHaveText(
+    "Saved in this browser",
+  );
   await page.getByRole("button", { name: "Take over editing" }).click();
   await expect(page.getByLabel("Page title", { exact: true })).toHaveValue(
     "Latest owner title",
   );
   await expect(second.getByLabel("Page title", { exact: true })).toBeDisabled();
+  // Ownership changes replace the drag context; camera listeners must rebind.
+  const zoomBefore = Number(
+    await page.getByLabel("Zoom", { exact: true }).inputValue(),
+  );
+  await page.getByTestId("canvas-scroll").hover({ position: { x: 30, y: 30 } });
+  await page.keyboard.down("Control");
+  await page.mouse.wheel(0, -80);
+  await page.keyboard.up("Control");
+  await expect
+    .poll(async () =>
+      Number(await page.getByLabel("Zoom", { exact: true }).inputValue()),
+    )
+    .toBeGreaterThan(zoomBefore);
   await second.close();
 });
 
@@ -147,7 +164,7 @@ test("quota failures preserve saved bytes and provide an unsaved recovery downlo
   await page
     .getByLabel("Page title", { exact: true })
     .fill("Unsaved, recoverable title");
-  await expect(page.getByRole("status")).toHaveText(
+  await expect(page.getByRole("status", { name: "Save status" })).toHaveText(
     "Save failed · unsaved changes",
   );
   expect(
@@ -168,7 +185,9 @@ test("quota failures preserve saved bytes and provide an unsaved recovery downlo
     Storage.prototype.setItem = window.originalStorageWrite;
   });
   await page.getByRole("button", { name: "Retry save now" }).click();
-  await expect(page.getByRole("status")).toHaveText("Saved in this browser");
+  await expect(page.getByRole("status", { name: "Save status" })).toHaveText(
+    "Saved in this browser",
+  );
 });
 
 test("mobile dialogs fit the screen and Escape returns to the launch preview", async ({

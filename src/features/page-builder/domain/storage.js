@@ -4,6 +4,7 @@ export const PROJECT_PREFIX = "page-builder:project:";
 export const OWNER_PREFIX = "page-builder:owner:";
 const WORKSPACE_PREFIX = "page-builder:workspace:";
 const PREFERENCES_KEY = "page-builder:preferences";
+const PALETTE_KEY = "page-builder:palette";
 const LEASE_MS = 45000;
 
 export class StorageConflictError extends Error {
@@ -260,7 +261,29 @@ export function createRepository(storage, { now = Date.now } = {}) {
       JSON.stringify(normalizeWorkspace(value)),
     );
   }
+  function palettePreferences() {
+    try {
+      const value = JSON.parse(read(PALETTE_KEY));
+      return {
+        favorites: safeIds(value?.favorites),
+        recent: safeIds(value?.recent).slice(0, 8),
+      };
+    } catch {
+      return { favorites: [], recent: [] };
+    }
+  }
+  function savePalettePreferences(value) {
+    write(
+      PALETTE_KEY,
+      JSON.stringify({
+        favorites: safeIds(value.favorites),
+        recent: safeIds(value.recent).slice(0, 8),
+      }),
+    );
+  }
   return {
+    palettePreferences,
+    savePalettePreferences,
     list,
     load,
     create,
@@ -280,23 +303,39 @@ export function createRepository(storage, { now = Date.now } = {}) {
   };
 }
 
+function safeIds(value) {
+  return Array.isArray(value)
+    ? [
+        ...new Set(
+          value.filter(
+            (id) =>
+              typeof id === "string" &&
+              /^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$/.test(id),
+          ),
+        ),
+      ].slice(0, 10000)
+    : [];
+}
 function normalizeWorkspace(value) {
+  const number = (v, min, max, fallback) =>
+    Number.isFinite(v) && v >= min && v <= max ? v : fallback;
   return {
-    viewport: [390, 768, 1280].includes(value?.viewport)
-      ? value.viewport
-      : 1280,
-    zoom:
-      typeof value?.zoom === "number" && value.zoom >= 0.5 && value.zoom <= 2
-        ? value.zoom
-        : 1,
-    scrollTop:
-      Number.isFinite(value?.scrollTop) && value.scrollTop >= 0
-        ? value.scrollTop
-        : 0,
-    selectedId:
-      typeof value?.selectedId === "string" && value.selectedId.length <= 100
-        ? value.selectedId
-        : null,
+    viewport: number(value?.viewport, 240, 3840, 1280),
+    zoom: number(value?.zoom, 0.5, 2, 1),
+    scrollTop: number(value?.scrollTop, 0, 1000000, 0),
+    scrollLeft: number(value?.scrollLeft, 0, 1000000, 0),
+    selectedId: safeIds([value?.selectedId])[0] || null,
+    selectedIds: safeIds(value?.selectedIds || [value?.selectedId]),
+    expandedIds: safeIds(value?.expandedIds),
+    leftOpen: value?.leftOpen !== false,
+    rightOpen: value?.rightOpen !== false,
+    leftTab: value?.leftTab === "layers" ? "layers" : "palette",
+    inspectorTab: ["content", "layout", "page"].includes(value?.inspectorTab)
+      ? value.inspectorTab
+      : "page",
+    mobilePanel: ["left", "right"].includes(value?.mobilePanel)
+      ? value.mobilePanel
+      : null,
   };
 }
 
