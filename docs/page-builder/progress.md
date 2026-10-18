@@ -106,7 +106,7 @@ M2 was merged independently by the repository owner during M3 implementation. Th
 - [x] Two-file UTF-8 ZIP/CRC32, safe filename slug and individual HTML/CSS downloads
 - [x] Observed resource warnings/correction, isolated panels, critical autosave pause and saved/unsaved JSON recovery
 - [x] Detailed collection restore report, default rollback and explicit partial-retention choice
-- [x] Local **123 unit/integration tests across 19 files**, production build and **30 Chromium scenarios** passed
+- [x] Local **124 unit/integration tests across 19 files**, production build and **30 Chromium scenarios** passed
 - [x] GitHub Chromium/Firefox/WebKit verification, reviewed per-engine exported-page baselines and Netlify preview evidence
 
 TDD began with missing compiler modules; the initial six compiler/delivery tests then passed. The expanded compiler suite covers safe text/attribute/style contexts, all component semantics, rich text, IDs, deterministic classes, CSS/font/keyframe pruning, URL punctuation, hidden subtrees, breakpoint visibility, warning gates and a 250-component fixture. Integration tests cover current-input invalidation, code viewer isolation, panel retries and critical failure recovery beyond the autosave interval. Existing quota/migration/ownership and last-good-byte tests remain passing.
@@ -126,3 +126,6 @@ The 250-component CI fixture observed open/preview times of Chromium **1467/269m
 Canvas tools are implemented in M2, content/design systems in M3, and compiler-backed preview/export plus detailed recovery reports in M4. The editing canvas remains an approximation; final preview and downloads share the compiler. The current schema version 3 rejects unsupported component/style/master/preset data. M1 schema version 1, M2 version 2 and the documented unreleased v0 fixture migrate through validated in-memory transformations.
 
 Browser storage revision checks have no atomic cross-tab compare-and-swap and remain best effort. Project input is bounded to 4 MiB; backup files to 16 MiB. The 3 MiB storage warning estimates project records, not the browser's actual quota. Calibrated cross-browser visual/performance baselines, manual mobile/assistive-technology checks, all 130 decisions and AC-01–AC-16 remain release gates. No final release approval is implied.
+
+
+Final URL-resolution regression: the browser interprets `https:example.com/path` relative to an existing HTTPS host, although `new URL(value)` without a base treats it as an absolute destination. The shared validator now requires an explicit HTTPS authority (`https://...`), retaining approved fragments/mailto/tel for links. A new regression failed before the fix and passed afterward; compiler cases cover links, forms and embeds. The local final suite is **124 tests across 19 files**, with a passing production build. Earlier 123-test CI evidence above predates this single added test; final-head CI and deployment status are linked from [PR #232 checks](https://github.com/BerinKarjala/portfolio/pull/232/checks). Ambiguous stored/imported URLs are rejected without rewriting their original record bytes.

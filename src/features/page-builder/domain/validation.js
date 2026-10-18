@@ -30,6 +30,9 @@ export function safeUrl(value, { link = false, empty = false } = {}) {
   if (link && /^#[A-Za-z][\w:.-]*$/.test(value)) return true;
   if (link && /^mailto:[^@?]+@[^@?]+\.[^@?]+$/.test(value)) return true;
   if (link && /^tel:\+?[\d()-]+$/.test(value)) return true;
+  // HTTPS spellings without an authority can resolve against the current host.
+  // Require an explicit authority so validation and hosted-page navigation agree.
+  if (!/^https:\/\/[^/]/i.test(value)) return false;
   try {
     const u = new URL(value);
     return u.protocol === "https:" && !u.username && !u.password;

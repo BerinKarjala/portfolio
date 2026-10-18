@@ -81,6 +81,21 @@ describe("standalone compiler", () => {
       (p) =>
         (p.page.elements[p.page.rootElementIds[0]].props.onclick = "alert(1)"),
       (p) => (p.globalStyles.backgroundImage = "javascript:alert(1)"),
+      (p) => {
+        Object.values(p.page.elements).find(
+          (e) => e.type === "link",
+        ).props.href = "https:example.com/path";
+      },
+      (p) => {
+        Object.values(p.page.elements).find(
+          (e) => e.type === "form",
+        ).props.action = "https:/example.com/path";
+      },
+      (p) => {
+        Object.values(p.page.elements).find(
+          (e) => e.type === "embed",
+        ).props.url = "https:www.youtube.com/embed/dQw4w9WgXcQ";
+      },
       (p) => p.page.rootElementIds.push(p.page.rootElementIds[0]),
       (p) => {
         const e = Object.values(p.page.elements);
