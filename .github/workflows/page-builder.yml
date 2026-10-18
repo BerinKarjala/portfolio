@@ -55,3 +55,13 @@ jobs:
             e2e/page-builder-export.spec.js-snapshots/
             test-results/**/compiled-page-*-actual.png
           retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: page-builder-touch-failure
+          path: |
+            test-results/page-builder-canvas-touch-*/error-context.md
+            test-results/page-builder-canvas-touch-*/test-failed-*.png
+            test-results/page-builder-canvas-touch-*/trace.zip
+          if-no-files-found: ignore
+          retention-days: 14
