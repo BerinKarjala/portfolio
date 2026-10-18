@@ -32,7 +32,7 @@
 
 ## HTML Page Builder (in development)
 
-The portfolio project at `/projects/page-builder` uses the existing project layout: clickable launch preview on the left and implementation source on the right. The full-screen workspace supports browser-local project management, an interactive Flex/Grid/free-form canvas, the full component palette, rich text, style presets, reusable linked components, effects, Layers, locks, grouping, clipboard, undo/redo, page settings, autosave, JSON backups and recovery. HTML/CSS export and the compiled sandbox preview follow in M4. See the [M3 content and design guide](docs/page-builder/m3-design.md).
+The portfolio project at `/projects/page-builder` uses the existing project layout: clickable launch preview on the left and implementation source on the right. The full-screen workspace supports browser-local project management, an interactive Flex/Grid/free-form canvas, the full component palette, rich text, style presets, reusable linked components, effects, Layers, locks, grouping, clipboard, undo/redo, page settings, autosave, JSON backups and recovery. Milestone 4 adds compiler-backed sandbox/device previews, read-only generated code, critical/warning preflight, a two-file HTML/CSS ZIP, individual downloads and detailed recovery reports. See the [export and preview contracts](docs/page-builder/m4-export.md). Final release acceptance remains M5.
 
 See [requirements and milestones](docs/page-builder/progress.md), the [user guide](docs/page-builder/user-guide.md), [developer guide](docs/page-builder/developer-guide.md), and [130-decision implementation trace](docs/page-builder/requirements-trace.md).
 

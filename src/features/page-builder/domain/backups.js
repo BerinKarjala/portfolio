@@ -114,11 +114,17 @@ export function uniqueName(name, projects) {
   return candidate;
 }
 
-export function restoreBackup(repository, entries) {
-  const existing = [...repository.list().projects];
-  const created = [];
-  try {
-    for (const entry of entries) {
+/** Default restore is transactional best effort. Partial retention requires an explicit choice. */
+export function restoreBackupDetailed(
+  repository,
+  entries,
+  { allowPartial = false } = {},
+) {
+  const existing = [...repository.list().projects],
+    created = [],
+    report = [];
+  for (const entry of entries) {
+    try {
       if (entry.error || !entry.project)
         throw new Error(
           "An invalid project was selected. Skip invalid entries before restoring.",
@@ -132,21 +138,46 @@ export function restoreBackup(repository, entries) {
       repository.create(copy);
       created.push(copy);
       existing.push(copy);
-    }
-    return created;
-  } catch (error) {
-    const retained = [];
-    for (const project of created.reverse()) {
-      try {
-        repository.rollbackCreated(project);
-      } catch {
-        retained.push(project.name);
+      report.push({
+        index: entry.index,
+        name: copy.name,
+        status: "restored",
+        projectId: copy.projectId,
+        message: "Restored as an independent copy.",
+      });
+    } catch (error) {
+      report.push({
+        index: entry.index,
+        name: entry.project?.name || "Invalid project",
+        status: "failed",
+        message: error.message,
+      });
+      if (allowPartial) continue;
+      const retained = [];
+      for (const copy of [...created].reverse()) {
+        const row = report.find((r) => r.projectId === copy.projectId);
+        try {
+          repository.rollbackCreated(copy);
+          row.status = "rolled-back";
+          row.message = "New copy removed after batch failure.";
+        } catch {
+          retained.push(copy.name);
+          row.status = "retained";
+          row.message =
+            "Rollback failed; this new copy remains in the dashboard.";
+        }
       }
+      const failure = new Error(
+        retained.length
+          ? `Restore stopped: ${error.message} Could not remove these new copies: ${retained.join(", ")}. Review the dashboard.`
+          : `Restore failed; newly added records were rolled back. ${error.message}`,
+      );
+      failure.report = report;
+      throw failure;
     }
-    throw new Error(
-      retained.length
-        ? `Restore stopped: ${error.message} Could not remove these new copies: ${retained.join(", ")}. Review the dashboard.`
-        : `Restore failed; newly added records were rolled back. ${error.message}`,
-    );
   }
+  return { created, report };
+}
+export function restoreBackup(repository, entries) {
+  return restoreBackupDetailed(repository, entries).created;
 }

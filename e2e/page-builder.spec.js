@@ -93,6 +93,7 @@ test("template project survives autosave, reload, and JSON copy restore", async 
   const review = page.getByRole("dialog", { name: "Review JSON restore" });
   await expect(review.getByText("Identical saved record")).toBeVisible();
   await review.getByRole("button", { name: "Restore 1 copy" }).click();
+  await page.getByRole("button", { name: "Close Restore report" }).click();
   await expect(
     page.getByRole("button", { name: "Open Portfolio (2)", exact: true }),
   ).toBeVisible();

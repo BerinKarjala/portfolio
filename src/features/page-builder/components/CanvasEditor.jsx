@@ -25,6 +25,7 @@ import {
 import { clamp, rectToGeometry } from "../domain/geometry";
 import useCanvasCamera, { isTextInput } from "../hooks/useCanvasCamera";
 import useCanvasPointer from "../hooks/useCanvasPointer";
+import ErrorBoundary from "./ErrorBoundary";
 import CanvasInspector, { CommitField } from "./CanvasInspector";
 import { Layers, Palette } from "./CanvasLibrary";
 import { CanvasNode, DropZone } from "./CanvasTree";
@@ -391,6 +392,7 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
     widthGesture.current = {
       x: event.clientX,
       width: workspace.viewport,
+      zoom: workspace.zoom,
       target: event.currentTarget,
       pointerId: event.pointerId,
     };
@@ -404,7 +406,7 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
     update({
       viewport: Math.round(
         clamp(
-          gesture.width + (event.clientX - gesture.x) / workspace.zoom,
+          gesture.width + (event.clientX - gesture.x) / gesture.zoom,
           240,
           3840,
         ),
@@ -414,6 +416,8 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
   function endWidth(event, cancel = false) {
     const gesture = widthGesture.current;
     if (!gesture || (event && event.pointerId !== gesture.pointerId)) return;
+    // Engines may coalesce the last move. Commit the release coordinate before ending capture.
+    if (!cancel && event) moveWidth(event);
     widthGesture.current = null;
     if (cancel) update({ viewport: gesture.width });
     try {
@@ -741,23 +745,25 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
             </button>
           </div>
           <div className="pb-library-content">
-            {workspace.leftTab === "reusable" ? (
-              <ReusableControls library />
-            ) : workspace.leftTab === "palette" ? (
-              <Palette
-                {...{ add, parentId, insertion, setInsertion, recentVersion }}
-              />
-            ) : (
-              <Layers
-                expanded={workspace.expandedIds}
-                setExpanded={(expandedIds) => update({ expandedIds })}
-                reveal={reveal}
-                inspect={() => {
-                  if (window.matchMedia?.("(max-width: 760px)").matches)
-                    update({ mobilePanel: "right", rightOpen: true });
-                }}
-              />
-            )}
+            <ErrorBoundary panelName="Library">
+              {workspace.leftTab === "reusable" ? (
+                <ReusableControls library />
+              ) : workspace.leftTab === "palette" ? (
+                <Palette
+                  {...{ add, parentId, insertion, setInsertion, recentVersion }}
+                />
+              ) : (
+                <Layers
+                  expanded={workspace.expandedIds}
+                  setExpanded={(expandedIds) => update({ expandedIds })}
+                  reveal={reveal}
+                  inspect={() => {
+                    if (window.matchMedia?.("(max-width: 760px)").matches)
+                      update({ mobilePanel: "right", rightOpen: true });
+                  }}
+                />
+              )}
+            </ErrorBoundary>
           </div>
         </aside>
         <section className="pb-canvas-area" aria-label="Page canvas">
@@ -980,11 +986,13 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
           >
             Close inspector
           </button>
-          <CanvasInspector
-            tab={workspace.inspectorTab}
-            setTab={(inspectorTab) => update({ inspectorTab })}
-            {...{ placements, requestDelete }}
-          />
+          <ErrorBoundary panelName="Inspector">
+            <CanvasInspector
+              tab={workspace.inspectorTab}
+              setTab={(inspectorTab) => update({ inspectorTab })}
+              {...{ placements, requestDelete }}
+            />
+          </ErrorBoundary>
         </aside>
       </div>
       {Object.keys(project.page.elements).length > 200 && (

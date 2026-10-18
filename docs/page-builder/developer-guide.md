@@ -14,7 +14,7 @@ The gallery prefers a matching Sanity project document and supplies a bundled ca
 - `domain/templates.js` contains immutable blank plus six starter definitions. `templateDesign.js` composes the six polished samples with editable components and original curated SVG placeholders.
 - `domain/storage.js` is the only durable-data adapter. Inject a Storage-compatible object and clock for deterministic tests.
 - `domain/backups.js` produces versioned project/collection JSON, previews duplicates and invalid entries, and restores selected entries as independent copies. Naming collisions receive numbered suffixes. Newly created records are rolled back after batch failures if they have not changed; retained copies are identified if rollback fails.
-- `browser/files.js` contains browser-only file operations. Preview text uses React escaping; no user HTML is inserted into the DOM.
+- `browser/files.js` contains browser-only file operations. Editor text uses React escaping. Compiled HTML comes only from a validated, compiler-owned AST; raw author markup is never accepted.
 
 ## Storage contracts
 
@@ -52,4 +52,13 @@ npm run test:e2e
 
 The browser tests use the production build through `vite preview`, desktop and 390px layouts, real downloads, reload recovery, quota failure injection, and two tabs sharing origin storage. Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` only when intentionally testing an installed Chromium binary. HTML reports, screenshots and failure traces live in ignored `playwright-report/` and `test-results/`; CI uploads them as artifacts. Two reviewed Chromium canvas regression baselines are committed; ordinary runs compare them without update mode. Other screenshot attachments are review evidence, not approved release screenshots. Automated axe scans cover the editor shell and rich-text tools; user-authored canvas styling is excluded. M5 adds calibrated visual/performance gates and manual mobile/assistive-technology evidence.
 
-The editing canvas is interactive and does not claim export parity: M4 replaces final Preview with the shared HTML/CSS compiler in a sandboxed iframe. No HTML/CSS export is offered before that compiler is implemented.
+The editing canvas is interactive and approximate. M4's final Preview and export share the same HTML AST and stylesheet. The outer preview iframe has an empty sandbox and restrictive CSP. Only isolation-specific navigation/form/style-link transformations distinguish `srcdoc` from the downloadable document. See [compiler, preflight, ZIP and recovery contracts](m4-export.md).
+
+`exporters/` is pure and does not access browser storage. `ExportWorkspace` memoizes/debounces compilation but reruns preflight before every download. Critical diagnostics block output; current warnings require acknowledgement. Generated code uses escaped React tokens, never HTML injection. Local observed media failures carry an element ID/URL for correction but are excluded from persistence and sanitized diagnostic downloads.
+
+Collection restore now exposes `restoreBackupDetailed`, returning per-entry results. Atomic-by-default best-effort rollback retains explicit reporting if concurrent changes prevent deletion. Partial success requires the user's checkbox choice. `restoreBackup` remains the array-returning compatibility wrapper. Error boundaries isolate Library/Inspector failures; the workspace boundary pauses autosave after a critical render failure and retains JSON recovery.
+
+M4 adds separate mobile/tablet/desktop exported-page snapshots in all three browser engines. Preview/export parity compares computed styles and document-space bounds for every compiled element in the same engine/viewport. Preview images and per-engine performance measurements are retained as artifacts. Raster origins differ between frames and top-level pages; screenshot evidence does not claim byte-identical rasterization. The 250-component fixture reports load/preview timings and output/DOM size; calibrated release budgets and real-device/AT validation remain M5.
+
+
+Visual comparisons use the committed Ubuntu 24.04 CI-native images with lockfile browser versions. The fixture uses native system controls/fonts, so a different local OS/font configuration or `PLAYWRIGHT_CHROMIUM_EXECUTABLE` can legitimately produce a different image. Do not update these baselines merely to make another local environment pass. M5 still expands calibrated fixture/font/state coverage. CI publishes a separate small `page-builder-export-baseline-review` artifact alongside the complete browser report for reviewing images before updates.

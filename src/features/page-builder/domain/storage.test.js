@@ -206,3 +206,52 @@ describe("portable backups (AC-08, AC-09)", () => {
     expect(repo.list().projects).toHaveLength(0);
   });
 });
+
+describe("M4 collection recovery", () => {
+  it("reports partial success only with explicit consent and preserves originals", async () => {
+    const { restoreBackupDetailed } = await import("./backups");
+    const original = repo.create(createProject({ name: "Original" }));
+    const entries = inspectBackup(
+      createBackup([
+        createProject({ name: "First" }),
+        createProject({ name: "Second" }),
+      ]),
+      repo.list().projects,
+    ).entries;
+    const create = repo.create.bind(repo);
+    repo.create = (p) => {
+      if (p.name === "Second") throw new Error("Quota exceeded");
+      return create(p);
+    };
+    const result = restoreBackupDetailed(repo, entries, { allowPartial: true });
+    expect(result.report.map((r) => r.status)).toEqual(["restored", "failed"]);
+    expect(repo.list().projects).toHaveLength(2);
+    expect(repo.load(original.projectId)).toEqual(original);
+  });
+  it("reports a retained copy if a concurrent edit prevents rollback", async () => {
+    const { restoreBackupDetailed } = await import("./backups");
+    const entries = inspectBackup(
+      createBackup([
+        createProject({ name: "First" }),
+        createProject({ name: "Second" }),
+      ]),
+      [],
+    ).entries;
+    const create = repo.create.bind(repo);
+    repo.create = (p) => {
+      if (p.name === "Second") throw new Error("Quota exceeded");
+      return create(p);
+    };
+    repo.rollbackCreated = () => {
+      throw new Error("Concurrent edit");
+    };
+    try {
+      restoreBackupDetailed(repo, entries);
+      expect.fail("Expected batch failure");
+    } catch (error) {
+      expect(error.report.map((r) => r.status)).toEqual(["retained", "failed"]);
+      expect(error.message).toMatch(/could not remove/i);
+    }
+    expect(repo.list().projects).toHaveLength(1);
+  });
+});

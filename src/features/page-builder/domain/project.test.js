@@ -182,3 +182,21 @@ describe("project model (AC-01, AC-08, AC-09)", () => {
     expect(JSON.stringify(old)).toBe(raw);
   });
 });
+
+it("requires explicit absolute HTTPS destinations so browser resolution cannot change the validated host", async () => {
+  const { safeUrl } = await import("./validation");
+  for (const url of [
+    "https:example.com/path",
+    "https:/example.com/path",
+    "https:////example.com/path",
+  ])
+    expect(safeUrl(url)).toBe(false);
+  for (const url of ["https://example.com/path", "HTTPS://example.com/path"]) {
+    expect(safeUrl(url)).toBe(true);
+    expect(new URL(url, "https://portfolio.example/page").href).toBe(
+      new URL(url).href,
+    );
+  }
+  for (const url of ["#intro", "mailto:hello@example.com", "tel:+123456789"])
+    expect(safeUrl(url, { link: true })).toBe(true);
+});

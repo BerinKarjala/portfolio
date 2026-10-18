@@ -2,7 +2,7 @@
 
 Open **Projects → HTML Page Builder**. The left preview launches the workspace full screen; the right panel displays the implementation source. Use **Close** or Escape to return to the portfolio project page.
 
-Choose **New project**, enter a name, and select Blank, Portfolio, Landing, Business, Blog, Contact or Gallery. You can edit page title, description, language, favicon URL and indexing settings. Changes save about one second after you stop typing. Use Components to add elements, move handles to arrange them, and Layers to inspect or reorder them. Canvas editing is active; downloadable HTML/CSS arrives in a later milestone.
+Choose **New project**, enter a name, and select Blank, Portfolio, Landing, Business, Blog, Contact or Gallery. You can edit page title, description, language, favicon URL and indexing settings. Changes save about one second after you stop typing. Use Components to add elements, move handles to arrange them, and Layers to inspect or reorder them. Use **Preview selected template** before creating a project, or **Preview and export** from the editor to review and download its webpage.
 
 The dashboard supports search, template filtering, favorites, sorting, and grid/list views. Rename and duplicate projects from their cards. Trash retains deleted projects indefinitely; restore them or explicitly delete them permanently. Browser storage usage includes Trash.
 
@@ -39,3 +39,14 @@ In **Style**, use categories for typography, sizing/spacing, appearance and tran
 **Make reusable component** turns a selected tree into a linked master. Open **Reusable** to insert it again. **Edit master** from any instance updates shared content/styles everywhere; placement, sizing, visibility and locks remain local. **Exit master editing** returns to instance controls. **Detach component** makes it independent. Removing a used master asks to detach its instances while keeping their appearance. The Reusable panel can copy another saved project's master and style dependencies as an independent definition.
 
 **Effects** configures animations, triggers, timing, repetition and direction. Inherit uses the global page animation; None disables it. Pause/Replay affect this editor session. Reduced-motion preferences suppress animations. **Accessibility** edits labels and responsive visibility; image descriptions, form labels, media captions and table headers are in Content. Sticky containers are available in Layout, with an offset and overflow warning.
+
+
+In **Preview and export**, choose Mobile (390px), Tablet (768px), Desktop (1280px), a numeric width, or drag the resize handle. Arrow keys also resize the preview. The preview keeps its real layout width; scroll horizontally when it is wider than the panel. Section links, native menus and form controls work. External navigation and form submission are blocked; visitor entries are never saved. Some external players require capabilities that the isolated preview blocks.
+
+Review **Preflight** before downloading. Critical errors block all output. Use **Show affected element** to select and inspect an affected node, or **Back to editor** to fix page settings. Warnings require the **I reviewed the warnings and want to export** checkbox. A warning about an external background or remote resource does not establish whether that resource works for every visitor. Review responsive appearance, accessibility and URLs yourself.
+
+**Download website ZIP** contains exactly `index.html` and `styles.css`; its filename comes from the project name. **Individual files** downloads the same files separately. Keep both files in one folder. The webpage uses native HTML/CSS with no generated JavaScript. External images, fonts, media, embeds and form endpoints still depend on their providers. HTML and CSS tabs show the final exported code with line numbers and copy; use **Select code manually** if clipboard access is unavailable. Use a JSON backup to reopen and edit your project later.
+
+Collection restores show a downloadable per-project **Restore report**. The default is to roll back newly added copies after a batch failure where possible. Choose **Keep successful copies if some restores fail** only when you want partial recovery. A report identifies any copy that could not be rolled back. Existing saved projects are preserved in either mode.
+
+If the Library or Inspector fails, retry that panel. A critical canvas failure pauses saving and offers stored-data and unsaved JSON recovery before restarting. **Copy diagnostics** and **Download diagnostics** in export review contain diagnostic codes only, without your page content or URLs.
