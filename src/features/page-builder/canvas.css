@@ -965,3 +965,16 @@
 .pb-root .pb-canvas-node[data-rich-editing="true"] > .pb-resize-handle {
   display: none;
 }
+@media (max-width: 760px) {
+  .pb-root .pb-mobile-close {
+    position: sticky;
+    top: 0;
+    z-index: 7;
+    background: var(--pb-panel);
+    min-height: 40px;
+  }
+  .pb-root .pb-canvas-left .pb-inspector-tabs,
+  .pb-root .pb-canvas-right .pb-inspector-tabs {
+    top: 48px;
+  }
+}

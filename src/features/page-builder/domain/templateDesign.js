@@ -16,13 +16,15 @@ export function polishTemplate(project, template, add) {
     e.htmlId = ["intro", "work", "contact"][i];
     e.styles.overrides = {
       ...e.styles.overrides,
-      padding: "3rem",
+      padding: "2rem",
       ...(i > 0
         ? { backgroundColor: i % 2 ? "#f1f4ef" : "#ffffff", color: "#173d2d" }
         : {}),
     };
     for (const child of e.children) {
       const n = es[child];
+      if (n.type === "heading" && n.props.level === 1)
+        n.styles.overrides.fontSize = "2.5rem";
       if (n.type === "paragraph" && n.styles.overrides.fontSize === "0.75rem")
         n.styles.overrides = {
           ...n.styles.overrides,

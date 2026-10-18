@@ -485,7 +485,7 @@ test("all six starter designs render at mobile width with native navigation", as
     "Gallery",
   ]) {
     const page = await browser.newPage({
-      viewport: { width: 1440, height: 1000 },
+      viewport: { width: 1440, height: 1400 },
       baseURL: "http://127.0.0.1:4173",
     });
     try {

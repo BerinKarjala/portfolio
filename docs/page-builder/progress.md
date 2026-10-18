@@ -1,6 +1,6 @@
 # Page Builder implementation evidence
 
-M3 branch: `codex/page-builder-m3`. M1/M2 branch: `codex/page-builder`. Requirements baseline: PR #226. M1 landed in [PR #227](https://github.com/BerinKarjala/portfolio/pull/227). M2 landed in [PR #228](https://github.com/BerinKarjala/portfolio/pull/228), with local, GitHub CI and Netlify preview gates passed. M3 implementation and local verification are underway; M4–M5 remain pending. No implementation merge or production release has been performed by Codex.
+M3 branch: `codex/page-builder-m3`. M1/M2 branch: `codex/page-builder`. Requirements baseline: PR #226. M1 landed in [PR #227](https://github.com/BerinKarjala/portfolio/pull/227). M2 landed in [PR #228](https://github.com/BerinKarjala/portfolio/pull/228), with local, GitHub CI and Netlify preview gates passed. M3 implementation/local verification is complete in [draft PR #229](https://github.com/BerinKarjala/portfolio/pull/229); remote gates are in progress; M4–M5 remain pending. No implementation merge or production release has been performed by Codex.
 
 The approved October 18 launch layout overrides the original direct-to-editor route: portfolio project page, clickable preview on the left, existing source viewer on the right, full-viewport workspace after activation.
 
@@ -8,7 +8,7 @@ The approved October 18 launch layout overrides the original direct-to-editor ro
 
 - [x] M1 — foundation and persistence: local, GitHub CI and Netlify preview gates passed
 - [x] M2 — canvas and structural editing: local, GitHub CI and Netlify preview gates passed
-- [ ] M3 — content and design systems: implemented; final local/CI/preview gates in progress
+- [ ] M3 — content and design systems: implementation/local checks complete; CI/preview gate in progress
 - [ ] M4 — export, preview, validation and resilience
 - [ ] M5 — cross-browser evidence, teaching documentation and release
 
@@ -70,8 +70,12 @@ The browser matrix includes a CDP touchscreen case and representative visual-bas
 - [x] Global/element effects, triggers/timing/repeats/direction, session pause/replay and reduced motion
 - [x] Six polished editable template compositions with original SVG placeholders
 - [x] Schema v3 migration, canonical graph history, ownership and last-good-save protections
-- [ ] Final local unit/integration/browser checks, refreshed visual comparison and accessible workflow review
+- [x] Final local unit/integration/browser checks, refreshed visual comparison and accessible workflow review
 - [ ] M3 GitHub Chromium/Firefox/WebKit verification and Netlify Deploy Preview
+
+Local M3 verification on Node 22.22.2/npm 10.9.4: **102 tests across 16 files passed**; production build passed; the full **23-case Chromium suite passed**, including the seven M3 workflows. Final mobile heading/drawer refinements then passed all seven M3 workflows plus the existing mobile insertion/dialog cases and ordinary visual comparison. Two refreshed structured/Grid images, desktop rich editing, mobile inspector and all six mobile template heroes were visually reviewed. Axe scans passed for the desktop/mobile shell and the rich editing controls; new browser cases report no unhandled page errors.
+
+The first lazy-workspace unit assertion now allows five seconds for test-runtime compilation/import; ordinary behavior assertions remain unchanged. The only new packages are dev-only `@axe-core/playwright` 4.14.0 and `axe-core`; the Node >=22.12 peer/runtime contract matches this repository. No existing dependency versions changed. All 130 requirement rows remain present with selected options preserved.
 
 M2 was merged independently by the repository owner during M3 implementation. M3 is isolated on `codex/page-builder-m3` from that exact main baseline. See [M3 contracts](m3-design.md). M3 browser workflows also fail on unhandled page errors; scoped axe scans cover the desktop/mobile editor and text tools. External page designs, physical device and screen-reader review remain release gates.
 
