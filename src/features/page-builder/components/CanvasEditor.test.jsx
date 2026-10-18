@@ -1,7 +1,7 @@
 /* @vitest-environment jsdom */
 import { useEffect } from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import BuilderProvider, { useBuilder } from "../state/BuilderProvider";
 import { createProject } from "../domain/project";
 import { createRepository } from "../domain/storage";
@@ -30,7 +30,10 @@ beforeEach(() => {
   createRepository(localStorage).create(p);
   id = p.projectId;
 });
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 describe("canvas controls and non-pointer alternatives", () => {
   it("inserts into the selected container, auto-selects content, and undoes/redoes one structural command", () => {
     start();
@@ -78,4 +81,39 @@ describe("canvas controls and non-pointer alternatives", () => {
     fireEvent.keyDown(document.body, { key: "v", ctrlKey: true });
     expect(screen.getAllByTestId("canvas-heading")).toHaveLength(2);
   });
+});
+
+it("commits the released canvas-width coordinate even without its final move event and rolls back cancellation", () => {
+  vi.stubGlobal(
+    "PointerEvent",
+    class extends MouseEvent {
+      constructor(type, options = {}) {
+        super(type, options);
+        this.pointerId = options.pointerId ?? 1;
+      }
+    },
+  );
+  start();
+  const handle = screen.getByRole("button", {
+    name: "Resize canvas width",
+    exact: true,
+  });
+  handle.setPointerCapture = () => {};
+  handle.releasePointerCapture = () => {};
+  const field = screen.getByLabelText("Custom canvas width", { exact: true });
+  const before = Number(field.value),
+    zoom = Number(screen.getByLabelText("Zoom", { exact: true }).value) / 100;
+  fireEvent.pointerDown(handle, { button: 0, clientX: 100, pointerId: 1 });
+  fireEvent.pointerMove(handle, { clientX: 120, pointerId: 1 });
+  expect(Number(field.value)).toBe(Math.round(before + 20 / zoom));
+  fireEvent.pointerUp(handle, { clientX: 130, pointerId: 1 });
+  expect(Number(field.value)).toBe(Math.round(before + 30 / zoom));
+  const committed = Number(field.value);
+  fireEvent.pointerDown(handle, { button: 0, clientX: 100, pointerId: 2 });
+  fireEvent.pointerMove(handle, { clientX: 160, pointerId: 2 });
+  fireEvent.pointerCancel(handle, { clientX: 160, pointerId: 2 });
+  expect(Number(field.value)).toBe(committed);
+  expect(
+    screen.getByRole("button", { name: "Undo", exact: true }).disabled,
+  ).toBe(true);
 });

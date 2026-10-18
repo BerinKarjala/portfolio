@@ -392,6 +392,7 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
     widthGesture.current = {
       x: event.clientX,
       width: workspace.viewport,
+      zoom: workspace.zoom,
       target: event.currentTarget,
       pointerId: event.pointerId,
     };
@@ -405,7 +406,7 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
     update({
       viewport: Math.round(
         clamp(
-          gesture.width + (event.clientX - gesture.x) / workspace.zoom,
+          gesture.width + (event.clientX - gesture.x) / gesture.zoom,
           240,
           3840,
         ),
@@ -415,6 +416,8 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
   function endWidth(event, cancel = false) {
     const gesture = widthGesture.current;
     if (!gesture || (event && event.pointerId !== gesture.pointerId)) return;
+    // Engines may coalesce the last move. Commit the release coordinate before ending capture.
+    if (!cancel && event) moveWidth(event);
     widthGesture.current = null;
     if (cancel) update({ viewport: gesture.width });
     try {

@@ -197,6 +197,22 @@ test("sandbox preview blocks external navigation, submissions and parent access 
   await grip.focus();
   await grip.press("ArrowRight");
   await expect(page.getByLabel("Preview width")).toHaveValue("400");
+  await grip.scrollIntoViewIfNeeded();
+  const box = await grip.boundingBox();
+  await page.mouse.move(box.x + 20, box.y + 10);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 50, box.y + 10, { steps: 6 });
+  await page.mouse.up();
+  await expect(page.getByLabel("Preview width")).toHaveValue("430");
+  await page.mouse.move(box.x + 20, box.y + 10);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 70, box.y + 10, { steps: 3 });
+  await page.keyboard.press("Escape");
+  await page.mouse.up();
+  await expect(page.getByLabel("Preview width")).toHaveValue("430");
+  await expect(
+    page.getByRole("heading", { name: "Preview and export", exact: true }),
+  ).toBeVisible();
 });
 
 test("ZIP and individual downloads retain native endpoints and render identically to the preview at all device widths", async ({

@@ -104,14 +104,14 @@ M2 was merged independently by the repository owner during M3 implementation. Th
 - [x] Two-file UTF-8 ZIP/CRC32, safe filename slug and individual HTML/CSS downloads
 - [x] Observed resource warnings/correction, isolated panels, critical autosave pause and saved/unsaved JSON recovery
 - [x] Detailed collection restore report, default rollback and explicit partial-retention choice
-- [x] Local **121 unit/integration tests across 19 files**, production build and **30 Chromium scenarios** passed
+- [x] Local **122 unit/integration tests across 19 files**, production build and **30 Chromium scenarios** passed
 - [ ] Final GitHub Chromium/Firefox/WebKit verification, reviewed per-engine exported-page baselines and Netlify preview evidence
 
 TDD began with missing compiler modules; the initial six compiler/delivery tests then passed. The expanded compiler suite covers safe text/attribute/style contexts, all component semantics, rich text, IDs, deterministic classes, CSS/font/keyframe pruning, URL punctuation, hidden subtrees, breakpoint visibility, warning gates and a 250-component fixture. Integration tests cover current-input invalidation, code viewer isolation, panel retries and critical failure recovery beyond the autosave interval. Existing quota/migration/ownership and last-good-byte tests remain passing.
 
 Seven new browser cases run in each engine. They cover sandbox parent/navigation/form isolation, native menu resizing, no persisted visitor values, ZIP names/CRCs and individual-file equivalence, every compiled node's preview/export computed layout at 390/768/1280px, warning navigation, no-write template preview, desktop/mobile axe, damaged records/restore reports and observable large-page timings. Existing game/gallery/canvas/rich-text/storage workflows are retained. The four intentional skips remain limited to the two Chromium-specific CDP/canvas cases on the other engines.
 
-M4 adds three exported-page baselines per engine. These are implementation regression evidence, not user-approved final design screenshots. Details: [M4 contracts](m4-export.md). Remote run/baseline evidence will be added after verification.
+M4 adds three exported-page baselines per engine. These are implementation regression evidence, not user-approved final design screenshots. Details: [M4 contracts](m4-export.md). Baseline acquisition [run 39108980299](https://github.com/BerinKarjala/portfolio/actions/runs/39108980299) verified the full interaction matrix and produced images for review. Its three failures were the expected exported-page baseline comparisons/initialization. All nine actual CI images were visually reviewed and committed; local system-font rasterization differs, so these CI-native images are canonical. The runner is fixed to Ubuntu 24.04 and browser versions come from the lockfile. The same run exposed a WebKit width-resize flake (passed on retry): the release coordinate was not committed when the final move was coalesced. The fix snapshots gesture zoom, applies the pointer-up coordinate and retains cancellation rollback; a regression test verifies all three behaviors without creating content history. Final ordinary CI must pass after this baseline/fix commit.
 
 ## Known limits and release gates
 

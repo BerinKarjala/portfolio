@@ -9,6 +9,10 @@ export default function SandboxPreview({
   const drag = useRef(null);
   const source = useMemo(() => previewDocument(compiled), [compiled]);
   const clamp = (value) => Math.max(320, Math.min(1920, Math.round(value)));
+  function cancelDrag() {
+    if (drag.current) setWidth(drag.current.width);
+    drag.current = null;
+  }
   return (
     <section className="pb-sandbox" aria-label={title}>
       <div className="pb-preview-toolbar">
@@ -70,6 +74,11 @@ export default function SandboxPreview({
         aria-valuenow={width}
         tabIndex={0}
         onKeyDown={(e) => {
+          if (e.key === "Escape" && drag.current) {
+            e.preventDefault();
+            cancelDrag();
+            return;
+          }
           if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) {
             e.preventDefault();
             setWidth(
@@ -82,22 +91,27 @@ export default function SandboxPreview({
           }
         }}
         onPointerDown={(e) => {
-          drag.current = { x: e.clientX, width };
+          if (e.button !== 0 || drag.current) return;
+          e.preventDefault();
+          e.currentTarget.focus({ preventScroll: true });
+          drag.current = { x: e.clientX, width, pointerId: e.pointerId };
           e.currentTarget.setPointerCapture(e.pointerId);
         }}
         onPointerMove={(e) => {
-          if (drag.current)
+          if (drag.current && drag.current.pointerId === e.pointerId) {
+            e.preventDefault();
             setWidth(clamp(drag.current.width + (e.clientX - drag.current.x)));
+          }
         }}
-        onPointerUp={() => {
-          drag.current = null;
+        onPointerUp={(e) => {
+          const d = drag.current;
+          if (d && d.pointerId === e.pointerId) {
+            drag.current = null;
+            setWidth(clamp(d.width + e.clientX - d.x));
+          }
         }}
-        onPointerCancel={() => {
-          drag.current = null;
-        }}
-        onLostPointerCapture={() => {
-          drag.current = null;
-        }}
+        onPointerCancel={cancelDrag}
+        onLostPointerCapture={cancelDrag}
       >
         ↔ Drag or use arrow keys to resize
       </div>
