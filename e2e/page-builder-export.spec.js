@@ -193,6 +193,19 @@ test("sandbox preview blocks external navigation, submissions and parent access 
     frame.getByRole("link", { name: "Menu destination" }),
   ).toBeVisible();
   await page.getByLabel("Preview device").selectOption("390");
+  // Narrow containers retain native keyboard scrolling within the table.
+  await frame.locator(".pb-table").evaluate((e) => {
+    e.style.width = "160px";
+  });
+  const tableScroll = frame.getByRole("region", {
+    name: "A useful comparison",
+    exact: true,
+  });
+  await tableScroll.focus();
+  await tableScroll.press("ArrowRight");
+  await expect
+    .poll(() => tableScroll.evaluate((e) => e.scrollLeft))
+    .toBeGreaterThan(0);
   const grip = page.getByRole("separator", { name: "Resize preview" });
   await grip.focus();
   await grip.press("ArrowRight");

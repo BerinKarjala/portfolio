@@ -44,7 +44,7 @@ hr { border: 0; border-top: 1px solid currentColor; margin: 12px 0; }
 .pb-form input,.pb-form textarea,.pb-form select { width: 100%; font: inherit; color: #213b2d; background: #ffffffdd; border: 1px solid #94a49b; border-radius: .35rem; padding: .7rem; }
 .pb-form input[type=checkbox],.pb-form input[type=radio] { width: auto; }
 .pb-form button { align-self: flex-start; font: inherit; border: 0; cursor: pointer; background: #173f33; color: #fff; padding: .8rem 1.2rem; border-radius: .4rem; }
-.pb-table { overflow-x: auto; }
+.pb-internal-table-scroll { overflow-x: auto; width: 100%; }
 .pb-table table { border-collapse: collapse; width: 100%; min-width: 280px; }
 .pb-table th,.pb-table td { border-bottom: 1px solid #9aa79e; padding: .7em 1em; text-align: left; }
 .pb-table th { font-weight: 700; background: #b5c4ba44; }
@@ -405,17 +405,26 @@ export function compileProject(project, { observedFailures = [] } = {}) {
         return n(
           "div",
           attrs,
-          n("table", { "data-striped": String(p.striped) }, [
-            n("caption", {}, p.caption),
-            header ? n("thead", {}, row(p.rows[0], 0)) : null,
-            n(
-              "tbody",
-              {},
-              p.rows
-                .slice(header ? 1 : 0)
-                .map((cells, r) => row(cells, r + (header ? 1 : 0))),
-            ),
-          ]),
+          n(
+            "div",
+            {
+              class: "pb-internal-table-scroll",
+              role: "region",
+              "aria-label": p.caption || "Scrollable table",
+              tabindex: 0,
+            },
+            n("table", { "data-striped": String(p.striped) }, [
+              n("caption", {}, p.caption),
+              header ? n("thead", {}, row(p.rows[0], 0)) : null,
+              n(
+                "tbody",
+                {},
+                p.rows
+                  .slice(header ? 1 : 0)
+                  .map((cells, r) => row(cells, r + (header ? 1 : 0))),
+              ),
+            ]),
+          ),
         );
       }
       if (e.type === "form")
@@ -542,6 +551,7 @@ export function compileProject(project, { observedFailures = [] } = {}) {
             [".pb-image", "image"],
             [".pb-form", "form"],
             [".pb-table", "table"],
+            [".pb-internal-table-scroll", "table"],
             [".pb-gallery", "gallery"],
             [".pb-nav", "nav"],
             [".pb-embed", "embed"],

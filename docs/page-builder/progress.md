@@ -106,7 +106,7 @@ M2 was merged independently by the repository owner during M3 implementation. Th
 - [x] Two-file UTF-8 ZIP/CRC32, safe filename slug and individual HTML/CSS downloads
 - [x] Observed resource warnings/correction, isolated panels, critical autosave pause and saved/unsaved JSON recovery
 - [x] Detailed collection restore report, default rollback and explicit partial-retention choice
-- [x] Local **124 unit/integration tests across 19 files**, production build and **30 Chromium scenarios** passed
+- [x] Local **125 unit/integration tests across 19 files**, production build and **30 Chromium scenarios** passed
 - [x] GitHub Chromium/Firefox/WebKit verification, reviewed per-engine exported-page baselines and Netlify preview evidence
 
 TDD began with missing compiler modules; the initial six compiler/delivery tests then passed. The expanded compiler suite covers safe text/attribute/style contexts, all component semantics, rich text, IDs, deterministic classes, CSS/font/keyframe pruning, URL punctuation, hidden subtrees, breakpoint visibility, warning gates and a 250-component fixture. Integration tests cover current-input invalidation, code viewer isolation, panel retries and critical failure recovery beyond the autosave interval. Existing quota/migration/ownership and last-good-byte tests remain passing.
@@ -129,3 +129,6 @@ Browser storage revision checks have no atomic cross-tab compare-and-swap and re
 
 
 Final URL-resolution regression: the browser interprets `https:example.com/path` relative to an existing HTTPS host, although `new URL(value)` without a base treats it as an absolute destination. The shared validator now requires an explicit HTTPS authority (`https://...`), retaining approved fragments/mailto/tel for links. A new regression failed before the fix and passed afterward; compiler cases cover links, forms and embeds. The local final suite is **124 tests across 19 files**, with a passing production build. Earlier 123-test CI evidence above predates this single added test; final-head CI and deployment status are linked from [PR #232 checks](https://github.com/BerinKarjala/portfolio/pull/232/checks). Ambiguous stored/imported URLs are rejected without rewriting their original record bytes.
+
+
+Native table refinement: exported tables now have a separate labelled, keyboard-focusable horizontal viewport, so the element's outer overflow controls cannot accidentally disable data scrolling in a narrow container. The common browser workflow narrows a table to 160px and verifies real ArrowRight scrolling. Helper classes use a reserved internal namespace; an identity regression verifies that an imported table ID such as `scroll` cannot collide with its helper. The final local unit suite is **125 tests across 19 files**; all seven M4 Chromium workflows passed for functional checks (`--ignore-snapshots` locally because the reviewed visual baseline uses CI fonts). CI continues to compare all nine images normally. The URL-only [run 39110904627](https://github.com/BerinKarjala/portfolio/actions/runs/39110904627) also passed before this final table refinement. Final-head checks remain linked from PR #232.

@@ -273,6 +273,17 @@ describe("M4 resolved styles, semantics and diagnostics", () => {
       [...d.querySelectorAll("input[type=radio]")].map((e) => e.value),
     ).toEqual(radio.options);
   });
+  it("keeps generated element classes distinct from internal component helpers", () => {
+    const p = createProject(),
+      table = makeElement("table");
+    table.id = "scroll";
+    p.page.elements = { scroll: table };
+    p.page.rootElementIds = ["scroll"];
+    const c = compileProject(p),
+      d = parse(c.html);
+    expect(c.errors).toEqual([]);
+    expect(d.querySelectorAll("." + c.classes.scroll)).toHaveLength(1);
+  });
   it("reports observable resource failures with correction targets and drops stale failures after URL edits", () => {
     const p = fixture(),
       image = Object.values(p.page.elements).find((e) => e.type === "image");
