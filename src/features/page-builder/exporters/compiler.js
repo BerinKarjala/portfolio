@@ -22,7 +22,7 @@ body { margin: 0; font: 16px/1.5 system-ui, sans-serif; }
 .pb-node { min-width: 0; min-height: 28px; overflow-wrap: anywhere; }
 h1,h2,h3,h4,h5,h6,p { margin: 0; font-size: inherit; font-weight: inherit; line-height: inherit; letter-spacing: inherit; }
 p { white-space: pre-wrap; }
-a { color: inherit; }
+a { color: inherit; text-decoration: underline; }
 img { display: block; max-width: 100%; height: auto; }
 hr { border: 0; border-top: 1px solid currentColor; margin: 12px 0; }
 .pb-container { display: flex; flex-direction: column; }
@@ -617,11 +617,16 @@ export function previewDocument(compiled) {
   );
   function inert(e) {
     if (typeof e !== "object") return;
-    if (e.tag === "a" && e.attrs.href && !e.attrs.href.startsWith("#")) {
-      delete e.attrs.href;
-      e.attrs.role = "link";
-      e.attrs.tabindex = 0;
-      e.attrs["aria-disabled"] = "true";
+    if (e.tag === "a" && e.attrs.href) {
+      if (e.attrs.href.startsWith("#")) {
+        // srcdoc otherwise resolves relative fragments against the portfolio URL.
+        e.attrs.href = "about:srcdoc" + e.attrs.href;
+      } else {
+        delete e.attrs.href;
+        e.attrs.role = "link";
+        e.attrs.tabindex = 0;
+        e.attrs["aria-disabled"] = "true";
+      }
     }
     if (e.tag === "form") delete e.attrs.action;
     for (const child of e.children) inert(child);

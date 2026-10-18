@@ -135,7 +135,17 @@ async function zip(page) {
 test("sandbox preview blocks external navigation, submissions and parent access while native controls work", async ({
   page,
 }) => {
-  await boot(page);
+  const p = fixture();
+  Object.values(p.page.elements)
+    .find((e) => e.type === "paragraph")
+    .props.document.nodes.push({
+      type: "link",
+      text: " Read more",
+      href: "https://example.com/reference",
+      marks: [],
+      styles: {},
+    });
+  await boot(page, p);
   const frame = await output(page);
   await expect(
     frame.getByRole("heading", { name: "Native export studio" }),
@@ -149,9 +159,21 @@ test("sandbox preview blocks external navigation, submissions and parent access 
     await frame
       .locator("a")
       .evaluateAll((a) =>
-        a.every((n) => !n.href || n.getAttribute("href").startsWith("#")),
+        a.every(
+          (n) => !n.href || n.getAttribute("href").startsWith("about:srcdoc#"),
+        ),
       ),
   ).toBe(true);
+  await expect(
+    frame.getByRole("link", { name: "Read more", exact: true }),
+  ).toHaveCSS("text-decoration-line", "underline");
+  await frame.getByRole("link", { name: "Go to heading", exact: true }).click();
+  await expect(
+    frame.getByRole("heading", { name: "Native export studio" }),
+  ).toBeVisible();
+  expect(await frame.locator("body").evaluate(() => location.href)).toBe(
+    "about:srcdoc#intro",
+  );
   expect(await frame.locator("form").getAttribute("action")).toBeNull();
   expect(await frame.locator("script").count()).toBe(0);
   const isolated = await frame.locator("body").evaluate(() => {

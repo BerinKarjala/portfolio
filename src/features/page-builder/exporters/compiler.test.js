@@ -127,11 +127,23 @@ describe("standalone compiler", () => {
     expect(c.css).not.toContain("." + c.classes[nodes[0].id] + " {");
   });
   it("previews the compiled document in an inert navigation mode while exports retain endpoints", () => {
-    const p = fixture(),
-      c = compileProject(p),
+    const p = fixture();
+    Object.values(p.page.elements).find((e) => e.type === "heading").htmlId =
+      "intro";
+    Object.values(p.page.elements).find((e) => e.type === "link").props.href =
+      "#intro";
+    const c = compileProject(p),
       preview = parse(previewDocument(c));
     expect(preview.querySelector("form").getAttribute("action")).toBeNull();
-    expect(preview.querySelector("a").getAttribute("href")).toBeNull();
+    expect(
+      preview.querySelector("a.pb-button").getAttribute("href"),
+    ).toBeNull();
+    expect(preview.querySelector("a.pb-link").getAttribute("href")).toBe(
+      "about:srcdoc#intro",
+    );
+    expect(parse(c.html).querySelector("a.pb-link").getAttribute("href")).toBe(
+      "#intro",
+    );
     expect(preview.querySelector("style").textContent).toBe(c.css);
     expect(
       preview.querySelector('meta[http-equiv="Content-Security-Policy"]')
