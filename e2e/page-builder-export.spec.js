@@ -187,6 +187,12 @@ test("sandbox preview blocks external navigation, submissions and parent access 
   await expect(
     frame.getByRole("link", { name: "Menu destination" }),
   ).toBeVisible();
+  await frame.getByText("Menu", { exact: true }).click();
+  await page.getByLabel("Preview device").selectOption("1280");
+  await expect(
+    frame.getByRole("link", { name: "Menu destination" }),
+  ).toBeVisible();
+  await page.getByLabel("Preview device").selectOption("390");
   const grip = page.getByRole("separator", { name: "Resize preview" });
   await grip.focus();
   await grip.press("ArrowRight");
@@ -430,14 +436,12 @@ test("250 components remain editable and export preview timings are observable w
   const frame = await output(page);
   await expect(frame.locator("p")).toHaveCount(250);
   const previewed = Date.now();
-  const metrics = await frame
-    .locator("body")
-    .evaluate(() => ({
-      nodes: document.querySelectorAll("*").length,
-      scripts: document.scripts.length,
-      htmlBytes: new TextEncoder().encode(document.documentElement.outerHTML)
-        .length,
-    }));
+  const metrics = await frame.locator("body").evaluate(() => ({
+    nodes: document.querySelectorAll("*").length,
+    scripts: document.scripts.length,
+    htmlBytes: new TextEncoder().encode(document.documentElement.outerHTML)
+      .length,
+  }));
   expect(metrics.scripts).toBe(0);
   await testInfo.attach("large-page-metrics", {
     body: Buffer.from(

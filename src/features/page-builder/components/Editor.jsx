@@ -192,11 +192,13 @@ export default function Editor() {
               expandedIds: [...expanded],
             }));
             setMode("edit");
-            requestAnimationFrame(() =>
-              document
-                .querySelector(`[data-element-id="${id}"]`)
-                ?.scrollIntoView({ block: "center", inline: "nearest" }),
-            );
+            requestAnimationFrame(() => {
+              const element = document.querySelector(
+                `[data-element-id="${id}"]`,
+              );
+              element?.scrollIntoView({ block: "center", inline: "nearest" });
+              element?.focus({ preventScroll: true });
+            });
           }}
         />
       )}

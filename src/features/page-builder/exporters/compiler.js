@@ -230,6 +230,10 @@ export function compileProject(project, { observedFailures = [] } = {}) {
           childSelector,
           `display:${grid ? "grid" : "flex"};flex-direction:${l.direction};flex-wrap:${l.wrap ? "wrap" : "nowrap"};align-items:${l.align};justify-content:${l.justify};gap:${s.gap || "0"};${grid ? `grid-template-columns:repeat(${l.columns},minmax(0,1fr));` : ""}${!e.children.some((id) => project.page.elements[id].positionMode === "flow") ? "min-height:6rem;" : ""}`,
         );
+        if (e.type === "nav")
+          responsive.push(
+            `@media (min-width: 768px) { ${selector} > details:not([open]) > .pb-flow { display: ${grid ? "grid" : "flex"}; } }`,
+          );
         if (grid)
           for (const [query, cols] of [
             ["max-width: 599px", 1],
@@ -252,13 +256,12 @@ export function compileProject(project, { observedFailures = [] } = {}) {
     function render(id) {
       const e = project.page.elements[id];
       if (!classes[id]) return null;
-      const p = e.props,
-        s = ownStyles(project, id);
+      const p = e.props;
       const attrs = {
         class: [
           "pb-node",
           classes[id],
-          isContainer(e) && "pb-container",
+          isContainer(e) && e.type !== "container" && "pb-container",
           "pb-" + e.type,
         ]
           .filter(Boolean)
@@ -544,7 +547,7 @@ export function compileProject(project, { observedFailures = [] } = {}) {
             [".pb-embed", "embed"],
           ].some(
             ([prefix, type]) =>
-              line.startsWith(prefix) &&
+              line.trimStart().startsWith(prefix) &&
               !present.has(type) &&
               !(type === "image" && present.has("gallery")),
           ),
