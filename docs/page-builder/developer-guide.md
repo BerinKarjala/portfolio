@@ -62,3 +62,11 @@ M4 adds separate mobile/tablet/desktop exported-page snapshots in all three brow
 
 
 Visual comparisons use the committed Ubuntu 24.04 CI-native images with lockfile browser versions. The fixture uses native system controls/fonts, so a different local OS/font configuration or `PLAYWRIGHT_CHROMIUM_EXECUTABLE` can legitimately produce a different image. Do not update these baselines merely to make another local environment pass. M5 still expands calibrated fixture/font/state coverage. CI publishes a separate small `page-builder-export-baseline-review` artifact alongside the complete browser report for reviewing images before updates.
+
+## M5 onboarding, reset and teaching
+
+`QuickGuide` supplies a non-blocking first-run offer, optional five-step modal, restart button and hover/focus hint with Escape dismissal. Preferences store only completion/dismissal flags; guide writes preserve dashboard view/sort, and dashboard writes preserve guide flags. No guide state enters exported/project JSON. Denied preference writes are reported; they do not disable editing.
+
+`TemplateReset` confirms the remembered origin and optional backup. `resetToOrigin` retains record identity/CAS fields and replaces the complete website graph with fresh immutable-template-derived data. The provider rechecks ownership/revision and validates before writing an optional independent copy of current in-memory data. Copy failure aborts reset. The reducer records one undoable content action; autosave uses the existing conflict/quota path. Copies are separate durable records and survive Undo. localStorage’s non-atomic cross-tab limitation still applies.
+
+The source viewer excludes tests and lists each feature module once. `TeachingNotes` introduces architecture, reducer, tests and export on the portfolio page; [tutorials](tutorials.md) follow real code paths and testing examples. [M5 release evidence](m5-release.md) defines automated budgets, acceptance coverage and outstanding manual checks. Run `npm run check:page-builder` to guard all 130 canonical decisions against omissions or changed options/descriptions; `npm run check:page-builder:build` checks production chunk sizes after building.

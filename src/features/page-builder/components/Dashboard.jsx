@@ -103,7 +103,7 @@ export default function Dashboard() {
   function changePreferences(patch) {
     const next = { ...preferences, ...patch };
     setPreferences(next);
-    attempt(() => repository.savePreferences(next));
+    attempt(() => repository.savePreferences({ view: next.view, sort: next.sort }));
   }
   function showModal(value) {
     setModalError("");

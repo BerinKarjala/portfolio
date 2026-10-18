@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import TeachingNotes from "./components/TeachingNotes";
 import Seo from "../../components/Seo";
 import SourceCode from "../../components/SourceCode";
 import "./page-builder.css";
@@ -13,10 +14,12 @@ const sources = import.meta.glob(["./**/*.{js,jsx,css}", "!./**/*.test.*"], {
 });
 const sourceFiles = [
   { name: "page-builder/PageBuilderProject.jsx", source: projectSource },
-  ...Object.entries(sources).map(([name, source]) => ({
-    name: name.replace("./", "page-builder/"),
-    source,
-  })),
+  ...Object.entries(sources)
+    .filter(([name]) => name !== "./PageBuilderProject.jsx")
+    .map(([name, source]) => ({
+      name: name.replace("./", "page-builder/"),
+      source,
+    })),
 ];
 
 export default function PageBuilderProject() {
@@ -72,6 +75,7 @@ export default function PageBuilderProject() {
                 projects locally, preview responsive layouts, and download
                 standalone HTML/CSS or editable JSON backups.
               </p>
+              <TeachingNotes />
             </section>
           </div>
           <div className="w-full lg:w-1/2">

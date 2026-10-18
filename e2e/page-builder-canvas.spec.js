@@ -255,9 +255,12 @@ test("touch long-press drag, cancellation, and two-finger zoom", async ({
   const cdp = await context.newCDPSession(page);
   const touch = async (type, points) =>
     cdp.send("Input.dispatchTouchEvent", { type, touchPoints: points });
-  const handle = await page
-    .getByRole("button", { name: "Drag Heading", exact: true })
-    .boundingBox();
+  const dragHandle = page.getByRole("button", {
+    name: "Drag Heading",
+    exact: true,
+  });
+  await dragHandle.scrollIntoViewIfNeeded();
+  const handle = await dragHandle.boundingBox();
   const container = page.getByTestId("canvas-container");
   const id = await container.getAttribute("data-element-id");
   const target = await container
@@ -269,7 +272,7 @@ test("touch long-press drag, cancellation, and two-finger zoom", async ({
     id: 1,
   };
   await touch("touchStart", [a]);
-  await page.waitForTimeout(320);
+  await expect(page.locator(".pb-drag-overlay")).toBeVisible();
   for (let i = 1; i <= 10; i++)
     await touch("touchMove", [
       {
@@ -278,14 +281,27 @@ test("touch long-press drag, cancellation, and two-finger zoom", async ({
         id: 1,
       },
     ]);
+  await expect(
+    container.locator(`[data-drop-id="inside:${id}"]`),
+  ).toHaveAttribute("data-over", "true");
   await touch("touchEnd", []);
   await expect(page.getByTestId("canvas-heading")).toBeVisible();
   const before = await page
     .getByTestId("canvas-heading")
     .getAttribute("data-element-id");
-  await touch("touchStart", [a]);
-  await page.waitForTimeout(320);
+  await expect(page.locator(".pb-drag-overlay")).toHaveCount(0);
+  await dragHandle.scrollIntoViewIfNeeded();
+  const cancelHandle = await dragHandle.boundingBox();
+  await touch("touchStart", [
+    {
+      x: cancelHandle.x + cancelHandle.width / 2,
+      y: cancelHandle.y + cancelHandle.height / 2,
+      id: 1,
+    },
+  ]);
+  await expect(page.locator(".pb-drag-overlay")).toBeVisible();
   await touch("touchCancel", []);
+  await expect(page.locator(".pb-drag-overlay")).toHaveCount(0);
   await expect(page.getByTestId("canvas-heading")).toHaveCount(1);
   expect(
     await page.getByTestId("canvas-heading").getAttribute("data-element-id"),

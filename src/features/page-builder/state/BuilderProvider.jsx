@@ -17,6 +17,7 @@ import {
   StorageConflictError,
 } from "../domain/storage";
 import { builderReducer, initialState } from "./builderReducer";
+import { resetToOrigin } from "../domain/reset";
 import { localInstanceCommand } from "../domain/masters";
 
 const BuilderContext = createContext(null);
@@ -299,6 +300,38 @@ export default function BuilderProvider({ children }) {
     );
     return result;
   }
+  function resetTemplate({ backup = false } = {}) {
+    const editor = stateRef.current.editor;
+    if (!editor || editor.readOnly)
+      throw new Error("Take over editing before resetting.");
+    const id = editor.project.projectId;
+    if (
+      !repository.owns(id, token) ||
+      repository.load(id).revision !== editor.project.revision
+    )
+      throw new StorageConflictError(
+        "The saved project or editing owner changed. Download unsaved JSON before reloading.",
+      );
+    // Validate the reset before any backup write. Failed backup aborts the reset.
+    resetToOrigin(editor.project);
+    if (backup) {
+      const copy = duplicateProject(
+        editor.project,
+        uniqueName(
+          `${editor.project.name.slice(0, 85)} before reset`,
+          repository.list().projects,
+        ),
+      );
+      repository.create(copy);
+      publish();
+    }
+    dispatch({ type: "RESET_TEMPLATE" });
+    notice(
+      backup
+        ? "Original template restored. An independent copy preserves your previous work."
+        : "Original template restored. Undo is available in this session.",
+    );
+  }
   function takeOver() {
     const editor = stateRef.current.editor;
     try {
@@ -392,6 +425,7 @@ export default function BuilderProvider({ children }) {
         canLeave,
         saveNow,
         takeOver,
+        resetTemplate,
         editMetadata,
         sendCommand,
         select,

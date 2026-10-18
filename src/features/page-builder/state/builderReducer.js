@@ -1,3 +1,4 @@
+import { resetToOrigin } from "../domain/reset";
 import { applyCommand } from "../domain/structure";
 
 export const initialState = {
@@ -189,6 +190,10 @@ export function builderReducer(state, action) {
       } catch (error) {
         return { ...state, editor: { ...editor, commandError: error.message } };
       }
+    }
+    case "RESET_TEMPLATE": {
+      if (!editor || editor.readOnly) return state;
+      return commit(state, resetToOrigin(editor.project), [], action);
     }
     case "UNDO":
     case "REDO": {

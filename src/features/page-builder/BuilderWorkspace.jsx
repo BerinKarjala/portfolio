@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import BuilderProvider, { useBuilder } from "./state/BuilderProvider";
 import Dialog from "./components/Dialog";
 import Dashboard from "./components/Dashboard";
+import QuickGuide from "./components/QuickGuide";
 import Editor from "./components/Editor";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { downloadText } from "./browser/files";
@@ -48,6 +49,7 @@ function Workspace({ onClose }) {
           <h1 id="pb-workspace-title">Page Builder</h1>
           <span className="pb-local-badge">BROWSER LOCAL</span>
         </div>
+        <QuickGuide />
         <button type="button" onClick={close} aria-label="Close Page Builder">
           Close ✕
         </button>

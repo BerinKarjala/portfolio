@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useBuilder } from "../state/BuilderProvider";
 import { downloadText, fileName } from "../browser/files";
+import TemplateReset from "./TemplateReset";
 import CanvasEditor from "./CanvasEditor";
 import ExportWorkspace from "./ExportWorkspace";
 
@@ -140,6 +141,7 @@ export default function Editor() {
         <button type="button" onClick={exportDraft}>
           {dirty ? "Download unsaved JSON" : "Download project JSON"}
         </button>
+        <TemplateReset />
         {dirty && !readOnly && (
           <button type="button" className="pb-primary" onClick={saveNow}>
             Retry save now
