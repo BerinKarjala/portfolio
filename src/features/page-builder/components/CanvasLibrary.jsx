@@ -10,7 +10,7 @@ import {
 } from "../domain/structure";
 import { useBuilder } from "../state/BuilderProvider";
 import ComponentContent from "./ComponentContent";
-import { defaultProps } from "../domain/components";
+import { defaultProps, componentSearchText } from "../domain/components";
 
 function PaletteItem({
   item,
@@ -234,7 +234,7 @@ export function Layers({ expanded, setExpanded, reveal, inspect }) {
     );
   const results = Object.values(project.page.elements)
     .filter((e) =>
-      `${pathName(project, e.id)} ${e.type} ${e.htmlId} ${e.props.document?.nodes.map((n) => n.text).join(" ") || e.props.text || ""}`
+      `${pathName(project, e.id)} ${e.type} ${e.htmlId} ${componentSearchText(e)}`
         .toLowerCase()
         .includes(query.toLowerCase()),
     )

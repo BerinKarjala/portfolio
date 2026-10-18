@@ -2,7 +2,11 @@
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { afterEach, describe, it, expect } from "vitest";
 import { makeElement } from "../domain/structure";
-import { FIELD_KINDS, makeField } from "../domain/components";
+import {
+  FIELD_KINDS,
+  makeField,
+  componentSearchText,
+} from "../domain/components";
 import { createProject, validateProject } from "../domain/project";
 import ComponentContent from "./ComponentContent";
 afterEach(cleanup);
@@ -17,6 +21,7 @@ describe("semantic component fixtures", () => {
       pattern: kind === "text" ? "[A-Za-z]+" : "",
     }));
     const original = JSON.stringify(e);
+    expect(componentSearchText(e)).toContain("Field 0");
     const { container } = render(<ComponentContent element={e} />);
     const form = screen.getByRole("form", { name: "Form preview" });
     expect(form.getAttribute("method")).toBe("POST");

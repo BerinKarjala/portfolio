@@ -304,6 +304,8 @@ test("preset removal preserves effective styling; states, effects and responsive
   await boot(page);
   await add(page, "Paragraph");
   await tab(page, "Style");
+  await page.locator(".pb-computed-box > summary").click();
+  await expect(page.locator(".pb-box-size")).toHaveText(/CSS size: \d/);
   await page
     .locator(".pb-style-group > summary")
     .filter({ hasText: /^Typography$/ })
@@ -491,6 +493,7 @@ test("all six starter designs render at mobile width with native navigation", as
       viewport: { width: 1440, height: 1400 },
       baseURL: "http://127.0.0.1:4173",
     });
+    page.on("pageerror", (error) => pageErrors.push(error.message));
     try {
       await boot(page, template);
       await page

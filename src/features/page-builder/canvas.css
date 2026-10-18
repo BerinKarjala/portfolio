@@ -978,3 +978,28 @@
     top: 48px;
   }
 }
+.pb-root .pb-computed-box {
+  margin: 1rem 0;
+  font-size: 0.7rem;
+  overflow-wrap: anywhere;
+}
+.pb-root .pb-box-margin,
+.pb-root .pb-box-border,
+.pb-root .pb-box-padding,
+.pb-root .pb-box-size {
+  padding: 0.5rem;
+  border: 1px solid #65765b;
+  margin-top: 0.3rem;
+}
+.pb-root .pb-box-margin {
+  background: #34432a;
+}
+.pb-root .pb-box-border {
+  background: #3a4231;
+}
+.pb-root .pb-box-padding {
+  background: #2e4434;
+}
+.pb-root .pb-box-size {
+  background: #182d22;
+}

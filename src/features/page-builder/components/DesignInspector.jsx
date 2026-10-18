@@ -637,6 +637,69 @@ function Presets({ nodes }) {
     </details>
   );
 }
+function ComputedBox({ id, project }) {
+  const [box, setBox] = useState(null);
+  useEffect(() => {
+    const read = () => {
+      const element = document.querySelector(`[data-element-id="${id}"]`);
+      if (!element) {
+        setBox(null);
+        return;
+      }
+      const css = getComputedStyle(element);
+      const result = {
+        size: `${css.width} × ${css.height}`,
+        ...Object.fromEntries(
+          ["margin", "border", "padding"].map((kind) => [
+            kind,
+            ["Top", "Right", "Bottom", "Left"]
+              .map(
+                (side) => css[kind + side + (kind === "border" ? "Width" : "")],
+              )
+              .join(" · "),
+          ]),
+        ),
+      };
+      setBox((old) =>
+        JSON.stringify(old) === JSON.stringify(result) ? old : result,
+      );
+    };
+    read();
+    const documentNode = document.querySelector(
+      '[data-container-id="__page_root__"]',
+    );
+    const observer =
+      typeof ResizeObserver === "function" ? new ResizeObserver(read) : null;
+    if (documentNode) observer?.observe(documentNode);
+    return () => observer?.disconnect();
+  }, [id, project]);
+  return (
+    <details className="pb-computed-box">
+      <summary>Computed box model</summary>
+      <div role="region" aria-label="Computed box model">
+        {box ? (
+          <>
+            <p className="pb-muted">
+              Top · right · bottom · left, in computed pixels
+            </p>
+            <div className="pb-box-margin">
+              Margin: {box.margin}
+              <div className="pb-box-border">
+                Border: {box.border}
+                <div className="pb-box-padding">
+                  Padding: {box.padding}
+                  <div className="pb-box-size">CSS size: {box.size}</div>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <p>This element is hidden at the current width.</p>
+        )}
+      </div>
+    </details>
+  );
+}
 export default function DesignInspector({ nodes }) {
   const { state, sendCommand } = useBuilder();
   const { project, selection, readOnly, masterEdit } = state.editor;
@@ -697,6 +760,7 @@ export default function DesignInspector({ nodes }) {
           }
         />
       </fieldset>
+      {nodes.length === 1 && <ComputedBox id={nodes[0].id} project={project} />}
       <Presets nodes={nodes} />
       {nodes.length === 1 && (
         <details>

@@ -15,6 +15,15 @@ export const FIELD_KINDS = [
   "checkbox",
   "textarea",
 ];
+export function componentSearchText(element) {
+  const read = (value) =>
+    typeof value === "string"
+      ? value
+      : value && typeof value === "object"
+        ? Object.values(value).map(read).join(" ")
+        : "";
+  return read(element.props);
+}
 export const makeField = (kind = "text") => ({
   id: crypto.randomUUID(),
   kind,
