@@ -7,6 +7,9 @@ include packages affected by the following advisories:
   `@vercel/frameworks -> js-yaml 3 -> argparse 1 -> sprintf-js`. Override only
   js-yaml's argparse to 2.0.1, which retains its legacy API and removes sprintf-js.
   Keep js-yaml 3 because the framework reader uses its `safeLoad` API.
+  The postinstall script applies a checked, idempotent one-line fix to argparse
+  2.0.1's legacy version action: it must use the supplied constructor option,
+  rather than an unset instance field. This preserves `js-yaml --version` output.
 - [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm):
   codegen's chokidar 3 and globby/fast-glob/micromatch both use braces 3. Override
   braces with the exact npm alias `@dieub/braces-depth-guard@3.0.3-pn.3`.
