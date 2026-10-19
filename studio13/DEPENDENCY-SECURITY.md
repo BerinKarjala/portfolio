@@ -23,7 +23,8 @@ tarball integrity is pinned in package-lock.json. This is a temporary maintained
 derivative, not an upstream braces security release. Normal expansion cardinality
 limits remain unchanged; this override addresses the reported nesting failure.
 
-Run `npm ci`, `npm run test:dependencies`, `npm audit --audit-level=moderate`, and
+First run `npm ci` at the repository root for the shared PostCSS configuration.
+Then run `npm ci`, `npm run test:dependencies`, `npm audit --audit-level=moderate`, and
 `npm run build` in this directory when updating either override. The regression
 checks cover both consumer resolutions, deep string/AST inputs, ordinary globs,
 real file watches, YAML parsing and the js-yaml command-line interface.
