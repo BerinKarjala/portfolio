@@ -23,36 +23,39 @@ async function field(page, label, value) {
   await input.fill(String(value));
   await input.press("Tab");
 }
-async function dragMouse(page, from, to) {
-  await page.mouse.move(from.x, from.y);
+async function dragMouse(page, handle, target) {
+  // Activation can update measured layout. Aim at the live target afterward.
+  await expect(page.locator(".pb-drag-overlay")).toHaveCount(0);
+  await handle.scrollIntoViewIfNeeded();
+  const from = await handle.boundingBox();
+  const x = from.x + from.width / 2,
+    y = from.y + from.height / 2;
+  await page.mouse.move(x, y);
   await page.mouse.down();
-  await page.mouse.move(from.x + 8, from.y, { steps: 2 });
-  await page.mouse.move(to.x, to.y, { steps: 12 });
+  await page.mouse.move(x + 8, y, { steps: 2 });
+  await expect(page.locator(".pb-drag-overlay")).toBeVisible();
+  // Programmatic scrolling during a pressed gesture changes browser drag coordinates.
+  await expect(target).toBeInViewport();
+  const to = await target.boundingBox();
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, {
+    steps: 12,
+  });
+  await expect(target).toHaveAttribute("data-over", "true");
 }
+
 test("mouse palette drag inserts a node and its move handle reparents it without changing identity", async ({
   page,
 }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await boot(page);
   await add(page, "Container");
   const container = page.getByTestId("canvas-container");
   const containerId = await container.getAttribute("data-element-id");
-  await page
-    .getByRole("button", { name: "Drag Heading", exact: true })
-    .scrollIntoViewIfNeeded();
-  const handle = await page
-    .getByRole("button", { name: "Drag Heading", exact: true })
-    .boundingBox();
-  const target = await container
-    .locator(`[data-drop-id="inside:${containerId}"]`)
-    .boundingBox();
   await dragMouse(
     page,
-    { x: handle.x + handle.width / 2, y: handle.y + handle.height / 2 },
-    { x: target.x + target.width / 2, y: target.y + target.height / 2 },
-  );
-  await expect(
+    page.getByRole("button", { name: "Drag Heading", exact: true }),
     container.locator(`[data-drop-id="inside:${containerId}"]`),
-  ).toHaveAttribute("data-over", "true");
+  );
   await page.mouse.up();
   const heading = page.getByTestId("canvas-heading");
   await expect(heading).toBeVisible();
@@ -60,14 +63,10 @@ test("mouse palette drag inserts a node and its move handle reparents it without
   await expect(
     container.locator(`[data-element-id="${headingId}"]`),
   ).toHaveCount(1);
-  const move = await heading
-    .getByRole("button", { name: "Move Heading", exact: true })
-    .boundingBox();
-  const root = await page.locator('[data-drop-id="root-end"]').boundingBox();
   await dragMouse(
     page,
-    { x: move.x + 8, y: move.y + 8 },
-    { x: root.x + root.width / 2, y: root.y + root.height / 2 },
+    heading.getByRole("button", { name: "Move Heading", exact: true }),
+    page.locator('[data-drop-id="root-end"]'),
   );
   await page.mouse.up();
   await expect(
