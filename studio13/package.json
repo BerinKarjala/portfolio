@@ -13,6 +13,7 @@
   "scripts": {
     "start": "sanity dev",
     "build": "sanity build",
+    "test:dependencies": "node --test scripts/dependency-security.check.cjs",
     "cors:list": "sanity cors list",
     "cors:add-local": "sanity cors add http://127.0.0.1:5173 --credentials && sanity cors add http://localhost:5173 --credentials"
   },
@@ -36,11 +37,15 @@
     "eslint": "^10.11.0"
   },
   "overrides": {
+    "braces": "npm:@dieub/braces-depth-guard@3.0.3-pn.3",
     "@sanity/runtime-cli": {
       "adm-zip": "0.6.1"
     },
     "@vercel/frameworks": {
-      "js-yaml": "3.15.2",
+      "js-yaml": {
+        ".": "3.15.2",
+        "argparse": "2.0.1"
+      },
       "smol-toml": "1.9.0"
     },
     "@module-federation/dts-plugin": {
