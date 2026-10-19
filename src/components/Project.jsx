@@ -3,7 +3,19 @@ import sanityClient from "../client.js";
 import Seo, { SITE_NAME, SITE_URL } from "./Seo";
 import { cancelIdle, runWhenIdle } from "../utils/idleCallback";
 import sudokuPreview from "../assets/sudoku-solver-preview.svg";
+import minesweeperPreview from "../assets/minesweeper-preview.svg";
 import { includePageBuilder, PAGE_BUILDER_PATH } from "../features/page-builder/gallery";
+
+const PROJECT_PREVIEWS = {
+  sudokusolver: {
+    asset: { url: sudokuPreview },
+    alt: "Sudoku Solver board with Solve and Reset controls",
+  },
+  minesweeper: {
+    asset: { url: minesweeperPreview },
+    alt: "Minesweeper board with instructions, flags remaining, and reset controls",
+  },
+};
 
 const EMPTY_PROJECTS = [];
 const EMPTY_PROJECT_DESCRIPTION =
@@ -60,17 +72,11 @@ export default function Project() {
   const projects = includePageBuilder(
     projectData.filter((project) => project?.name && project?.link)
   )
-    .map((project) =>
-      /\/projects\/SudokuSolver\/?$/i.test(project.link.split(/[?#]/)[0])
-        ? {
-            ...project,
-            thumbnail: {
-              asset: { url: sudokuPreview },
-              alt: "Sudoku Solver board with Solve and Reset controls",
-            },
-          }
-        : project
-    );
+    .map((project) => {
+      const route = project.link.split(/[?#]/)[0].match(/\/projects\/(SudokuSolver|Minesweeper)\/?$/i);
+      const thumbnail = route && PROJECT_PREVIEWS[route[1].toLowerCase()];
+      return thumbnail ? { ...project, thumbnail } : project;
+    });
   const projectNames = projects
     .map((project) => project?.name)
     .slice(0, 3);

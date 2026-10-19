@@ -42,7 +42,8 @@ class Minsweeper extends Component {
     if (!grid) return;
 
     const viewportWidth = window.innerWidth || 0;
-    const maxBoardWidth = Math.min(520, Math.max(0, viewportWidth - 32));
+    const containerWidth = grid.parentElement?.clientWidth || viewportWidth - 32;
+    const maxBoardWidth = Math.min(520, Math.max(0, containerWidth));
     const gridBorder = viewportWidth < 480 ? 6 : 10;
     const gridGap = viewportWidth < 480 ? 2 : 3;
     const usable = Math.max(
@@ -300,32 +301,43 @@ class Minsweeper extends Component {
           jsonLd={[webPageSchema, appSchema]}
         />
         <section className="mx-auto w-full max-w-xl px-4 py-6">
-        <div className="w-full">
-          <div className="w-full">
-            <h1 className="mb-3 text-center text-2xl sm:text-3xl font-semibold text-green-50">
+          <div className="rounded-2xl border border-green-700 border-opacity-40 bg-green-900 bg-opacity-60 p-4 sm:p-6 shadow-2xl backdrop-filter backdrop-blur-sm">
+            <p className="text-xs uppercase tracking-widest text-green-200">
+              Minesweeper
+            </p>
+            <h1 className="mt-3 text-2xl sm:text-3xl font-semibold text-green-50">
               Minesweeper
             </h1>
-            <div className="boardBox">
+            <p className="mt-4 text-sm sm:text-base text-green-100 leading-relaxed">
+              Clear the board without uncovering a mine.
+            </p>
+            <div className="mt-6 w-full max-w-md mx-auto">
               <div
                 ref={this.gridRef}
                 className="gridX"
                 aria-label="Minesweeper board"
               ></div>
-              <p className="text-sm text-green-100">
+            </div>
+            <div className="mt-6 rounded-2xl border border-green-700 border-opacity-40 bg-green-900 bg-opacity-60 p-4 sm:p-6 shadow-2xl backdrop-filter backdrop-blur-sm">
+              <h2 className="text-xs uppercase tracking-widest text-green-200">
+                Controls
+              </h2>
+              <p className="mt-3 text-sm text-green-100 leading-relaxed">
                 Right click on a tile to add a flag to the board.
               </p>
-              <div className="text-sm text-green-100">
+              <div className="mt-3 text-sm text-green-100" aria-live="polite">
                 Flags left: {FLAG_SYMBOL}
                 <span ref={this.flagsLeftRef} className="ml-1"></span>
               </div>
-              <div ref={this.resultRef} id="result" className="text-sm text-green-100"></div>
-              <button type="button" className="resetbtn mt-3" onClick={this.resetGame}>
-                Click to reset the board
-              </button>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button type="button" className="resetbtn" onClick={this.resetGame}>
+                  Click to reset the board
+                </button>
+              </div>
+              <div ref={this.resultRef} id="result" role="status" className="mt-4 text-sm text-green-100 min-h-[1.25rem]"></div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
       </>
     );
   }
