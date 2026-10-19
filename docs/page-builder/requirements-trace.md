@@ -1,6 +1,6 @@
 # Q001–Q130 implementation trace
 
-All decisions remain approved. “M1 verified” means the foundation implementation has evidence; it does not mark the final product or release accepted. Partial rows require later milestone coverage. M2 adds structural/canvas evidence in `m2-canvas.md`; M3 adds content/design evidence in `m3-design.md`; M4 adds compiler, preflight, sandbox and recovery evidence in `m4-export.md`. M4 remote results are recorded in `progress.md`; M5 implementation and acceptance mapping are in `m5-release.md`. Final acceptance remains open. See `progress.md` for the actual test runs and `specification.md` for acceptance contracts.
+All decisions remain approved. “M1 verified” means the foundation implementation has evidence; it does not mark the final product or release accepted. Partial rows require later milestone coverage. M2 adds structural/canvas evidence in `m2-canvas.md`; M3 adds content/design evidence in `m3-design.md`; M4 adds compiler, preflight, sandbox and recovery evidence in `m4-export.md`. M4 remote results are recorded in `progress.md`; M5 implementation and acceptance mapping are in `m5-release.md`. Post-merge evidence and additional acceptance coverage are in `release-verification.md`. Final acceptance remains open. See `progress.md` for the actual test runs and `specification.md` for acceptance contracts.
 
 | Decision | Option | Requirement | Implementation status / evidence |
 |---|---|---|---|
@@ -145,11 +145,11 @@ All decisions remain approved. “M1 verified” means the foundation implementa
 | AC-06 | M3 selection/composition/formatting; M4 rich semantic serialization/escaping and reload-safe AST. |
 | AC-07 | M4 native semantic component/compiler fixtures, safe URLs and script-free standalone files. |
 | AC-08 | Strict import and export validation, blocked unsafe serialization and intact saved state. |
-| AC-09 | Record isolation/migration/quota/copy restore/rollback retained; M4 adds explicit partial retention and detailed reports. |
+| AC-09 | Record isolation/migration/quota/copy restore/rollback retained; M4 adds explicit partial retention and detailed reports. Follow-up coverage adds six directed cross-engine rich/master/preset JSON transfers; see release-verification.md for results. |
 | AC-10 | Lease/takeover/stale revision and ownership-replacement listeners retained through M4 regression suite. |
 | AC-11 | M4 same-compiler device preview, per-node computed-layout parity and exported-page per-engine images; final visual states/device acceptance M5. |
 | AC-12 | All formats revalidate current input; criticals block, warnings confirm, exact two-file ZIP/CRCs and individual-file equivalence. |
-| AC-13 | Existing mouse/touch/keyboard/rich-text paths plus M4 preview resize/code/export and scoped desktop/mobile axe; manual AT M5. |
+| AC-13 | Existing mouse/touch/keyboard/rich-text paths plus preview/code/export/scoped axe; follow-up covers 320px keyboard/reflow. Manual AT, actual zoom and physical-device acceptance remain open. |
 | AC-14 | Lazy approximate thumbnails, editor image fallback, resource correction warnings and native no-JS export fallbacks; unknown cross-origin status stays unknown. |
 | AC-15 | Unit/build and browser regression CI; M4 cross-browser exported-page baselines and observable large-page metrics; calibrated release matrix M5. |
 | AC-16 | Early draft PRs, full trace and milestone evidence; final 130-decision acceptance and user sign-off pending M5. |

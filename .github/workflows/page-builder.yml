@@ -37,6 +37,7 @@ jobs:
       - run: npm run build
       - run: npm run check:page-builder:build
       - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run test:e2e -- e2e/page-builder-canvas.spec.js --grep "mouse palette" --workers=1 --retries=0
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: always()
@@ -63,5 +64,25 @@ jobs:
             test-results/page-builder-canvas-touch-*/error-context.md
             test-results/page-builder-canvas-touch-*/test-failed-*.png
             test-results/page-builder-canvas-touch-*/trace.zip
+          if-no-files-found: ignore
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: page-builder-acceptance-failure
+          path: |
+            test-results/page-builder-acceptance-*/error-context.md
+            test-results/page-builder-acceptance-*/test-failed-*.png
+            test-results/page-builder-acceptance-*/trace.zip
+          if-no-files-found: ignore
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: page-builder-mouse-failure
+          path: |
+            test-results/page-builder-canvas-mouse-*/error-context.md
+            test-results/page-builder-canvas-mouse-*/test-failed-*.png
+            test-results/page-builder-canvas-mouse-*/trace.zip
           if-no-files-found: ignore
           retention-days: 14

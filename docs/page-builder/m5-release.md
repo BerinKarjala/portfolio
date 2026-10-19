@@ -1,6 +1,6 @@
 # M5 release candidate and acceptance evidence
 
-M4 was merged by the repository owner as `00f074c` (PR #232). M5 is isolated on `codex/page-builder-m5`, [draft PR #233](https://github.com/BerinKarjala/portfolio/pull/233). This document records implementation and review evidence. Final release acceptance is **open**. Unperformed checks below are not approved exceptions. Remaining manual acceptance and final approval are tracked in [issue #234](https://github.com/BerinKarjala/portfolio/issues/234).
+M4 was merged by the repository owner as `00f074c` (PR #232). M5 [PR #233](https://github.com/BerinKarjala/portfolio/pull/233) was subsequently owner-merged as `095d567` and automatically published by Netlify. This document records implementation and review evidence; [post-merge verification](release-verification.md) records the production revision and follow-up coverage. Final release acceptance is **open**. Unperformed checks below are not approved exceptions. Remaining manual acceptance and final approval are tracked in [issue #234](https://github.com/BerinKarjala/portfolio/issues/234).
 
 ## Implemented in M5
 
@@ -64,12 +64,12 @@ For every entry record reviewer, date, OS/device, browser/AT version, result and
 - [x] Product gaps implemented; meaningful unit/integration/browser regressions added.
 - [x] Teaching/user/developer/export/storage-limit documentation and canonical trace guard.
 - [x] Performance/visual gates defined; evidence uploaded by CI.
-- [ ] Latest-head unit/build/budget/all-engine workflow and Netlify preview checks verified (link evidence below).
+- [x] M5 final-head unit/build/budget/all-engine workflow and Netlify preview checks verified; immutable run and production evidence in [post-merge verification](release-verification.md).
 - [ ] Physical-device, current-branded-browser, AT and remaining resource/backup manual matrix completed or explicit exceptions reviewed and approved.
 - [ ] User-approved final screenshots and performance thresholds recorded.
 - [ ] Open release blockers resolved or approved exceptions recorded; no known unresolved project-critical failures.
-- [ ] Explicit user approval to merge final PR/release from `main`.
+- [x] Repository owner merged #233 and Git-connected production publication completed. Manual acceptance/approved exceptions above remain open.
 
-M5 introduces no production deployment, CMS record mutation or automatic merge. Git-connected Netlify Deploy Previews are the review surface; local/CI interactions use the production build. The gallery continues to prefer matching Sanity content with a bundled discoverable fallback.
+Codex performed no merge, manual production deployment or CMS record mutation. Netlify automatically published the owner’s M5 merge; live production checks are recorded separately from the production-build CI interactions in the linked post-merge evidence. The gallery continues to prefer matching Sanity content with a bundled discoverable fallback.
 
 Known limits remain: browser-local, best-effort non-atomic ownership; 4MiB project input and 16MiB backup limits; no automatic cloud backup; native script-free output with remote resource/provider dependencies; opaque preview deliberately blocks submissions/navigation; basic exported-page accessibility does not certify user-authored designs. The repository also reports existing dependency alerts independently of this feature; M5 does not claim a repository-wide security audit.
