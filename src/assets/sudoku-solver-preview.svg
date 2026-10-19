@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450" fill="none">
   <title>Sudoku Solver preview</title>
-  <desc>Sudoku board and Solve and Reset controls in the left panel, with source code in an equally tall right panel.</desc>
+  <desc>Sudoku board with Solve and Reset controls below it.</desc>
   <rect width="800" height="450" fill="#052e16"/>
+  <g transform="translate(195 0)">
   <g fill="#14532d" stroke="#15803d" stroke-width="2">
     <rect x="20" y="20" width="370" height="410" rx="14"/>
-    <rect x="410" y="20" width="370" height="410" rx="14"/>
   </g>
   <g font-family="Arial, sans-serif" fill="#dcfce7">
     <text x="42" y="46" font-size="8" letter-spacing="2">SUDOKU SOLVER</text>
@@ -30,27 +30,6 @@
     <rect x="55" y="362" width="48" height="24" rx="4" fill="#166534" stroke="#4ade80"/>
     <rect x="112" y="362" width="48" height="24" rx="4" fill="#166534" stroke="#4ade80"/>
     <text x="66" y="378" font-size="10">Solve</text><text x="123" y="378" font-size="10">Reset</text>
-    <text x="430" y="48" font-size="11" letter-spacing="1.5">SUDOKU SOLVER SOURCE</text>
   </g>
-  <rect x="430" y="65" width="330" height="343" rx="8" fill="#052e16" stroke="#15803d" stroke-width="2"/>
-  <g font-family="monospace" font-size="10" fill="#bbf7d0">
-    <text x="445" y="88">SudokuSolver.jsx</text>
-    <text x="445" y="113">import React, { useMemo, useState }</text>
-    <text x="445" y="130">  from "react";</text>
-    <text x="445" y="156">import {</text>
-    <text x="445" y="173">  isValidGrid,</text>
-    <text x="445" y="190">  solveSudoku,</text>
-    <text x="445" y="207">  toNumberGrid,</text>
-    <text x="445" y="224">  toUiGrid,</text>
-    <text x="445" y="241">} from "./sudoku/solver";</text>
-    <text x="445" y="275">export default function SudokuSolver() {</text>
-    <text x="445" y="301">  const emptyGrid = useMemo(</text>
-    <text x="445" y="318">    () =&gt; Array.from({ length: 9 },</text>
-    <text x="445" y="335">      () =&gt; Array(9).fill("")),</text>
-    <text x="445" y="352">    []</text>
-    <text x="445" y="369">  );</text>
-    <text x="445" y="395">  // Validate and solve the puzzle.</text>
   </g>
-  <rect x="750" y="77" width="4" height="319" rx="2" fill="#14532d"/>
-  <rect x="750" y="80" width="4" height="74" rx="2" fill="#86efac"/>
 </svg>

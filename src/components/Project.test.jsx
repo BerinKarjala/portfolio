@@ -24,6 +24,7 @@ vi.mock("../utils/idleCallback", () => ({
 }));
 
 import Project from "./Project";
+import sudokuPreview from "../assets/sudoku-solver-preview.svg";
 
 const renderProject = () =>
   render(
@@ -100,7 +101,7 @@ describe("Project", () => {
     renderProject();
 
     const sudoku = await screen.findByRole("link", { name: "View project: Sudoku Solver" });
-    expect(sudoku.querySelector("img").getAttribute("src")).toContain("sudoku-solver-preview.svg");
+    expect(sudoku.querySelector("img").getAttribute("src")).toBe(sudokuPreview);
     expect(screen.getByRole("link", { name: "View project: HTML Page Builder" }).getAttribute("href"))
       .toBe("/projects/page-builder");
   });

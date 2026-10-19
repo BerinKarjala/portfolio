@@ -1,26 +1,9 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import TeachingNotes from "./components/TeachingNotes";
 import Seo from "../../components/Seo";
-import SourceCode from "../../components/SourceCode";
 import "./page-builder.css";
 import "./canvas.css";
-import projectSource from "./PageBuilderProject.jsx?raw";
-
 const BuilderWorkspace = lazy(() => import("./BuilderWorkspace"));
-const sources = import.meta.glob(["./**/*.{js,jsx,css}", "!./**/*.test.*"], {
-  query: "?raw",
-  import: "default",
-  eager: true,
-});
-const sourceFiles = [
-  { name: "page-builder/PageBuilderProject.jsx", source: projectSource },
-  ...Object.entries(sources)
-    .filter(([name]) => name !== "./PageBuilderProject.jsx")
-    .map(([name, source]) => ({
-      name: name.replace("./", "page-builder/"),
-      source,
-    })),
-];
 
 export default function PageBuilderProject() {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,12 +16,12 @@ export default function PageBuilderProject() {
     <>
       <Seo
         title="HTML Page Builder Project | Berin Karjala"
-        description="A visual, browser-local HTML page builder built with React. Explore the implementation and launch the workspace."
+        description="A visual, browser-local HTML page builder built with React. Create websites and launch the workspace."
         path="/projects/page-builder"
       />
-      <main className="mx-auto w-full max-w-6xl px-4 py-6" inert={isOpen}>
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-          <div className="w-full lg:w-1/2">
+      <main className="mx-auto w-full max-w-3xl px-4 py-6" inert={isOpen}>
+        <div className="w-full">
+          <div className="w-full">
             <section className="rounded-2xl border border-green-700 border-opacity-40 bg-green-900 bg-opacity-60 p-4 sm:p-6 shadow-2xl backdrop-filter backdrop-blur-sm">
               <p className="text-xs uppercase tracking-widest text-green-200">
                 HTML Page Builder
@@ -77,9 +60,6 @@ export default function PageBuilderProject() {
               </p>
               <TeachingNotes />
             </section>
-          </div>
-          <div className="w-full lg:w-1/2">
-            <SourceCode title="Page Builder Source" files={sourceFiles} />
           </div>
         </div>
       </main>

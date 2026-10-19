@@ -1,11 +1,9 @@
 import React, { Component } from "react";
 import Seo, { SITE_NAME, SITE_URL } from "../Seo";
-import SourceCode from "../SourceCode";
-import minesweeperSource from "./Minesweeper.jsx?raw";
 
 const DEBUG_VALIDATE_COUNTS = false;
 const PAGE_DESCRIPTION =
-  "Play a classic Minesweeper board and explore the game logic behind the scenes.";
+  "Play a classic Minesweeper board. Find the mines, place flags, and clear the board.";
 const FLAG_SYMBOL = "\u{1F6A9}";
 const BOMB_SYMBOL = "\u{1F4A3}";
 
@@ -301,9 +299,9 @@ class Minsweeper extends Component {
           path="/projects/Minesweeper"
           jsonLd={[webPageSchema, appSchema]}
         />
-        <section className="mx-auto w-full max-w-6xl px-4 py-6">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-          <div className="w-full lg:w-1/2">
+        <section className="mx-auto w-full max-w-xl px-4 py-6">
+        <div className="w-full">
+          <div className="w-full">
             <h1 className="mb-3 text-center text-2xl sm:text-3xl font-semibold text-green-50">
               Minesweeper
             </h1>
@@ -325,9 +323,6 @@ class Minsweeper extends Component {
                 Click to reset the board
               </button>
             </div>
-          </div>
-          <div className="w-full lg:w-1/2">
-            <SourceCode title="Minesweeper Source" files={[{ name: "Minesweeper.jsx", source: minesweeperSource }]} />
           </div>
         </div>
       </section>

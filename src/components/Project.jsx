@@ -66,7 +66,7 @@ export default function Project() {
             ...project,
             thumbnail: {
               asset: { url: sudokuPreview },
-              alt: "Sudoku Solver with board and controls on the left and source code on the right",
+              alt: "Sudoku Solver board with Solve and Reset controls",
             },
           }
         : project

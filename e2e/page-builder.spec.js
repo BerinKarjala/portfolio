@@ -32,7 +32,7 @@ test("portfolio launch page opens full screen and restores keyboard focus", asyn
   await page.goto("/projects/page-builder");
   await expect(
     page.getByRole("heading", { name: "Page Builder Source" }),
-  ).toBeVisible();
+  ).toHaveCount(0);
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await testInfo.attach("portfolio-project-page", {
     body: await page.screenshot(),

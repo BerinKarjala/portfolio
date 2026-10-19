@@ -54,11 +54,11 @@ afterEach(() => {
 });
 
 describe("portfolio launcher and dashboard (AC-01, AC-09, AC-13)", () => {
-  it("uses the standard source panel, launches full screen, and restores launcher focus", async () => {
+  it("launches full screen without a source panel and restores launcher focus", async () => {
     renderPage();
     expect(
-      screen.getByRole("heading", { name: "Page Builder Source" }),
-    ).not.toBeNull();
+      screen.queryByRole("heading", { name: "Page Builder Source" }),
+    ).toBeNull();
     expect(screen.queryByRole("dialog")).toBeNull();
     const workspace = await launch();
     expect(

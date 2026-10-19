@@ -6,9 +6,6 @@ import {
   toUiGrid,
 } from "./sudoku/solver";
 import Seo, { SITE_NAME, SITE_URL } from "../Seo";
-import SourceCode from "../SourceCode";
-import sudokuSource from "./SudokuSolver.jsx?raw";
-import solverSource from "./sudoku/solver.js?raw";
 
 const PAGE_DESCRIPTION =
   "Solve Sudoku puzzles in the browser with clear inputs, validation, and a readable solver.";
@@ -123,8 +120,8 @@ export default function SudokuSolver() {
         path="/projects/SudokuSolver"
         jsonLd={[webPageSchema, appSchema]}
       />
-      <section className="mx-auto w-full max-w-6xl px-4 py-6">
-        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
+      <section className="mx-auto w-full max-w-xl px-4 py-6">
+        <div className="w-full">
           <div className="rounded-2xl border border-green-700 border-opacity-40 bg-green-900 bg-opacity-60 p-4 sm:p-6 shadow-2xl backdrop-filter backdrop-blur-sm">
             <p className="text-xs uppercase tracking-widest text-green-200">
               Sudoku Solver
@@ -199,14 +196,6 @@ export default function SudokuSolver() {
               </p>
             </div>
           </div>
-          <SourceCode
-            fillHeight
-            title="Sudoku Solver Source"
-            files={[
-              { name: "SudokuSolver.jsx", source: sudokuSource },
-              { name: "sudoku/solver.js", source: solverSource },
-            ]}
-          />
         </div>
       </section>
     </>
