@@ -257,3 +257,42 @@ are explicit test setup, not public generator functionality. Production inferenc
 remains disabled. Account/free-tier eligibility, identity, durable shared quotas,
 provider comparison and physical/other-browser acceptance still remain. Full
 commands, source commit and scope limits are recorded in verification-m3.md.
+
+## M4 increment: disabled server boundary and durable quota authority
+
+Source commit `e9bd317` adds a Cloudflare Worker boundary, signed browser identity,
+server-owned schemas and one transactional SQLite Durable Object for global
+admission. Miniflare/workerd tests exercise actual storage concurrency, persistence
+through a full runtime restart, cookie sessions and the disabled production entry.
+Chromium additionally checks real HttpOnly/host/Strict cookie behavior and a
+same-origin frontend-proxy simulation. The frontend designer remains unavailable;
+there is no AI binding, live provider, deployed endpoint or media-ownership path.
+
+The authority atomically reserves browser allowance and a server-owned conservative
+Neuron bound before dispatch. Adopted ceilings remain three images/refinements,
+ten prompts and 8,000 shared Neurons per UTC day. The current conservative counter
+interpretation counts image/refinement submissions in both counters. It is explicit
+and revisable. Burst protection, two global pending slots, canonical-input
+idempotency, delayed-response accounting, rollback, provider exhaustion, trusted
+usage reconciliation and conservative cross-midnight holds are implemented.
+Unknown execution or a violated cost bound keeps the charge and latches new work
+closed until reviewed reconciliation; there is no automatic reset/refund endpoint.
+
+Current official Cloudflare documentation source was checked: Workers Free permits
+SQLite-backed Durable Objects and describes hard free-limit failures; Workers AI
+lists a 10,000-Neuron daily allocation. This supports the local design choice but
+does not establish this account's eligibility, real model terms/costs, operational
+billing allowances or a live deployment. See cloudflare-readiness.md. No existing
+account, credentials or paid plan were assumed or provisioned.
+
+Miniflare 4.20260730.0 is an exact development dependency for real runtime tests.
+Existing lockfile package records/versions are unchanged. Offline npm ci succeeds;
+all 196 unit/integration tests, three workerd runtime tests, one browser boundary
+test, 17 existing Studio browser checks, build and Page Builder gates pass.
+A dedicated CI workflow is included; remote CI has not run. Browser bundles retain
+the same frontend hashes and contain no server bindings/authority/internal route.
+
+The next work requires actual Free-plan account evidence, verified model bounds,
+owned server media handling and a real same-origin proxy before any provider is
+wired or enabled. AC-30/33–37/42 are partial, not completed live acceptance. No
+push, deployment, inference, account mutation or merge into main was performed.

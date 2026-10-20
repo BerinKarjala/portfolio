@@ -9,14 +9,17 @@ future server integration. It is not a browser-to-provider implementation.
 2. Recheck the official references in `handoff/Security_and_Live_AI.md` for Workers
    Free, Workers AI pricing and the exact candidate models. Verify all endpoint,
    durable coordination, abuse-control and storage allowances fit a $0 budget.
-3. Choose a protected Worker/AI-binding backend or protected server REST adapter.
-   The current app deploys static output through Netlify; no existing server
-   identity or suitable quota service has been demonstrated.
-4. Implement server-issued/validated opaque browser identities and one durable,
-   coordinated daily quota authority. Reserve browser allowance AND conservative
-   shared cost before dispatch. Defaults remain 3 images, 10 submitted chat
-   prompts, 8,000 shared Neurons, UTC day. They are adopted revisable defaults;
-   Cloudflare and $0 are explicit choices. Switching presets does not reset limits.
+3. Review the implemented Worker/SQLite authority in server-boundary.md. It has
+   no AI binding or provider plan and is not deployed. The current app remains
+   static on Netlify; configure and verify a same-origin proxy only after actual
+   Worker access and free allowances are established.
+4. Retain and deploy-verify the implemented signed HttpOnly browser identity and
+   single transactional SQLite authority. Browser allowance and shared cost are
+   reserved atomically before dispatch. Defaults remain 3 images, 10 submitted
+   prompts and 8,000 shared Neurons per UTC day. The conservative current policy
+   counts image/refinement prompts in both counters. These remain revisable
+   defaults; Cloudflare and $0 are explicit choices. Never partition the shared
+   authority by preset, browser or evaluation route.
 5. Cover concurrent admission, retries/idempotency, conservative ambiguous charges,
    reservations settling across midnight, earlier provider exhaustion, oversized
    input/output, unknown identity, origin/CSRF and storage/service failures. An
@@ -33,6 +36,10 @@ future server integration. It is not a browser-to-provider implementation.
    bounded tasks and validate the FLUX route. Include comparison compute in the
    same limits. Record validity, latency, actual usage and rationale; no winner
    has been selected. Never automatically upgrade or choose paid fallback.
+
+Local server/runtime tests cover these controls with an injected provider; they
+do not establish live eligibility, real model costs or production proxy behavior.
+See verification-m4-server.md.
 
 No account resources, secrets, paid services, inference, or deployments were
 created by this increment. Manual styling and export work without this setup.
