@@ -13,7 +13,7 @@ This is a working manual-theme increment, not the completed v2.2 release.
 - [Live AI prerequisites](live-ai-setup.md)
 - [Unmodified supplied handoff](handoff/README.md)
 
-The supplied photo catalog and assets still need integration. Live inference is
-disabled. Generated-image caching, history/comparison/downloads and protected
+The supplied 248-photo catalog, thumbnails, credits and standalone browser are
+integrated under public/css-studio/. Live inference remains disabled. Generated-image caching, history/comparison/downloads and protected
 server quota/identity controls are not implemented. Do not enable a provider by
 replacing the disabled browser adapter with a privileged API call.

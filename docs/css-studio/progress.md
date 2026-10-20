@@ -10,8 +10,10 @@ context used within that request. The unrelated maintenance recovery attachment
 was not executed. Unmodified supplied documents are retained under `handoff/`;
 all seven Markdown files match their entries in the supplied SHA-256 manifest.
 The manifest describes the original delivery, not files actually available here.
-The large ZIP could not be transferred (32 MiB tool limit); no photographs or
-catalog have been imported.
+The large ZIP initially could not be transferred (32 MiB tool limit). The user
+subsequently supplied the connected Google Drive handoff folder; its catalog,
+photos, thumbnails and notices have now been downloaded and integrated. See the
+M2 update below for evidence.
 
 Initial/current feature base before implementation:
 `5644de5b9f7eeb809ed8ce2d6b9f2e03ac84e2da` (#237). The checkout was clean.
@@ -51,9 +53,11 @@ profiles, contextual reset/recovery, and lazy-loaded previews of all seven actua
 Page Builder starters. The starting holiday catalog is HD-02's **revisable
 proposal**, not an additional explicit user selection or an exhaustive cultural
 catalog. Names/context and imagery require entry-specific review before release.
-The exact 248-photo catalog, image selection, attribution, crop and license
-verification are **blocked by missing supplied assets**. No substitute image
-inventory has been fabricated. Background controls currently provide solid fills.
+The exact supplied 248-photo catalog is now integrated with automatic matching,
+manual selections, attribution, bounded lazy thumbnails, selected backgrounds and
+portable exports. Backgrounds also support a solid-fill choice. Full cross-browser,
+device and per-appearance photo/crop accessibility review remains incomplete;
+metadata verification is not a legal clearance claim.
 
 M3 has an injectable, default-disabled designer contract, bounded conversation,
 structured token validation, request/preset/appearance binding, explicit proposal
@@ -133,3 +137,56 @@ The browser executable override is an environment-specific test-tool selector.
 CI can use its standard installed browser builds. Final results are recorded in
 `verification.md`. Intermediate screenshots/reports are local test artifacts.
 No production deployment or merge into main is authorized by this task.
+
+## M2 update — connected Drive library
+
+The user supplied `My Drive/CSS_Studio_Codex_Handoff` and explicitly instructed
+continuation. Source folder: https://drive.google.com/drive/folders/1HJuK5FAA8RTOnMXBD9HrP-grY-UdgKxF.
+Drive was read only; no sharing, organization or source files were changed.
+All 248 samples and 248 thumbnails were materialized through authenticated Drive
+file references. Catalog, ATTRIBUTION.md and standalone index.html match the
+original handoff manifest hashes. Four original contact sheets are included.
+
+`public/css-studio/` owns the complete local library (approximately 97 MiB). Its
+bytes are static assets rather than JavaScript embeds. A small index supplies
+trusted IDs/paths; full credit metadata and picker code load on demand. The picker
+shows 12 thumbnails per page, uses native lazy images, and supports matching/all,
+season, kind and title/holiday search. Only the selected full sample loads.
+
+Seasonal auto-selection uses wilderness on every ordinary day, including the
+adopted weekend fallback. Holidays match explicit tags across all seasons; there
+is no date/locale inference. Manual `backgroundId` fields are validated and saved
+per existing schema-2 profile (optional backward-compatible field). `none` means
+solid fill; absence means automatic matching. Reset/Undo uses the same profile
+path. A failed manual photo falls back without erasing its saved ID; two failed
+loads in one selection context stop image attempts and retain the solid palette.
+
+The resolver provides the same selected image/design values to canvas, examples
+and exports. Runtime image paths begin `/css-studio/`; copying/downloading CSS
+normalizes that base to `./css-studio/` for portability, leaving the selected
+relative file and all color/font/button values unchanged. A theme ZIP includes
+styles.css, selected WebP bytes and the full matching CREDITS.json. Downloaded
+bytes must match the catalog SHA-256, WebP type and a 4 MiB bound. This separate
+binary ZIP utility reuses the existing CRC helper without weakening Page Builder's
+strict two-file export contract. No generated-image persistence is implied.
+
+Photo credits retain creator, source, license, original resolution, modification
+notes and additional rights restrictions. `spring-55` and `summer-51` carry
+`personality` notes. Eleven source license URLs use legacy HTTP and are preserved;
+credit validation permits HTTP(S) links while rejecting unsupported URL schemes.
+A browser regression caught the initial overly strict HTTPS-only metadata guard;
+allowing the supplied legacy license links restores credits/downloads.
+
+TDD evidence: background-selection tests failed before backgrounds.js existed;
+the photo-picker behavior test failed before its entry point was implemented.
+Binary archive tests verify exact selected bytes, relative CSS and matching
+credits, and reject corrupted bytes. Chromium tests cover tag precedence, lazy
+loading, no inference requests, retained manual images after reload, actual ZIP
+downloads, missing-photo fallback and standalone catalog filters.
+
+`python scripts/check-css-studio-assets.py` decodes all 496 WebP files and verifies
+paths, dimensions, hashes, unique original/sample identity metadata, 62 per season,
+50/12 split and complete attribution fields. Contact sheets for all four seasons
+were reviewed, plus actual Winter canvas/picker crops at 390, 1440 and 3840 px.
+Opaque text/control surfaces protect readability; these representative checks do
+not establish all-photo/all-appearance or physical-device conformance.
