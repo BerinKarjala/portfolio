@@ -1,0 +1,2590 @@
+{
+  "handoffVersion": "1.0",
+  "date": "2026-10-20",
+  "algorithm": "sha256",
+  "excludes": [
+    "HANDOFF_MANIFEST.json"
+  ],
+  "files": [
+    {
+      "path": "Acceptance_Test_Plan.md",
+      "bytes": 24449,
+      "sha256": "481a6b8680277e3886a8773f9a8e612804d2cf3ecc96024d5a246393b8ba1927"
+    },
+    {
+      "path": "Asset_Integration_Guide.md",
+      "bytes": 4594,
+      "sha256": "539852ce28ebc2b5e040086465b140c7e4e4c19f957471eb466ae965cb6df071"
+    },
+    {
+      "path": "Codex_CSS_Studio_Prompt.md",
+      "bytes": 10188,
+      "sha256": "dbc8528735b9adf3be144d9e0e036df54229ee0c6cb29ee9eab36df2af6a67dc"
+    },
+    {
+      "path": "HANDOFF_VALIDATION.md",
+      "bytes": 1768,
+      "sha256": "c3e092416092aa0d43203abaaf05d75d2d96fdcfee59cd0805bf1daced5e8468"
+    },
+    {
+      "path": "Implementation_Plan.md",
+      "bytes": 7757,
+      "sha256": "03af9805192ce097c1471812adf61c95e1c8f924802e7c79f5282d9039577d6b"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3611,
+      "sha256": "527abc81c6779564ccc2dc32447d97fb39c5eb36c7ab079a0f0a8be2857def63"
+    },
+    {
+      "path": "SOURCE_SNAPSHOT.json",
+      "bytes": 2151,
+      "sha256": "b94e5d225a2d095532382e0e132653a6bff2f307be865d0a9dc2d2491fba712c"
+    },
+    {
+      "path": "Security_and_Live_AI.md",
+      "bytes": 7640,
+      "sha256": "95c08dadd3571ac6014737aef2ca9337cd0dbec0ab31415fb5788c7e4f21af26"
+    },
+    {
+      "path": "background-library/ATTRIBUTION.md",
+      "bytes": 117375,
+      "sha256": "08cc30d2a73b2bf1a9a5cfc618d4d4adcd62957752c1f31141375c22097bfece"
+    },
+    {
+      "path": "background-library/README.md",
+      "bytes": 1990,
+      "sha256": "0beef76893f6787f7e498c5d0547243af51c4b24698fbf85685216b34b92897a"
+    },
+    {
+      "path": "background-library/catalog.json",
+      "bytes": 760488,
+      "sha256": "e031d709328d677118c9040c560d05bea7026f4f00922731836e57c24e35dd01"
+    },
+    {
+      "path": "background-library/contact-sheets/fall.jpg",
+      "bytes": 859175,
+      "sha256": "aff6b66f177e83058f29a711b18b61610a3444cdb5c16dddaa74de8d0e3f7558"
+    },
+    {
+      "path": "background-library/contact-sheets/spring.jpg",
+      "bytes": 865398,
+      "sha256": "d253feb7561566b9f902cc8456d4109584c9e6414eabaeb9d89b96bab91e09cf"
+    },
+    {
+      "path": "background-library/contact-sheets/summer.jpg",
+      "bytes": 807907,
+      "sha256": "86144544bdca0a79f0f5005f8bf0cda7e50b250eb6c096b7b2216e52f408dee3"
+    },
+    {
+      "path": "background-library/contact-sheets/winter.jpg",
+      "bytes": 757277,
+      "sha256": "5f28d2ed9076dc7b01ef2979a8a2efcbb7012a76d0ce3af0c3f33e8b078f72ce"
+    },
+    {
+      "path": "background-library/images/fall/fall-01-woodland.webp",
+      "bytes": 821368,
+      "sha256": "22bc536df5eda4be56013a935ef5966531e6e7ecb3bfbab4e9f0453a20b5b641"
+    },
+    {
+      "path": "background-library/images/fall/fall-02-woodland.webp",
+      "bytes": 328608,
+      "sha256": "fb54e31ee9b0cf80edb7a4f6c6326c510723d0e31d0d07d5227de9135d45ea8a"
+    },
+    {
+      "path": "background-library/images/fall/fall-03-woodland.webp",
+      "bytes": 555244,
+      "sha256": "43795c73089049a48c95bcc035e8a60911e0492c6c9a3537ff79ff6359f6143a"
+    },
+    {
+      "path": "background-library/images/fall/fall-04-woodland.webp",
+      "bytes": 483626,
+      "sha256": "6d78d6150f1731ee780c9a577a9628db85dabaa3651330c3e86a809ffb7e9823"
+    },
+    {
+      "path": "background-library/images/fall/fall-05-woodland.webp",
+      "bytes": 643440,
+      "sha256": "34b6cd7824e9f027c48e05ba177ad79e467ac107920fe9eb823a9df5af994928"
+    },
+    {
+      "path": "background-library/images/fall/fall-06-woodland.webp",
+      "bytes": 496434,
+      "sha256": "41a92397f6b84caca7d1ed67e9a092de9ccedbbeabf1b7fb9c8db6a801060ada"
+    },
+    {
+      "path": "background-library/images/fall/fall-07-woodland.webp",
+      "bytes": 510274,
+      "sha256": "78bb46fe4799c59dff93b47aa73bf0c94102ff2f43ba24ead0d4447cd167861a"
+    },
+    {
+      "path": "background-library/images/fall/fall-08-woodland.webp",
+      "bytes": 582454,
+      "sha256": "1ed34c45b98ace89392c02aafb62a60bae4a87beae8dfb469eab9bd3dedb391f"
+    },
+    {
+      "path": "background-library/images/fall/fall-09-waterfalls.webp",
+      "bytes": 385834,
+      "sha256": "8376ba2b8a56101b7041932cfe56280fe49505423d7e974b8bb870498212662a"
+    },
+    {
+      "path": "background-library/images/fall/fall-10-waterfalls.webp",
+      "bytes": 846940,
+      "sha256": "781003d99d2eec9719e5eebf3ab49a150f18c834d71e88fcf78a651c7ad33729"
+    },
+    {
+      "path": "background-library/images/fall/fall-11-lakes.webp",
+      "bytes": 718092,
+      "sha256": "f5e1ec2276cf6343ccd2c7d6e07193712071538558a86869016e839b18f3ed17"
+    },
+    {
+      "path": "background-library/images/fall/fall-12-lakes.webp",
+      "bytes": 254954,
+      "sha256": "df8dd120a748acd4813f230bdd6d98b89b839928e33d13467fd5582156fdf236"
+    },
+    {
+      "path": "background-library/images/fall/fall-13-mountains.webp",
+      "bytes": 171176,
+      "sha256": "994ca0fe17bea027346f67f71812a10841670f76c57ddf23b4f3d767b87a6735"
+    },
+    {
+      "path": "background-library/images/fall/fall-14-lakes.webp",
+      "bytes": 411886,
+      "sha256": "937c800248aea3eef2e87d7f07558de86e7a6770d00dde275aed014d26b58441"
+    },
+    {
+      "path": "background-library/images/fall/fall-15-lakes.webp",
+      "bytes": 446864,
+      "sha256": "4b6d75f1a40f9bdd6783ab68bdaaf10fb5ca1aa53c764edc6ac96ca9ce5ede5e"
+    },
+    {
+      "path": "background-library/images/fall/fall-16-lakes.webp",
+      "bytes": 91140,
+      "sha256": "1d3c2c5c332ce4d026db3d0f9567cf4ff0b716d37b8ec8fe63542db2cac5aad1"
+    },
+    {
+      "path": "background-library/images/fall/fall-17-lakes.webp",
+      "bytes": 484770,
+      "sha256": "a637a1e6e66efb9b1e7f85a37f9e91946bbaca757f685bcfefec4ea3f4b233f8"
+    },
+    {
+      "path": "background-library/images/fall/fall-18-lakes.webp",
+      "bytes": 309350,
+      "sha256": "e5703161a69897fb77228c13488101bf7289013adc3ffcf52f7e9fad0eec19f2"
+    },
+    {
+      "path": "background-library/images/fall/fall-19-lakes.webp",
+      "bytes": 758864,
+      "sha256": "024340924fdd756b5808685ee49cc1b1bbcfc93a4a94486b93ede7d3a0901c1d"
+    },
+    {
+      "path": "background-library/images/fall/fall-20-lakes.webp",
+      "bytes": 249692,
+      "sha256": "aff545e67c973435a280e0930469bf66cb5d5522c9b67a0183dbf6f59e7039df"
+    },
+    {
+      "path": "background-library/images/fall/fall-21-mountains.webp",
+      "bytes": 350970,
+      "sha256": "611a1c81508971c4bd3bf6c3a6cd490063f400af87ab600abdbc171f8d615705"
+    },
+    {
+      "path": "background-library/images/fall/fall-22-mountains.webp",
+      "bytes": 453746,
+      "sha256": "1a7b657ef70108c3509985089257daf19e53fc9419b981bc938b6e3afd003df5"
+    },
+    {
+      "path": "background-library/images/fall/fall-23-mountains.webp",
+      "bytes": 228604,
+      "sha256": "a8a51e318d20296f430e5e79509bbcfd1ec6af56c0149012cfd0f41569712bd7"
+    },
+    {
+      "path": "background-library/images/fall/fall-24-lakes.webp",
+      "bytes": 350536,
+      "sha256": "c783b9f9204c94fd51a58c160ae900812529881f6612ebedc03bd41b0fdc8d65"
+    },
+    {
+      "path": "background-library/images/fall/fall-25-mountains.webp",
+      "bytes": 80220,
+      "sha256": "e76a27898d298692a8e2fdb5ee7788c57a406e4823db9235e8360b547f1cb6ae"
+    },
+    {
+      "path": "background-library/images/fall/fall-26-mountains.webp",
+      "bytes": 180326,
+      "sha256": "f3c91543a9ecc439a2e9377e2000f4431d60e74ec71a2a7f569548c128d820b9"
+    },
+    {
+      "path": "background-library/images/fall/fall-27-woodland.webp",
+      "bytes": 732982,
+      "sha256": "fb86cc1b88e01ee2f3c56cfea4989cb1c8d82dca0fbc598a45ec9edbd0e18d32"
+    },
+    {
+      "path": "background-library/images/fall/fall-28-mountains.webp",
+      "bytes": 520918,
+      "sha256": "bb1cc491df8525d23f7c956b618976350bf287849b98ede89b65b0f7197b73f6"
+    },
+    {
+      "path": "background-library/images/fall/fall-29-valleys.webp",
+      "bytes": 375310,
+      "sha256": "b1244fcc2960a744f18dfe635654cdf9359d3d27da3092f8354f1e3395ec8cf9"
+    },
+    {
+      "path": "background-library/images/fall/fall-30-mountains.webp",
+      "bytes": 360896,
+      "sha256": "9f8c5aa5502f9589e6bbb81675f526ffe0b177d1feab9fb26a5dc0304f145024"
+    },
+    {
+      "path": "background-library/images/fall/fall-31-waterfalls.webp",
+      "bytes": 445874,
+      "sha256": "541fdefca9fabd2a93be96ee073279777012ea609583d849ba431c4ec32adb64"
+    },
+    {
+      "path": "background-library/images/fall/fall-32-waterfalls.webp",
+      "bytes": 634590,
+      "sha256": "4d3a36e22a7809dc53193b35d24892654daaf98a98dfda000c838fe4f100a124"
+    },
+    {
+      "path": "background-library/images/fall/fall-33-waterfalls.webp",
+      "bytes": 142530,
+      "sha256": "d7318bb41b6a78e270509b71c37bc1ac290bc2701a5e44c2d4173df6c4397d96"
+    },
+    {
+      "path": "background-library/images/fall/fall-34-waterfalls.webp",
+      "bytes": 438972,
+      "sha256": "3f2543658e37908ce60636f0ea087fdb8104d4c4570a12ac900245f139623a03"
+    },
+    {
+      "path": "background-library/images/fall/fall-35-waterfalls.webp",
+      "bytes": 619154,
+      "sha256": "1f65147311374a0b825e14d76e377277ab29346c5e52bc38aaebf2223b73b5c6"
+    },
+    {
+      "path": "background-library/images/fall/fall-36-waterfalls.webp",
+      "bytes": 564344,
+      "sha256": "05ef1537e288f6b9e27fb862572b011da84ca2df74ecd50f5f3e7be8b0f29294"
+    },
+    {
+      "path": "background-library/images/fall/fall-37-waterfalls.webp",
+      "bytes": 671840,
+      "sha256": "d59ea8871df49fdcab2ac584cf7aca73e08ebd8689a37cba73b352048e2a3d97"
+    },
+    {
+      "path": "background-library/images/fall/fall-38-woodland.webp",
+      "bytes": 456666,
+      "sha256": "6cda559769ba6abd961582bf288296df422a8d5d96b1689810bc63a008051b5a"
+    },
+    {
+      "path": "background-library/images/fall/fall-39-woodland.webp",
+      "bytes": 385640,
+      "sha256": "2fe1b7d20f6470577a60bd9bf61d4d00b8e56504c66828736575f5881c58d6b1"
+    },
+    {
+      "path": "background-library/images/fall/fall-40-woodland.webp",
+      "bytes": 465318,
+      "sha256": "c9ec15ef8ac445dc83325ddcacf4111aa1e416ae67e588773c8f6b674a45b638"
+    },
+    {
+      "path": "background-library/images/fall/fall-41-mountains.webp",
+      "bytes": 312166,
+      "sha256": "01226364cbcd932a44126939cda3dd17fc5ceed5ca9a5592d0348356cc1ff988"
+    },
+    {
+      "path": "background-library/images/fall/fall-42-valleys.webp",
+      "bytes": 798398,
+      "sha256": "fb3924f91b4b03123051794f2fce7bef66f676633c3764fdb187f6172621ef7d"
+    },
+    {
+      "path": "background-library/images/fall/fall-43-valleys.webp",
+      "bytes": 386346,
+      "sha256": "51cc855b31f2dccc9955c759b62f0aed5dcbcde92bd1b1ed50bae779466f0d19"
+    },
+    {
+      "path": "background-library/images/fall/fall-44-valleys.webp",
+      "bytes": 367688,
+      "sha256": "800685bb37dba03c617fb3628c8dbe51aa53221af9161d2b44684007d4ba54f3"
+    },
+    {
+      "path": "background-library/images/fall/fall-45-valleys.webp",
+      "bytes": 579196,
+      "sha256": "528c3a1bee48cf6ec718b59c9d1c617cd6daa77b33b2289e82b4fa372406327a"
+    },
+    {
+      "path": "background-library/images/fall/fall-46-valleys.webp",
+      "bytes": 743218,
+      "sha256": "f1bdcc39d6cc0b3c1bc3936e907da6e4402e53ecaa1f4638b9063d6635bf17a1"
+    },
+    {
+      "path": "background-library/images/fall/fall-47-valleys.webp",
+      "bytes": 725964,
+      "sha256": "8d52d66fea4de062d205422aba1668dbb941ba388a4c1433ad4b9d2d8469e5b1"
+    },
+    {
+      "path": "background-library/images/fall/fall-48-mountains.webp",
+      "bytes": 342480,
+      "sha256": "1da4a7862e85c9d5b9e61bdc1acd88b47c04de17d19737701a2e9cc343e57a2a"
+    },
+    {
+      "path": "background-library/images/fall/fall-49-valleys.webp",
+      "bytes": 483966,
+      "sha256": "e309744008bbd581304aea28e48f59f6f6536670c50c91b681cabbda77ea52e5"
+    },
+    {
+      "path": "background-library/images/fall/fall-50-valleys.webp",
+      "bytes": 120486,
+      "sha256": "e5d475541ba129c63d75f8d935415cc2c38dbb6014e83c7aaf1d5aa1088bb59e"
+    },
+    {
+      "path": "background-library/images/fall/fall-51-dia-de-muertos.webp",
+      "bytes": 321710,
+      "sha256": "776f924a8d8ec6040fb9a351650d2108e6a2b1619d7c8fe961230c043ab7bdd5"
+    },
+    {
+      "path": "background-library/images/fall/fall-52-dia-de-muertos.webp",
+      "bytes": 334892,
+      "sha256": "6f6a44c78186321448cec787f4ef5e6763b62e660720f9f6ad6d2fd96a96c8de"
+    },
+    {
+      "path": "background-library/images/fall/fall-53-dia-de-muertos.webp",
+      "bytes": 462456,
+      "sha256": "49f5d6dd2174c7ec5284a15cf04b7aefbe698c5613e29aa53c59a6fedd5fe11b"
+    },
+    {
+      "path": "background-library/images/fall/fall-54-diwali.webp",
+      "bytes": 52560,
+      "sha256": "017f60ee1f74dd9318512e17e2cd35a37be3aa12af79d904dc64c7a3e4eb3697"
+    },
+    {
+      "path": "background-library/images/fall/fall-55-diwali.webp",
+      "bytes": 59346,
+      "sha256": "14c7f0087b20c136b0e11d32a497878f672aa2c2d7d26d8b6c1af3b57524dea9"
+    },
+    {
+      "path": "background-library/images/fall/fall-56-diwali.webp",
+      "bytes": 213538,
+      "sha256": "f209319c193f949f266a8d40e63abe325f92156e017ce670970644880c58b147"
+    },
+    {
+      "path": "background-library/images/fall/fall-57-halloween.webp",
+      "bytes": 539616,
+      "sha256": "fec09828e532193bf18ac33df5e160db9585df8c7dc6bfb8d4b4ee285d9d0561"
+    },
+    {
+      "path": "background-library/images/fall/fall-58-halloween.webp",
+      "bytes": 166888,
+      "sha256": "fbbc51930eb49e669d04978e2724444451404ec6882385abe8af4ae9d00ee9d0"
+    },
+    {
+      "path": "background-library/images/fall/fall-59-halloween.webp",
+      "bytes": 207706,
+      "sha256": "9c4397df5ebe0468ef6af1f340f243faa167e8baef5dcdcc91bdf9615fb6442f"
+    },
+    {
+      "path": "background-library/images/fall/fall-60-mid-autumn-festival.webp",
+      "bytes": 452552,
+      "sha256": "edc1910162702a9500d0dbd37e9e25a84ba5984409bf5be420a3b9e6ddc1d849"
+    },
+    {
+      "path": "background-library/images/fall/fall-61-mid-autumn-festival.webp",
+      "bytes": 201714,
+      "sha256": "1958a7756b08ddb7d537d9e2b8fbf001b865d31bb8ec2db23c5826f2f4ecc225"
+    },
+    {
+      "path": "background-library/images/fall/fall-62-mid-autumn-festival.webp",
+      "bytes": 479988,
+      "sha256": "50b7e1acfbb5cbac9c5e93610052ad816801afcfa96f12486dec3fb24a12a99c"
+    },
+    {
+      "path": "background-library/images/spring/spring-01-woodland.webp",
+      "bytes": 776892,
+      "sha256": "ad5c130b64e8b8821ddf07d4036c452502da5fd017829ef772be6ecd678c0609"
+    },
+    {
+      "path": "background-library/images/spring/spring-02-woodland.webp",
+      "bytes": 721438,
+      "sha256": "af52f992ea5ada82fcda10784729466cf93d9331a52759084f35803074f985f7"
+    },
+    {
+      "path": "background-library/images/spring/spring-03-woodland.webp",
+      "bytes": 577048,
+      "sha256": "68f0d09c062253e69143bb00eecc38551f48609ca1bd4662a8010dfd8f292ff9"
+    },
+    {
+      "path": "background-library/images/spring/spring-04-wildflowers.webp",
+      "bytes": 377672,
+      "sha256": "56e062d4f04e99ad6796478106ded824dc39d702a7d52b6d19ca17288de4e48b"
+    },
+    {
+      "path": "background-library/images/spring/spring-05-wildflowers.webp",
+      "bytes": 629652,
+      "sha256": "39eea8714206034dfaf338b9efeb3cbc121e97035f75a925b16a2c685dcca1e5"
+    },
+    {
+      "path": "background-library/images/spring/spring-06-wildflowers.webp",
+      "bytes": 533884,
+      "sha256": "45cedc94e26b0bdc5a59d4169a859e175a3c0f08be18908f5539e14eed0fc961"
+    },
+    {
+      "path": "background-library/images/spring/spring-07-woodland.webp",
+      "bytes": 478738,
+      "sha256": "23d6964cdfc77c3d0a0e2ac3c38a3a54222b5104275590c5068399aaf2108278"
+    },
+    {
+      "path": "background-library/images/spring/spring-08-wildflowers.webp",
+      "bytes": 194144,
+      "sha256": "ca2c51162c361ca7e45a2bca629caec830ae7d6572982c78cc7bb06eb93987c4"
+    },
+    {
+      "path": "background-library/images/spring/spring-09-woodland.webp",
+      "bytes": 315248,
+      "sha256": "cb600d8a701acb718453f0d8c0dc979ae9162bcebce6425e7c2aa85d42450529"
+    },
+    {
+      "path": "background-library/images/spring/spring-10-wildflowers.webp",
+      "bytes": 703972,
+      "sha256": "aeebcb9323f8459cc415f9d6b1b43b5bd6f8519f546ca0c1b9c306811e5869ce"
+    },
+    {
+      "path": "background-library/images/spring/spring-11-mountains.webp",
+      "bytes": 208248,
+      "sha256": "8398fea7df41f406d3f8e4ca74fa05439bfd08404f29c4f49c959e4133a32726"
+    },
+    {
+      "path": "background-library/images/spring/spring-12-mountains.webp",
+      "bytes": 397236,
+      "sha256": "a5ca39fde7e0fc2f9a24d219cfd583f96082abd820c51e05d7a9660cc3a37d00"
+    },
+    {
+      "path": "background-library/images/spring/spring-13-mountains.webp",
+      "bytes": 198388,
+      "sha256": "7a3bb877043a66cb266a689b1055ad1cb3576f3384098f20e4aaac14d35f0e93"
+    },
+    {
+      "path": "background-library/images/spring/spring-14-mountains.webp",
+      "bytes": 406752,
+      "sha256": "7997b716cf0b99a33ba160008b48a8b184f6183ab4fabc84b100b306fa569b9d"
+    },
+    {
+      "path": "background-library/images/spring/spring-15-woodland.webp",
+      "bytes": 231644,
+      "sha256": "b521961287596f454b50533d05a0c1ebbc81fbc1a0f038ed538a41814468aca9"
+    },
+    {
+      "path": "background-library/images/spring/spring-16-wildflowers.webp",
+      "bytes": 598984,
+      "sha256": "bc608d0e390b46dec01f974ddd2e6ad1482eac5830915f44a8b497e311cd487e"
+    },
+    {
+      "path": "background-library/images/spring/spring-17-mountains.webp",
+      "bytes": 81218,
+      "sha256": "17bda050e2e27e0ec1d218c17842c424a0b416830c8c3481c98224892f12649b"
+    },
+    {
+      "path": "background-library/images/spring/spring-18-wildflowers.webp",
+      "bytes": 564136,
+      "sha256": "9b9a2eb65261b8433634a7a81e4e8cc750d6241760f766e8209dd7a5fe8c9960"
+    },
+    {
+      "path": "background-library/images/spring/spring-19-wildflowers.webp",
+      "bytes": 235874,
+      "sha256": "26ad390083f1d1b8670f45ed2640bd9396d8a16a42b3165dd680260fb2b67261"
+    },
+    {
+      "path": "background-library/images/spring/spring-20-wildflowers.webp",
+      "bytes": 494550,
+      "sha256": "213c049f61a5d9e60ceb4aec2cadba39434101259b9a5f7fb6cfaaacbca53983"
+    },
+    {
+      "path": "background-library/images/spring/spring-21-waterfalls.webp",
+      "bytes": 367686,
+      "sha256": "3c125b31aa68fc0785e75fc074898b5e22444c570fdc629d7d86ad0082f3b3fb"
+    },
+    {
+      "path": "background-library/images/spring/spring-22-waterfalls.webp",
+      "bytes": 503854,
+      "sha256": "6fea0c4ee1263145cae3e3a49031ee470016926abd9ed4ed30762399efa38d7b"
+    },
+    {
+      "path": "background-library/images/spring/spring-23-wildflowers.webp",
+      "bytes": 401586,
+      "sha256": "3be19cb36cfc5713c852d50a7b6a2ecc46eb7568aae9eaf09a3c7e1ed16cbabe"
+    },
+    {
+      "path": "background-library/images/spring/spring-24-wildflowers.webp",
+      "bytes": 584632,
+      "sha256": "1c6674d4034e75a7f719aca4f98fa6e8ce303f1ea2ab82c6d7c39703b29c9b46"
+    },
+    {
+      "path": "background-library/images/spring/spring-25-woodland.webp",
+      "bytes": 784410,
+      "sha256": "76a6ec1f86a175bdf904968a51b6b816ec39666e461d0391ac3ac26e3f04da80"
+    },
+    {
+      "path": "background-library/images/spring/spring-26-waterfalls.webp",
+      "bytes": 145906,
+      "sha256": "fed0dc52f20dc548b692ec53fb90eb18ced0b62c761925e4ea635279639cee54"
+    },
+    {
+      "path": "background-library/images/spring/spring-27-mountains.webp",
+      "bytes": 332730,
+      "sha256": "8d8f99011ee0c03ff3f69671bd7f0c675dc4f4d86cdffdeffee680d9ec6e6d0c"
+    },
+    {
+      "path": "background-library/images/spring/spring-28-waterfalls.webp",
+      "bytes": 304368,
+      "sha256": "79b65a8e40ebf44542f93ed47746be3a6353f420a777edc6a6f9be7c7a8f3390"
+    },
+    {
+      "path": "background-library/images/spring/spring-29-woodland.webp",
+      "bytes": 443568,
+      "sha256": "ce6a5c5993fda9d7f6b48329cf8612047e1223ba250acdb8b3cfba30dc9990b4"
+    },
+    {
+      "path": "background-library/images/spring/spring-30-waterfalls.webp",
+      "bytes": 560624,
+      "sha256": "b71fe5747ce275d7ce31cb16dd9e3a6c6ccd261545e0dcf50c4ec49de407ecac"
+    },
+    {
+      "path": "background-library/images/spring/spring-31-wildflowers.webp",
+      "bytes": 439320,
+      "sha256": "1f8c0cb2120d458d2bac78e50a46546da33401ed922f42a4aefd685a68d90745"
+    },
+    {
+      "path": "background-library/images/spring/spring-32-wildflowers.webp",
+      "bytes": 444924,
+      "sha256": "e9c7cdf7074059b908151c767272052b5b7bd4b3ce1dd5e2d65d5b8a086b1ae6"
+    },
+    {
+      "path": "background-library/images/spring/spring-33-woodland.webp",
+      "bytes": 52462,
+      "sha256": "8518d76a8a7f3a3338c59b860730fa9d2541c69d3655655fa905db8c9a3bbae2"
+    },
+    {
+      "path": "background-library/images/spring/spring-34-waterfalls.webp",
+      "bytes": 775946,
+      "sha256": "e49d7daf9f16ef4ad21d81f4d10288a49276e8f86aefa1ceb471f9e2856dae84"
+    },
+    {
+      "path": "background-library/images/spring/spring-35-mountains.webp",
+      "bytes": 236168,
+      "sha256": "2a9da6a6384b252d84bd67e4ccaa80180ade1d7c0f4f5ce7097fe7aaf9f0767c"
+    },
+    {
+      "path": "background-library/images/spring/spring-36-wildflowers.webp",
+      "bytes": 300508,
+      "sha256": "1831069c2cd491ef5198292b33ef60a24650246a0d1d2acabe975ddb8f02f837"
+    },
+    {
+      "path": "background-library/images/spring/spring-37-wildflowers.webp",
+      "bytes": 352914,
+      "sha256": "64a65e88399911849dfa6a3bd6d6d4382cfcbf4f73c32962f9f7c3a7789bf8ab"
+    },
+    {
+      "path": "background-library/images/spring/spring-38-waterfalls.webp",
+      "bytes": 702964,
+      "sha256": "e87366b43c73bed056f6f47804a44597a62c013d0846f87c74f5afeefa7b8ab4"
+    },
+    {
+      "path": "background-library/images/spring/spring-39-wildflowers.webp",
+      "bytes": 458598,
+      "sha256": "d4753e655811f1ae30381b021084f705b66555a3f0f91189c043cb65bb730a75"
+    },
+    {
+      "path": "background-library/images/spring/spring-40-wildflowers.webp",
+      "bytes": 210742,
+      "sha256": "2fa2ac08b987c3b8d0814165a3a143ac1bfd6b27933b660fd9c31f3896813c3a"
+    },
+    {
+      "path": "background-library/images/spring/spring-41-woodland.webp",
+      "bytes": 535946,
+      "sha256": "520303030e3191ee2e0eb4d1ff9507ea5b6a6c6c6dcba284dfee4e6a842fe1f3"
+    },
+    {
+      "path": "background-library/images/spring/spring-42-lakes.webp",
+      "bytes": 506514,
+      "sha256": "96c4f0be99e34b4067296f7dbed44962626811a198625d9307ade5e7010601e2"
+    },
+    {
+      "path": "background-library/images/spring/spring-43-lakes.webp",
+      "bytes": 261958,
+      "sha256": "50ae2d7cb8758130e026c5ccab994823d5659df0a0c878b69388d35747c700f8"
+    },
+    {
+      "path": "background-library/images/spring/spring-44-lakes.webp",
+      "bytes": 187668,
+      "sha256": "ab79a77bb4bd7c846eea03d890553e4d44b9a4fa5e1abf4cb8eb0172722c7347"
+    },
+    {
+      "path": "background-library/images/spring/spring-45-lakes.webp",
+      "bytes": 146292,
+      "sha256": "b82c670131870434c86f2415cd25acaa3f512ee473d5cc659e6c965c8de8f2d9"
+    },
+    {
+      "path": "background-library/images/spring/spring-46-wildflowers.webp",
+      "bytes": 738758,
+      "sha256": "62da4b52b196adae7a09b471f404975502696ba9c621f5554049b4d5a0fe2e2a"
+    },
+    {
+      "path": "background-library/images/spring/spring-47-woodland.webp",
+      "bytes": 654810,
+      "sha256": "ceda3a55dfdb25a085edf4ba88275e74b7ce439fb5e8f8bbdb6a0ef39d51c30e"
+    },
+    {
+      "path": "background-library/images/spring/spring-48-lakes.webp",
+      "bytes": 747460,
+      "sha256": "22632ecca96069f7cc8a0bf09014ac0364f3450ee35b65441ff29cc473294bf0"
+    },
+    {
+      "path": "background-library/images/spring/spring-49-wildflowers.webp",
+      "bytes": 682688,
+      "sha256": "94822e4c90ff7c15eac24c56cc4bf0e02ed9228fa8582f213f97135f9e88a4c8"
+    },
+    {
+      "path": "background-library/images/spring/spring-50-wildflowers.webp",
+      "bytes": 87478,
+      "sha256": "e44d9d2eadc2fa5ee2a81506475a0402857330d18d2d5a0e85be51e77f076f34"
+    },
+    {
+      "path": "background-library/images/spring/spring-51-easter.webp",
+      "bytes": 86436,
+      "sha256": "4cbabc428fdcc309938fc0bf76c44d84943369e7fdb235ac06c3ad455536b64d"
+    },
+    {
+      "path": "background-library/images/spring/spring-52-easter.webp",
+      "bytes": 216992,
+      "sha256": "00acce5a3024c751eb476e404acaa0798691ec2c9a4666abf71560d9f08499d9"
+    },
+    {
+      "path": "background-library/images/spring/spring-53-easter.webp",
+      "bytes": 173954,
+      "sha256": "add6293b626afc8b155fb75935647a0a131fea2af24840216eb46cc09f757e2a"
+    },
+    {
+      "path": "background-library/images/spring/spring-54-holi.webp",
+      "bytes": 446434,
+      "sha256": "23dfa21e29b6fc5fb843c2be7c964167e77f523f92bc4e1a1772ce26cb5f63d1"
+    },
+    {
+      "path": "background-library/images/spring/spring-55-holi.webp",
+      "bytes": 365274,
+      "sha256": "4149c6da27d1c94056a01016faccfa5eac08286d47247851ed9984a11968511d"
+    },
+    {
+      "path": "background-library/images/spring/spring-56-holi.webp",
+      "bytes": 164962,
+      "sha256": "0fb4c584e4c07207024398464cc359f1a4e58076b718bc7bf948dbbb6acba756"
+    },
+    {
+      "path": "background-library/images/spring/spring-57-nowruz.webp",
+      "bytes": 228252,
+      "sha256": "036c970c9c8970e9c434655118a8b0a626d33734ed194f1e41e172e71d30efe7"
+    },
+    {
+      "path": "background-library/images/spring/spring-58-nowruz.webp",
+      "bytes": 296668,
+      "sha256": "dafb9f3eb3bfff0e54427a009f132ec85255113972cc252c235bbcda7a032f0d"
+    },
+    {
+      "path": "background-library/images/spring/spring-59-nowruz.webp",
+      "bytes": 60292,
+      "sha256": "e87784627288a70a8e4afd94291e2e166c50ea3ec38e95c7a451fd158192ad1e"
+    },
+    {
+      "path": "background-library/images/spring/spring-60-vesak.webp",
+      "bytes": 371624,
+      "sha256": "a665c5127c41c749dee6937527bb44200886ea6154ea5691fa4d79f4a9eb2f06"
+    },
+    {
+      "path": "background-library/images/spring/spring-61-vesak.webp",
+      "bytes": 228242,
+      "sha256": "1cfc8b4c314cb5d3580ed168932c60196234be42ec82645da07f55380fdc0d98"
+    },
+    {
+      "path": "background-library/images/spring/spring-62-vesak.webp",
+      "bytes": 200226,
+      "sha256": "fb31648e373cf147bce8405f82720a70e0fadb4a1fe6b6ff1cfac9c38521eeb0"
+    },
+    {
+      "path": "background-library/images/summer/summer-01-alpine-lakes.webp",
+      "bytes": 23234,
+      "sha256": "048f1fbd0a846eb66f5cce667cacd77a5ad733f9c8eb6ab9c88427ead53886f2"
+    },
+    {
+      "path": "background-library/images/summer/summer-02-alpine-lakes.webp",
+      "bytes": 311126,
+      "sha256": "456d4ae487d8b835256e75b584b1efa384a54d68f620f626373ea36ba5349f75"
+    },
+    {
+      "path": "background-library/images/summer/summer-03-alpine-lakes.webp",
+      "bytes": 314314,
+      "sha256": "fd6d09fcf2dcc9f32ac37c5408410cc28dc705d0eff1ff5bb2703dc7803ad93d"
+    },
+    {
+      "path": "background-library/images/summer/summer-04-alpine-lakes.webp",
+      "bytes": 206116,
+      "sha256": "c56b8c3ed82a1a45b82b8aded3867c6d0eb930000d1c35fec4bd56afa2a48ecd"
+    },
+    {
+      "path": "background-library/images/summer/summer-05-alpine-lakes.webp",
+      "bytes": 540056,
+      "sha256": "c68432db9f17ce5e1d7f2a711d1eeadf6be6b09b81c1466fa0b21f3603299b28"
+    },
+    {
+      "path": "background-library/images/summer/summer-06-alpine-lakes.webp",
+      "bytes": 168980,
+      "sha256": "8e7acbd4fc625eb7996a64ab3b358d9155178a814d535e04d32a3b1efed4e074"
+    },
+    {
+      "path": "background-library/images/summer/summer-07-alpine-lakes.webp",
+      "bytes": 128420,
+      "sha256": "0e8f54a96bcf920e3661bbd3cf3496b9684b113244bf0eca2510eee17e311f38"
+    },
+    {
+      "path": "background-library/images/summer/summer-08-alpine-lakes.webp",
+      "bytes": 233136,
+      "sha256": "28c3cd9bffe62eded869b9a2a7a6c8ba7dcd2a58a6057b87671565e9dfccc93c"
+    },
+    {
+      "path": "background-library/images/summer/summer-09-alpine-lakes.webp",
+      "bytes": 154910,
+      "sha256": "ae99cda4560cbce152585b111e0df5812702fdfb90de8bb22c9dcd731c84893f"
+    },
+    {
+      "path": "background-library/images/summer/summer-10-alpine-lakes.webp",
+      "bytes": 169038,
+      "sha256": "a40b0b25082121df6fe5475dd5cf03e778949d105a1ab829c7045723b0854748"
+    },
+    {
+      "path": "background-library/images/summer/summer-11-night-sky.webp",
+      "bytes": 237972,
+      "sha256": "25e8898672dc496c69ebfb3544923c0fab2544ab88cb69fa11433178a61ef537"
+    },
+    {
+      "path": "background-library/images/summer/summer-12-wild-coast.webp",
+      "bytes": 225876,
+      "sha256": "e8b28e56e1c711bc645a0661ff85d42f229818eaae0587635a917927857b377a"
+    },
+    {
+      "path": "background-library/images/summer/summer-13-night-sky.webp",
+      "bytes": 387084,
+      "sha256": "bc8a9d1cb9b853281e7e347277db4d6e22d3584311bb18cec28350704bd7cd79"
+    },
+    {
+      "path": "background-library/images/summer/summer-14-desert.webp",
+      "bytes": 234228,
+      "sha256": "c6b577ee5e29df9aec5d08b807a8315584219e79233470fb5fedee50738eb9cc"
+    },
+    {
+      "path": "background-library/images/summer/summer-15-grasslands.webp",
+      "bytes": 410578,
+      "sha256": "71f3ac9270ab7785f8ac338c4e95d51bdff919fd6423945cd73c01b055f6d39c"
+    },
+    {
+      "path": "background-library/images/summer/summer-16-lush-forest.webp",
+      "bytes": 142686,
+      "sha256": "323e77b8b571a9e62c49cf514f4a8d3b82db149be9b27a7775b80ff573527992"
+    },
+    {
+      "path": "background-library/images/summer/summer-17-lush-forest.webp",
+      "bytes": 503460,
+      "sha256": "98504713f02d75f90adc1b5afc881dcd078f3a8a3f501f4a71711019f7254794"
+    },
+    {
+      "path": "background-library/images/summer/summer-18-wild-coast.webp",
+      "bytes": 409684,
+      "sha256": "3177edce7a0cfc5e560718e8fe0b26e3d47b343aa8cb4f0861406a2a58a574ba"
+    },
+    {
+      "path": "background-library/images/summer/summer-19-lush-forest.webp",
+      "bytes": 476510,
+      "sha256": "4863535ef6089403c68b6197fe845fecbe016e5d6251c8cc9b2fdc60250470a8"
+    },
+    {
+      "path": "background-library/images/summer/summer-20-wild-coast.webp",
+      "bytes": 503444,
+      "sha256": "495420d6c04e0c743c0bfec95ae6da9a8226c34b289eb72469478bca076ff721"
+    },
+    {
+      "path": "background-library/images/summer/summer-21-lush-forest.webp",
+      "bytes": 644798,
+      "sha256": "f5b788273af90ace273a1d6c913ff769f02bbfbc7a8eb448fdea1acdd96b0848"
+    },
+    {
+      "path": "background-library/images/summer/summer-22-lush-forest.webp",
+      "bytes": 361160,
+      "sha256": "d8fd7b7813320fdee3b53be86dd776f9a9d79bb67e826197ba03b32a1041750a"
+    },
+    {
+      "path": "background-library/images/summer/summer-23-lush-forest.webp",
+      "bytes": 521138,
+      "sha256": "00281fb2135a064ade9ada24b1656b3b31f452be471ff2fbe0dd3c0affbd1b5e"
+    },
+    {
+      "path": "background-library/images/summer/summer-24-lush-forest.webp",
+      "bytes": 566430,
+      "sha256": "03656044fdbb271bb25bf21efc0ef2e9902b6982565bbe5fb3dab91feeed5a7e"
+    },
+    {
+      "path": "background-library/images/summer/summer-25-grasslands.webp",
+      "bytes": 286322,
+      "sha256": "48ca6ca972acaa34d80083a7c82600ac89db83d20fb12fe09655b587f7035ec8"
+    },
+    {
+      "path": "background-library/images/summer/summer-26-grasslands.webp",
+      "bytes": 353628,
+      "sha256": "288a0b943be2e440b04ad228e6d914dbc6396486ffd22e000dd6509bd853fc48"
+    },
+    {
+      "path": "background-library/images/summer/summer-27-grasslands.webp",
+      "bytes": 119816,
+      "sha256": "ca88515c4842fbf33b8a767b818477c38b78a531d8ebac31a52ff6959916e066"
+    },
+    {
+      "path": "background-library/images/summer/summer-28-grasslands.webp",
+      "bytes": 377878,
+      "sha256": "cd34f5552231c8ad7e58277618db98c1d37066947e3bcb32b109a4ff1e1a3c58"
+    },
+    {
+      "path": "background-library/images/summer/summer-29-grasslands.webp",
+      "bytes": 175106,
+      "sha256": "f2daa84fe321e7881e0ae3b545735b947b2a8f7eaff70886a05d58a3b38bbbc9"
+    },
+    {
+      "path": "background-library/images/summer/summer-30-grasslands.webp",
+      "bytes": 630910,
+      "sha256": "5ddd0512bc7a3a6a032b7f4b3956f90a4324ec64004df0f2d578d3361776192f"
+    },
+    {
+      "path": "background-library/images/summer/summer-31-grasslands.webp",
+      "bytes": 321534,
+      "sha256": "eb4a8fd8c505c7d04d4f4d4b13dc9aea9bef0065a9c418bea5efa3516cabe320"
+    },
+    {
+      "path": "background-library/images/summer/summer-32-grasslands.webp",
+      "bytes": 218788,
+      "sha256": "c5be14c5cfac3cd396142fa93ad83dce7377c1cc8743de2416edbb0fdca46ad6"
+    },
+    {
+      "path": "background-library/images/summer/summer-33-grasslands.webp",
+      "bytes": 387342,
+      "sha256": "faf567040543e8216029b3207e5f9d4480616be89ba186bb5a39935c70f346a6"
+    },
+    {
+      "path": "background-library/images/summer/summer-34-grasslands.webp",
+      "bytes": 484914,
+      "sha256": "a1b063cd9dec942733c967e55ec6c029919b77a8635bd3405f466b07bf3c0033"
+    },
+    {
+      "path": "background-library/images/summer/summer-35-desert.webp",
+      "bytes": 253260,
+      "sha256": "f323da8c68f6a8f633c54c3438a05e0df90734d8ae4fb504a11266aee344ff5e"
+    },
+    {
+      "path": "background-library/images/summer/summer-36-desert.webp",
+      "bytes": 260682,
+      "sha256": "c0216f162e53a4261d020717b25c1a3c7b544a5bc47d49fae21d29bccbfca46a"
+    },
+    {
+      "path": "background-library/images/summer/summer-37-desert.webp",
+      "bytes": 240104,
+      "sha256": "aa7a9dff8e373ccf8537a1808f8c0725f10cda0324a8cc2ab45e95f144e59fec"
+    },
+    {
+      "path": "background-library/images/summer/summer-38-desert.webp",
+      "bytes": 587896,
+      "sha256": "c7a102240be575a6c075d42eeec3d91c5bae7f2cb7d5951e4f352290ee70a5e4"
+    },
+    {
+      "path": "background-library/images/summer/summer-39-desert.webp",
+      "bytes": 197340,
+      "sha256": "584f4a0703ecd61a8fa91ebb93c2b34189eee4ed7acd84089a8c0eacbcceab47"
+    },
+    {
+      "path": "background-library/images/summer/summer-40-desert.webp",
+      "bytes": 263506,
+      "sha256": "609f463d279e9299fa7359127cf7e102f46656f167653a38444590dd0d2a93c6"
+    },
+    {
+      "path": "background-library/images/summer/summer-41-desert.webp",
+      "bytes": 433226,
+      "sha256": "c2f94b14f19bf8b9046abc528ff1626a7837f79d97a0ef4eec5b0c904a6af766"
+    },
+    {
+      "path": "background-library/images/summer/summer-42-desert.webp",
+      "bytes": 279058,
+      "sha256": "b653323cb165cb11dff037281e2a014ff97134221a54c663e4ae45dc257017b1"
+    },
+    {
+      "path": "background-library/images/summer/summer-43-desert.webp",
+      "bytes": 146080,
+      "sha256": "76c9119b9cd14d8c69c2c7e9fd5fe547a83ccc1e8c3ae587920558aeee86a40f"
+    },
+    {
+      "path": "background-library/images/summer/summer-44-desert.webp",
+      "bytes": 420432,
+      "sha256": "2f7de0f17a4cd326f2e61ddca7e42d79e842f7fa01914ce2fca4445ef120eec6"
+    },
+    {
+      "path": "background-library/images/summer/summer-45-desert.webp",
+      "bytes": 256146,
+      "sha256": "6a735ace24c61c180e1bab6f11353593fce4b9993235d7a820ffaf1612a74c73"
+    },
+    {
+      "path": "background-library/images/summer/summer-46-wild-coast.webp",
+      "bytes": 332926,
+      "sha256": "7523a9de94ac517d602371c7d5ad782d21a2892bde5fa29c3723f4eeda9f9421"
+    },
+    {
+      "path": "background-library/images/summer/summer-47-desert.webp",
+      "bytes": 208206,
+      "sha256": "ad7e15d842ce50dabd1d7434edef08cf40f14a5a44e03cba6b9ae9a14bba8191"
+    },
+    {
+      "path": "background-library/images/summer/summer-48-desert.webp",
+      "bytes": 220274,
+      "sha256": "1f40240651d6270f6f39428bba01194ce47337fa1a9b971785f3361dd2ed3551"
+    },
+    {
+      "path": "background-library/images/summer/summer-49-wild-coast.webp",
+      "bytes": 408860,
+      "sha256": "29a845aa9c655f6ad1fdea8f8799cb51b1ae2a7cb7b7693e6552652156988536"
+    },
+    {
+      "path": "background-library/images/summer/summer-50-desert.webp",
+      "bytes": 478276,
+      "sha256": "90438494c3e735e845329942581d24f03c7aa59d324fe2742c99efd3608b5fed"
+    },
+    {
+      "path": "background-library/images/summer/summer-51-eid-al-adha.webp",
+      "bytes": 327434,
+      "sha256": "6a99dfdcfd17fe1c2c9bc4288b7a6c151389f2346ea64cfcd654b9e8a4a1b576"
+    },
+    {
+      "path": "background-library/images/summer/summer-52-eid-al-fitr.webp",
+      "bytes": 128334,
+      "sha256": "6deedceaad34644b4b175dc23b911b110de28e1231da9ba22ce8789764d4cee9"
+    },
+    {
+      "path": "background-library/images/summer/summer-53-eid-al-fitr.webp",
+      "bytes": 183718,
+      "sha256": "3c2832906a97c387705b4e6bf33a1e64be487fea001f7ca4bf7be16e42e6b4dc"
+    },
+    {
+      "path": "background-library/images/summer/summer-54-eid-al-fitr.webp",
+      "bytes": 351588,
+      "sha256": "11c64f5c75d28b142a3d86a95cb87bf5609f3ac8378024286f5750ec93045ba9"
+    },
+    {
+      "path": "background-library/images/summer/summer-55-midsummer.webp",
+      "bytes": 125708,
+      "sha256": "a4bdf23540ef1845181830853cd5b3908e09e88d4a25c0add9dd9b1c7a068038"
+    },
+    {
+      "path": "background-library/images/summer/summer-56-eid-al-adha.webp",
+      "bytes": 157014,
+      "sha256": "c99325775f0fa836a3c43c45e6484ee804efe636d383c8bc5cc8258ee58564ee"
+    },
+    {
+      "path": "background-library/images/summer/summer-57-midsummer.webp",
+      "bytes": 242594,
+      "sha256": "7609d78b1f9537745056dc4e323fbfa4ac49381241f44ab3bf18abada86170d0"
+    },
+    {
+      "path": "background-library/images/summer/summer-58-midsummer.webp",
+      "bytes": 334442,
+      "sha256": "571f26a4622b0702faa3f4c991ba4f8ba058fe6e8ce7d151b8d92fd98e118c40"
+    },
+    {
+      "path": "background-library/images/summer/summer-59-eid-al-adha.webp",
+      "bytes": 277510,
+      "sha256": "15b46ef3bec4f8ac6d6e8bc427cacc444f843b1aadd972b14e544d49e52a8cba"
+    },
+    {
+      "path": "background-library/images/summer/summer-60-tanabata.webp",
+      "bytes": 132878,
+      "sha256": "8094b8df62a8749a13c47fbbfc1f34748e5403a3a83cc222879dd43998ea27cc"
+    },
+    {
+      "path": "background-library/images/summer/summer-61-tanabata.webp",
+      "bytes": 444186,
+      "sha256": "b4e0a9408e6ceabaf501beb6ecbf4cb8494545f227e77f7a456beadddfc83e02"
+    },
+    {
+      "path": "background-library/images/summer/summer-62-tanabata.webp",
+      "bytes": 490710,
+      "sha256": "cbfc1821a51c6a2d2cd642dc8cbb4d3f117219b01a5f81c3692cd991517425b2"
+    },
+    {
+      "path": "background-library/images/winter/winter-01-snow-forest.webp",
+      "bytes": 688014,
+      "sha256": "e85d6d7359d3826d174d3342a6d56b0d4c837e9e8ed93024e3121216e3cd4ee8"
+    },
+    {
+      "path": "background-library/images/winter/winter-02-snow-forest.webp",
+      "bytes": 475982,
+      "sha256": "ff9b4898c565d4e8f47e7fb90522e704c2f0f6804393066cb2675798ab870ef7"
+    },
+    {
+      "path": "background-library/images/winter/winter-03-snow-forest.webp",
+      "bytes": 314884,
+      "sha256": "e75aaa95ddb6b906903be44ed80c189072e493c9a9b26f25aacab49d70720165"
+    },
+    {
+      "path": "background-library/images/winter/winter-04-snow-forest.webp",
+      "bytes": 739966,
+      "sha256": "39339b575d9ff340f30527b9320ea77fb9c82cde2b65587b099aa8e4cf6324a4"
+    },
+    {
+      "path": "background-library/images/winter/winter-05-snow-forest.webp",
+      "bytes": 737488,
+      "sha256": "2e74c5666f0e648e0b653167f2eaece2bf27a89972ecd87ffcb621de3a71b28d"
+    },
+    {
+      "path": "background-library/images/winter/winter-06-snow-forest.webp",
+      "bytes": 353912,
+      "sha256": "5412c64781f64f8c99ec7d01c7c989f976bd5f744df3ffb4d862d745f0ec5e4f"
+    },
+    {
+      "path": "background-library/images/winter/winter-07-snow-forest.webp",
+      "bytes": 765716,
+      "sha256": "618b05bc9994c50bf2cba9b783517fb2b5911afa58ceb3b5d13018e273a7e42b"
+    },
+    {
+      "path": "background-library/images/winter/winter-08-rivers.webp",
+      "bytes": 506136,
+      "sha256": "8409f12fd8e82417e88ba3d5938228f367a2df960fefb693825034c39b44d545"
+    },
+    {
+      "path": "background-library/images/winter/winter-09-snow-forest.webp",
+      "bytes": 244358,
+      "sha256": "0c02a1a077b41c3ed9ca0b7f7b6b979991f1637601f5c7a2c9849f21d672bf99"
+    },
+    {
+      "path": "background-library/images/winter/winter-10-frozen-lakes.webp",
+      "bytes": 493246,
+      "sha256": "e964fa50e52d20689d19151aaa5bfd4a59391290f96a621bb68ae57a5247d454"
+    },
+    {
+      "path": "background-library/images/winter/winter-11-rocky-coast.webp",
+      "bytes": 161874,
+      "sha256": "6d132cd89c96258aa43698120f5aa54e09e7aba73bed03f13fe8a2802e70d720"
+    },
+    {
+      "path": "background-library/images/winter/winter-12-snow-mountains.webp",
+      "bytes": 284648,
+      "sha256": "538dec3fc068d58628d8faa7873c25d5fca77dde7234ae07ffddf9f5e03246b8"
+    },
+    {
+      "path": "background-library/images/winter/winter-13-rivers.webp",
+      "bytes": 154536,
+      "sha256": "7fd1f855384ef3e493bf6519431ecb3567edbc131e7c61658751f257948495dc"
+    },
+    {
+      "path": "background-library/images/winter/winter-14-snow-mountains.webp",
+      "bytes": 173980,
+      "sha256": "94d92e8c487441b716f04d896100f9bd10a132a9c3f2bb3765ac76903e6ce710"
+    },
+    {
+      "path": "background-library/images/winter/winter-15-rivers.webp",
+      "bytes": 100306,
+      "sha256": "f28f7d35314a0007d7410d3f8cd63ae513fd343336702d995d780bbc5c8af85c"
+    },
+    {
+      "path": "background-library/images/winter/winter-16-snow-mountains.webp",
+      "bytes": 431306,
+      "sha256": "adce630ad16fa0ffa782c93682b4f1cdbe315c0523e22fb6481065e79386fc55"
+    },
+    {
+      "path": "background-library/images/winter/winter-17-snow-mountains.webp",
+      "bytes": 319006,
+      "sha256": "10675cebaa4ee0fa3990782f1a81a4b775f5ae3688919e828821e511b7afd0f6"
+    },
+    {
+      "path": "background-library/images/winter/winter-18-snow-mountains.webp",
+      "bytes": 482012,
+      "sha256": "7a73d0b01e3e278f1accd245596396e4dd136c15978ba8fc830624ce56cbc876"
+    },
+    {
+      "path": "background-library/images/winter/winter-19-snow-mountains.webp",
+      "bytes": 82472,
+      "sha256": "f30ef4a897d112aeea4ce3e6d00766ca374c1c4e0ba0a6b93fd8007b08c47fe5"
+    },
+    {
+      "path": "background-library/images/winter/winter-20-snow-mountains.webp",
+      "bytes": 77604,
+      "sha256": "0e28a56752d02899986a814192895b0882ceb92fde5f31776a5410fc307ce4e9"
+    },
+    {
+      "path": "background-library/images/winter/winter-21-frozen-lakes.webp",
+      "bytes": 431808,
+      "sha256": "b2afc260ed4dc36ebc9aca4f2500f1a465331f72773365c55fa78fa1e1bae3cd"
+    },
+    {
+      "path": "background-library/images/winter/winter-22-frozen-lakes.webp",
+      "bytes": 459026,
+      "sha256": "72e75273ea848c8209ae2150cd4329e9cce4798af0302f93fe95f166efd2dd1c"
+    },
+    {
+      "path": "background-library/images/winter/winter-23-frozen-lakes.webp",
+      "bytes": 111672,
+      "sha256": "3fa0895553d2289554325643558c3bd99184098360f18f5af4412fce0d1a8f00"
+    },
+    {
+      "path": "background-library/images/winter/winter-24-frozen-lakes.webp",
+      "bytes": 436924,
+      "sha256": "e15004b734f5d27090c3bdd78c685f105c57797748ba149007f1cf00d8abee5a"
+    },
+    {
+      "path": "background-library/images/winter/winter-25-frozen-lakes.webp",
+      "bytes": 130526,
+      "sha256": "805a9fba9e3f681d2259f5cbae8a3b9decfb2e8ee5fd82b87838d0ccd401aac8"
+    },
+    {
+      "path": "background-library/images/winter/winter-26-frozen-lakes.webp",
+      "bytes": 456930,
+      "sha256": "8a2a6e25fb22c5a8ab6b61c8c67af961df2afc4904b6ed6281bc6523fe093d36"
+    },
+    {
+      "path": "background-library/images/winter/winter-27-rivers.webp",
+      "bytes": 357126,
+      "sha256": "1933a24014d7931cd1cdbddea53fcf8480036275f1f6944a17516c7f87621b7b"
+    },
+    {
+      "path": "background-library/images/winter/winter-28-frozen-lakes.webp",
+      "bytes": 351750,
+      "sha256": "181f0ea736c18484143ea0c872a639b57f4e9600c32e9ab6cd62656f08a94d8a"
+    },
+    {
+      "path": "background-library/images/winter/winter-29-snow-forest.webp",
+      "bytes": 196080,
+      "sha256": "bdad876e62f2595724784d084c37e2b1453cc9b014411a4789824446709dd107"
+    },
+    {
+      "path": "background-library/images/winter/winter-30-frozen-lakes.webp",
+      "bytes": 200996,
+      "sha256": "ca7b3e41a3139bd076b3085adc8ba2c59a7b68020394309d79fdd645e0a0d320"
+    },
+    {
+      "path": "background-library/images/winter/winter-31-rivers.webp",
+      "bytes": 293416,
+      "sha256": "d711a30f0e2eb08ef60ff7d0a2fdb85b38d30322e74eaa46a9299764db858041"
+    },
+    {
+      "path": "background-library/images/winter/winter-32-rivers.webp",
+      "bytes": 82482,
+      "sha256": "785f15b9437c781289af24ff0459071e86beb671e3ae212f7029cd95cb05d985"
+    },
+    {
+      "path": "background-library/images/winter/winter-33-rivers.webp",
+      "bytes": 317342,
+      "sha256": "379fb0d8847502bd1ea7fa0c32b19c032c95e846298f2cfd489963657993ce14"
+    },
+    {
+      "path": "background-library/images/winter/winter-34-rivers.webp",
+      "bytes": 295752,
+      "sha256": "586977475a2be56f2ed0474be85cf857f712cd62ee93f5a4a72eea0abb9d6221"
+    },
+    {
+      "path": "background-library/images/winter/winter-35-rivers.webp",
+      "bytes": 217226,
+      "sha256": "5b78214c59298b8c66db8be2665a19d58ce47a443e88c436226f1f2275f9cb3b"
+    },
+    {
+      "path": "background-library/images/winter/winter-36-rivers.webp",
+      "bytes": 279202,
+      "sha256": "d388e82fc669a4cd3b61c77fd2d65e24437d54781def350e331f3540f3918746"
+    },
+    {
+      "path": "background-library/images/winter/winter-37-snow-forest.webp",
+      "bytes": 790676,
+      "sha256": "dd1cd54d4bf03d55596ff4509ab27f76689bfce59a951b78e70e695c9c5833d5"
+    },
+    {
+      "path": "background-library/images/winter/winter-38-rivers.webp",
+      "bytes": 448642,
+      "sha256": "f89e8ac8d0f76eb8c0950dd2b8af735cdcc3ab440b34b2aa8ef8afafbc5e09fa"
+    },
+    {
+      "path": "background-library/images/winter/winter-39-rivers.webp",
+      "bytes": 300024,
+      "sha256": "45ce7b868e5a954bde7183064c0130f2a5f6a115c7bbe7763a799a7a63a692af"
+    },
+    {
+      "path": "background-library/images/winter/winter-40-rivers.webp",
+      "bytes": 374232,
+      "sha256": "d7dd3827a23eec90b926e056975bc83f117b85b34a291c4de728f8a01d0a02f7"
+    },
+    {
+      "path": "background-library/images/winter/winter-41-aurora.webp",
+      "bytes": 99134,
+      "sha256": "b05f5ba95cf12bab47283bc65ba23a0c0b23674a57205642039f5606b9102e8f"
+    },
+    {
+      "path": "background-library/images/winter/winter-42-aurora.webp",
+      "bytes": 85568,
+      "sha256": "dc7571ea5d99cb6fd36a9e9240068cd53a810e23e2b51ba255e80c0e7ac34751"
+    },
+    {
+      "path": "background-library/images/winter/winter-43-aurora.webp",
+      "bytes": 47922,
+      "sha256": "4b3756e47d6bb96c69a2a6b85ad07fc0b557b009b0bac4b07152bc933a9dd208"
+    },
+    {
+      "path": "background-library/images/winter/winter-44-aurora.webp",
+      "bytes": 74854,
+      "sha256": "81359fa138343d0ab426ca956d67d06cde87b3eaeef8121ac41f9b3b575befd3"
+    },
+    {
+      "path": "background-library/images/winter/winter-45-aurora.webp",
+      "bytes": 69960,
+      "sha256": "dc6f18e8ef53f2d5796d115711e9c9fc5e5a628098d831cbe2f57ab6c51a7cea"
+    },
+    {
+      "path": "background-library/images/winter/winter-46-aurora.webp",
+      "bytes": 26088,
+      "sha256": "b3c5c02a4d9f387228c39a493b5365135e7b67f651ecc98041468676e65719d5"
+    },
+    {
+      "path": "background-library/images/winter/winter-47-aurora.webp",
+      "bytes": 53086,
+      "sha256": "43ec4054fd459508e72ab7df428d0878bce8bf14df2b2c34fe4c98766f7851d0"
+    },
+    {
+      "path": "background-library/images/winter/winter-48-aurora.webp",
+      "bytes": 61660,
+      "sha256": "782a164ffac842b0976ee3ea6a25234277bc592c84edf52ea8063c6d3e79ab7f"
+    },
+    {
+      "path": "background-library/images/winter/winter-49-aurora.webp",
+      "bytes": 87202,
+      "sha256": "235fb1edc1bf3eb5c4e67b14c6cda6ec9b5a9c96b4e9953a3e272726923a7d1c"
+    },
+    {
+      "path": "background-library/images/winter/winter-50-aurora.webp",
+      "bytes": 23134,
+      "sha256": "27089f1c8a344dc89fba171602d0fb86876be8672470073df6c44a683e24830b"
+    },
+    {
+      "path": "background-library/images/winter/winter-51-christmas.webp",
+      "bytes": 186450,
+      "sha256": "c9266aa7128765508c7a32f61a5c11d097534e707a32985a6442be94a479984c"
+    },
+    {
+      "path": "background-library/images/winter/winter-52-christmas.webp",
+      "bytes": 581114,
+      "sha256": "ba24ddfee345e5cef75d4657eaac77249a3357ffdfe46c173a897bff1e6b8e6e"
+    },
+    {
+      "path": "background-library/images/winter/winter-53-christmas.webp",
+      "bytes": 223528,
+      "sha256": "ac26d694bd468a514613afe5862eaefba4a63f88c05f730fb9125636ecd41e5f"
+    },
+    {
+      "path": "background-library/images/winter/winter-54-hanukkah.webp",
+      "bytes": 32204,
+      "sha256": "cefba243c8cc697f2e70c22170687e914f765619cc464b28427008d85e243812"
+    },
+    {
+      "path": "background-library/images/winter/winter-55-hanukkah.webp",
+      "bytes": 91298,
+      "sha256": "45bdd3bc05d5fccf6163d84f24df44448a4be06a67d7e87cb30d6ba33f34d422"
+    },
+    {
+      "path": "background-library/images/winter/winter-56-hanukkah.webp",
+      "bytes": 150652,
+      "sha256": "f6482171375edee801e5b0dc0382ed80cdeb0babba2f299914917a6b279de016"
+    },
+    {
+      "path": "background-library/images/winter/winter-57-lunar-new-year.webp",
+      "bytes": 180658,
+      "sha256": "70cf996d558ce93fe82bd8fa1b652c9c7b47276224390095a20e53e569404c7e"
+    },
+    {
+      "path": "background-library/images/winter/winter-58-lunar-new-year.webp",
+      "bytes": 606000,
+      "sha256": "8d070877e15a8831fe022dbf542ed09108185d7c52bd4b2b70a86e493e3e7c65"
+    },
+    {
+      "path": "background-library/images/winter/winter-59-lunar-new-year.webp",
+      "bytes": 245112,
+      "sha256": "482500d31e566ce4bd657ea8e7a9bb209b4f1ed6cc9c2150c23df546a26a3298"
+    },
+    {
+      "path": "background-library/images/winter/winter-60-new-year.webp",
+      "bytes": 150240,
+      "sha256": "d065b210b411e1e381ce651d1b183b2e820b0846f8b5ca8e58e4b6db2c5343dc"
+    },
+    {
+      "path": "background-library/images/winter/winter-61-new-year.webp",
+      "bytes": 320324,
+      "sha256": "70810aacc9f18472b985b07cec6deb1b5116a6359dbda5d6beec2da14bb30030"
+    },
+    {
+      "path": "background-library/images/winter/winter-62-new-year.webp",
+      "bytes": 109216,
+      "sha256": "bc25dfc2b93ecd4777529dc2408aeffecc7a56181651ce2b905039930ec82338"
+    },
+    {
+      "path": "background-library/index.html",
+      "bytes": 680073,
+      "sha256": "cfa413a1f7d843914e6d070c881f42f38804a79801312dd9fc53b072640a0505"
+    },
+    {
+      "path": "background-library/project-notes/Four_Seasons_CSS_Theme_Studio_Developer_Specification.md",
+      "bytes": 26738,
+      "sha256": "46ad0cc153b662fce83689f71ad5f6613938be083b067b6b5a2536ff6416d864"
+    },
+    {
+      "path": "background-library/project-notes/Four_Seasons_CSS_Theme_Studio_Plan.md",
+      "bytes": 73756,
+      "sha256": "a572cb4204e9722f852f07fd1cbc75ef6152e1b265d8611f5fe71637387a7b7a"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-01.webp",
+      "bytes": 63644,
+      "sha256": "2b4556717fc2602172b9d40a4678b9686e19fa60a995c41138ff0bffbaa8655b"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-02.webp",
+      "bytes": 16308,
+      "sha256": "a9e6211ff543cfbbb524a02cd8a4928aa4c7fbc31800d94122407b242a945a81"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-03.webp",
+      "bytes": 46640,
+      "sha256": "8dfa4064954782396a012a4364ba9d0abdd5998e609ef2eb09439d5d3ffba085"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-04.webp",
+      "bytes": 35258,
+      "sha256": "88ca66bde3d87dda34b21a60abc1e04634b996c46224d6a740dff0d5fa3c62a6"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-05.webp",
+      "bytes": 51260,
+      "sha256": "282e3094a3e8887b620151a0f91cc547dd0fb285a0eae101039ce77aa47c0e41"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-06.webp",
+      "bytes": 35432,
+      "sha256": "4513b387c7cce36ecb166ef66b8a35dbc6f58836fddebeb92042748bc6e28be6"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-07.webp",
+      "bytes": 51828,
+      "sha256": "73b8ae4f10bc49bae704323b9ecae24a8527c2552bf3ff1fca3ef70c2db6490a"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-08.webp",
+      "bytes": 40072,
+      "sha256": "b96fdf53f2458af99aeefb897007f58d14c874a11706c919253445af812f24c3"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-09.webp",
+      "bytes": 29126,
+      "sha256": "d6773aa03128dc285c2d02104688ecd050ec6a231438ea007251635e8fcc63ec"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-10.webp",
+      "bytes": 63942,
+      "sha256": "81c3cbad57c7b4e37c6b4b24941ba0074286208263bb8ddb9f0acbdbae7162e7"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-11.webp",
+      "bytes": 52732,
+      "sha256": "1d532070e85a6d477e77c4cb5ae9ec0bda1592cddfd4b3fe5d00b67b8d239273"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-12.webp",
+      "bytes": 18148,
+      "sha256": "85644433052080d288dfb9ba98dafc4db6c5e9a0890e748c9ef9df39dc2359da"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-13.webp",
+      "bytes": 9162,
+      "sha256": "388c70bb314b247c6115f0191ed596407d44e97acef26022c5d25cf7d777b254"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-14.webp",
+      "bytes": 31740,
+      "sha256": "03cf0d2b8866ae6f3f353f497ed5b921ad31b1f5b6e695cf5747f6c14ceb25a8"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-15.webp",
+      "bytes": 35002,
+      "sha256": "851c77b64b0572d27cf55d5f784aa70a882883f2a02ec040a6fb927b68bd108a"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-16.webp",
+      "bytes": 9906,
+      "sha256": "fb7af3c2174b426d558043def193f3bc48ed1f90c1f5701916e1e326101835fd"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-17.webp",
+      "bytes": 40878,
+      "sha256": "667a42051b001a59e802a4e0a1839021e26b299dfb38ed3001853b02c1bca2ed"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-18.webp",
+      "bytes": 20506,
+      "sha256": "342ad84b2e8cda9663e82a9493cf33a27c8eaaf249962c252e482370670d8b98"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-19.webp",
+      "bytes": 50604,
+      "sha256": "5c199980ff95ce3542eed9bfd4f5c6ade70fbe14fbe80d17bb989cde4e1bc314"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-20.webp",
+      "bytes": 22564,
+      "sha256": "c93ea09d143a4177d5d66a1998ec0f82588dd99ece54a9a2bb09e0451bb9ae25"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-21.webp",
+      "bytes": 36740,
+      "sha256": "ce6c8add0b221a5b5666915bc3871bbfcad74872e7ca87305f40cba92864bf6f"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-22.webp",
+      "bytes": 28886,
+      "sha256": "72e547155bb011eaa660488a6d28938cf9bd48c635747fc4de3df2c7fb61ddf5"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-23.webp",
+      "bytes": 20310,
+      "sha256": "c2a8d8d5741d814d1c3087bb1d8f5a011fa6f5e630a914925cca60f18224d7b5"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-24.webp",
+      "bytes": 19454,
+      "sha256": "c606eabef2b1602d4a0aaae8e3cbc94abcfa13d86650d93499825744bbe028cd"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-25.webp",
+      "bytes": 6280,
+      "sha256": "39939705aee808d7417f09d411608cd9b1139b5bfa43b10ad1d7491b32913101"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-26.webp",
+      "bytes": 16206,
+      "sha256": "7f8ad9b455160f075c036c2153298a043ef94ca35367f3d90294d9d19607cc4c"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-27.webp",
+      "bytes": 55420,
+      "sha256": "18198848598fa1096761f4f73d14bb020307b3fe57e88501126b7115abdc6ab1"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-28.webp",
+      "bytes": 40108,
+      "sha256": "e79dff4e319cb5b8011f5068cb0ce3cf2ac0181ab6615fc722644a7799b1f604"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-29.webp",
+      "bytes": 21560,
+      "sha256": "a1f23046e210f224ae7e89966c4294b65855873c1f67a6475ebd4f95b48a77c9"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-30.webp",
+      "bytes": 26090,
+      "sha256": "c8b449a66d74528a06ad3aa4f0198ca2ed7d935dd69b3d273454684797845a05"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-31.webp",
+      "bytes": 31906,
+      "sha256": "3aa2065e1d4bbca4253c1eced6ea9f41d31413173abaa7bf04a69a8ba0abf6f1"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-32.webp",
+      "bytes": 48198,
+      "sha256": "557e2dbdb8dc229ed43b9edf94e4d48f39bd420cc28b88ce3d7120d4b9dbee55"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-33.webp",
+      "bytes": 24202,
+      "sha256": "b4fe847bcdf3a408cb1fe5e09485ffee6d530bc0e0c15493319cce78eee02cd2"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-34.webp",
+      "bytes": 28694,
+      "sha256": "7903a73ceb4b4430f53d2bd90c6fafc903a734ab23b504dc36dea78af7c65247"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-35.webp",
+      "bytes": 48164,
+      "sha256": "29a0d933c9bb5d4e5c0ce0302e56e3033249cc5c2502539fa99d637a778fed4a"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-36.webp",
+      "bytes": 34210,
+      "sha256": "70c3e584574443167edf22ba4058936870b4d1501cb5bff7e0b1f927ffa8449e"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-37.webp",
+      "bytes": 50652,
+      "sha256": "7c563fdc0ec7c295331a6e06af0153d48deff2edced2496dbf00b3ffc11a9e27"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-38.webp",
+      "bytes": 36458,
+      "sha256": "8a2fb0a20b139cd2ced843a532179cb0fb7062521b8d59825de748cf713be82a"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-39.webp",
+      "bytes": 29238,
+      "sha256": "6a24975f84b907823016f5720fd66c085f6317132c18aa33f17ccadab593c061"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-40.webp",
+      "bytes": 37250,
+      "sha256": "8a5004a072269b5e2dfdf533db021f185282fc31992ffadc6148a2d6c6fa8e29"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-41.webp",
+      "bytes": 20582,
+      "sha256": "ec6ed0beba0fd0c3be03d88df2dd6c0f289c351e7c7c95067796f82d502dee82"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-42.webp",
+      "bytes": 48582,
+      "sha256": "292e8a84c491cbf6bf2e62702ff952e18870f824dcda7f6934d1907c8a065d22"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-43.webp",
+      "bytes": 23890,
+      "sha256": "7cd3e41de95e7723a462afafc60f79b1fa575edde01f46ef9fed8a3af6e2a40a"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-44.webp",
+      "bytes": 24120,
+      "sha256": "cdff615144466a3169d6bd47f7a74da8a93dfde97896939b9ec88457ebb1baf7"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-45.webp",
+      "bytes": 39046,
+      "sha256": "07381f270bdf48daae02e6008347b4cbcd8d959f6773bf5f57ff4736e2c8a814"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-46.webp",
+      "bytes": 45398,
+      "sha256": "f75c8baca926fddb0ecedca047a596c6dfe33cac81678febb0d9e6c133b69385"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-47.webp",
+      "bytes": 56266,
+      "sha256": "135c0b157b5305008360d95bc8fae91f574b663af22ff96a80767aad8a4a9261"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-48.webp",
+      "bytes": 21110,
+      "sha256": "704076bdab7fc2c525a692f71110029539f5fc63157b6a38adc9974d6f762383"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-49.webp",
+      "bytes": 38182,
+      "sha256": "1d8cd10a411eb50d484007237b7529241b0096df4a68884e6538d66fd98a908f"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-50.webp",
+      "bytes": 5844,
+      "sha256": "a4e74afc550d3f577360e267cb6bf8f9d9b67d44d3f627de03447b094cd8fb0b"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-51.webp",
+      "bytes": 26658,
+      "sha256": "3c231c1811c2217e1897c228ed7fbdb317eb5b65cb784a9b5baf9cc1ef07750d"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-52.webp",
+      "bytes": 43596,
+      "sha256": "9b8b55bf297304f826405642951446e333b14fc8d8a678f0b88e316d62f84eb9"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-53.webp",
+      "bytes": 52536,
+      "sha256": "9d0563a36b8f089b53ffa4d7f3a34429ae7735def73d0141ebae5e79f26e1bed"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-54.webp",
+      "bytes": 10284,
+      "sha256": "021ce20e7ee8a4936727d9bcec30097ff120b6c4d10973abbcd1f3495eb79890"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-55.webp",
+      "bytes": 10132,
+      "sha256": "4237046663ab863f5dde6cf009da7e654bea2db84d20d135d0ab1a4a84345e1c"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-56.webp",
+      "bytes": 20612,
+      "sha256": "3b6638910d11cc87fa84fbdefba08fbcbc94a256530157fff313a5ba2ed16c28"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-57.webp",
+      "bytes": 45516,
+      "sha256": "23b7e7a37514b4c9639fcdbaaec64584974bb168c97b53e33a2f62d5d5de2d35"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-58.webp",
+      "bytes": 20896,
+      "sha256": "b509d30c123effe63392d4622331cc2e44f9be634576349cecd25d4c35ed0433"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-59.webp",
+      "bytes": 25248,
+      "sha256": "4df744be8b8c21e1e11baf54423b2a0233db0e0b12c96c48bf167a152dda8edd"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-60.webp",
+      "bytes": 42758,
+      "sha256": "3e9d68da0e1136526d26f12e8518d4092a1efed0f13b4b8b309038d4abd186d8"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-61.webp",
+      "bytes": 29196,
+      "sha256": "17c3029f3db2ac4f54d61154bb839e5f468b6dc8853fde5055e025b9b1e84fb6"
+    },
+    {
+      "path": "background-library/thumbnails/fall/fall-62.webp",
+      "bytes": 46296,
+      "sha256": "361a4b9058fb00f42fa0730c9d2cf3fdc40ef8457132c9bb5eb031624bf3b142"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-01.webp",
+      "bytes": 63008,
+      "sha256": "41f39daa97b84bdba4206a0c088d2b3f791e6cdf4164664d235e31d1786c828c"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-02.webp",
+      "bytes": 56518,
+      "sha256": "7e270d123dd66883fd5e0e21b1a1f2a6f7142c38c2ffaae3de49cb4e47ab7925"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-03.webp",
+      "bytes": 50200,
+      "sha256": "308ab5937464723f58ea9c5b7350178c01f0c89744a93e85c1c1dab33d937875"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-04.webp",
+      "bytes": 28362,
+      "sha256": "b18ea8979789aaf93598bee3d507f923d21e78d393679d381b767e8e8af45759"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-05.webp",
+      "bytes": 58232,
+      "sha256": "0f7a3d51f9f042d180c8aca30a242e7ca227c2b31e20310b8eff7e91d0e65fe3"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-06.webp",
+      "bytes": 41396,
+      "sha256": "ec4bf1ba04bb57ff9bc56107e02b6bf9887701987e66404a38e3019a4d36453f"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-07.webp",
+      "bytes": 34322,
+      "sha256": "d983849ce5fa5d82e2c717fbb75686b50e30cdf0ffd1722045c2bfbbe807bbc2"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-08.webp",
+      "bytes": 15408,
+      "sha256": "bdac85e0468aa3d884abc3cc6ae87fe835d500b98bc3bd11a18a5459c1a3e581"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-09.webp",
+      "bytes": 31716,
+      "sha256": "6995399af153862b9d5eb9ea0e58368e91c85bab360c097655012df1b2f4bb5a"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-10.webp",
+      "bytes": 60042,
+      "sha256": "7286f462ab7760b4f277f61d935302ed4afbe0d8262b1a3c87a6c27bc8c7e398"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-11.webp",
+      "bytes": 17576,
+      "sha256": "d524d207121c850c48817a4ccc708374966ea8d2cdb32829dae40b5b3c6b3154"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-12.webp",
+      "bytes": 27492,
+      "sha256": "f1615b8bfda797badb3d7aa113ba2466b5ccf55ce2017d97a16042a71109ef1a"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-13.webp",
+      "bytes": 28590,
+      "sha256": "1fa71462946753812ab536e509815cdba23eb50ba50767fa07e6324a18d52eed"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-14.webp",
+      "bytes": 30968,
+      "sha256": "533ef0da57f3583ac98e191822d996591fc5c22f64a222317199e3b6635ccedc"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-15.webp",
+      "bytes": 17516,
+      "sha256": "ccdc981ce1f010bf19bc6c35842479e24b5f874869ecb640c1ea77dfb8dd3d83"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-16.webp",
+      "bytes": 34340,
+      "sha256": "679ce3b7bbab4f6bb969fe4208d18b3e8cfe68c493406bff81fc66a3d37819b7"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-17.webp",
+      "bytes": 10978,
+      "sha256": "a68b222eac1d92fddd0f0e78bd867d31000e2e69d85903322c35d8da608f735b"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-18.webp",
+      "bytes": 47058,
+      "sha256": "eb9170eaefcf7ab2d9c9133c3e02ac00d1dd0dda78045fd91b0e27c2e14afa2a"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-19.webp",
+      "bytes": 43060,
+      "sha256": "1968f75df6f8d99c8c17bbcf437a9cf5de765d4d43840dc3b6753c5db0a11a1f"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-20.webp",
+      "bytes": 35432,
+      "sha256": "0623fd7e2d7abf22e5b64e616ea56fabde4d243424c1941967d4ef0bed86b2e5"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-21.webp",
+      "bytes": 28800,
+      "sha256": "41f6a3b967ef6cbb22fbdb8893dd47420b9b0fa7f5da1b879536e0366c28ecc1"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-22.webp",
+      "bytes": 31080,
+      "sha256": "f162f258e829a939efcd9a9a02254c00ef57ef6ec1ab4a25fd6e6e9e5b411d2d"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-23.webp",
+      "bytes": 31476,
+      "sha256": "bb4d7cb3d5b0e3934864cab5789e39f748e575a767b087c205ddc31958fc0384"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-24.webp",
+      "bytes": 28032,
+      "sha256": "0330d11ac6ee3cdb5ba683e017ee94d16881b71c260ccd8ae199256c535a93ef"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-25.webp",
+      "bytes": 64876,
+      "sha256": "8ff08eacfae766b785403e321011cf0d2ec6798a64661837e38dab45fca56ebd"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-26.webp",
+      "bytes": 24040,
+      "sha256": "aefe31a21ca3d3af0b011733eb94ad67a9515549ef6ce201f8aec8cfb8ab5d18"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-27.webp",
+      "bytes": 17948,
+      "sha256": "86be947662bc3ffc4a9743f9c5788e8418c93909609697ef1c87bfcf4a920a89"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-28.webp",
+      "bytes": 24346,
+      "sha256": "41b0581c6ca6fdfe25f4e203fc368a9f33fbb7e0fb8b50091b36f57fc35922fb"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-29.webp",
+      "bytes": 35494,
+      "sha256": "3138576f5ba0caf15cd0236584bbc8109c9abf63ebcbc85bb9303ceea1e72273"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-30.webp",
+      "bytes": 43356,
+      "sha256": "b05da6f019b3a67b3bca9f8fc823d566f6212ce3574d5db4f9d49b9511766580"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-31.webp",
+      "bytes": 35318,
+      "sha256": "bcf396b725cf67fcd8be9d936f4be819a47ac8dc0c66171a490f7a129a206ea4"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-32.webp",
+      "bytes": 39852,
+      "sha256": "45a223127f811a393df63505e1562e104db8bace964afe19343e27dfadd2927b"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-33.webp",
+      "bytes": 6728,
+      "sha256": "71ece15546fb4cbae43de2e7cf2d92478b9ac1331647505edf18dd7d1e549a50"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-34.webp",
+      "bytes": 37824,
+      "sha256": "fc51e2c8775de4ab3f99a88131440879e3fd1f7d6d4b2f698bf803759b96ac50"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-35.webp",
+      "bytes": 15308,
+      "sha256": "6f3ca2f5d8889633721d012a888e0b61ff6ee2ce6e23819bf1512b923418819f"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-36.webp",
+      "bytes": 24642,
+      "sha256": "fe08fd7cd817f78df488b17527589cdb522e5dd007518b98de73588fb059475f"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-37.webp",
+      "bytes": 25094,
+      "sha256": "60b6a873e8054a8b202684011e57cb5b5a280e13563ff495dbb13fcf7e530595"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-38.webp",
+      "bytes": 41850,
+      "sha256": "e87ca70328555d8cca792604d664d1adaec286c607849b2bd6c5ee5b23a28962"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-39.webp",
+      "bytes": 23118,
+      "sha256": "8baa474cd2707bfbf1e30af8415d52589baf36e9b896cf79d793e055c113e836"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-40.webp",
+      "bytes": 19526,
+      "sha256": "6bbf2d4531bd4af40957a6736f0af5489c7e61c16ec1e9b7c40c459e0dd3587a"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-41.webp",
+      "bytes": 41572,
+      "sha256": "8bda46f96589ac3d99cfac48f34cdfbf355f3d3d2414374b828b10d3754657dd"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-42.webp",
+      "bytes": 33102,
+      "sha256": "e0f9a544d21ed525cb78b85e08bfff6cd4a1fbe81d24392c251c992fcce6531d"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-43.webp",
+      "bytes": 19548,
+      "sha256": "f50e96694be6400989ff21bfb750f50cf7786b06981b2c0ad7b7ad4a9a222bd2"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-44.webp",
+      "bytes": 19694,
+      "sha256": "08dffb8b5ffe6fa6136efe084c8fe409e7cff93eaa0405a5450dbbbd57e7a43b"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-45.webp",
+      "bytes": 8868,
+      "sha256": "1c29fa455b1c41f0dc0531fa8bfe488c9ece1e83aefa3d055c0c2333bd605ed8"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-46.webp",
+      "bytes": 40040,
+      "sha256": "e361e5b059f3462a8c5a171ae211da809d018d019ba7aa75d237961bd72adb8f"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-47.webp",
+      "bytes": 50256,
+      "sha256": "744abf7d07820356e72cc93b53cf14ef3c0f761410238ab0810d083e8cabcdcd"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-48.webp",
+      "bytes": 48110,
+      "sha256": "ca398e1ba7011af6b0f8f8bd02cd4dd03b1b9d3231907935f1bf80b150172071"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-49.webp",
+      "bytes": 59928,
+      "sha256": "8d1891c8f90b7716ed100fd22150ad0917b701240a726ea6c6f3209f2aea0d44"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-50.webp",
+      "bytes": 12314,
+      "sha256": "4d31abc307d1e510e1c171364c21518b7629b203f10ce7842a5dc2447f17f6c4"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-51.webp",
+      "bytes": 13450,
+      "sha256": "43ee3281d04f794688892ca1e6e157fd37bd418795861f4be79e2ec4a6e3558a"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-52.webp",
+      "bytes": 36220,
+      "sha256": "73868c547350c2eb3432597f3dc348fd7ad7b058265249fc1c977722ae91cfe2"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-53.webp",
+      "bytes": 29226,
+      "sha256": "0ddc7719b43d0863c0b99c0bb30980a0c90340daf558d485d8805b6b73d1fddb"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-54.webp",
+      "bytes": 32214,
+      "sha256": "0826efc799edafd77abc4a9afcf68c15fd5c3e00562395787f146282b1f6466a"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-55.webp",
+      "bytes": 32834,
+      "sha256": "7e48344956fffc14c2cf378571cf0ac8e6d1a5ac5b86ba317cdf80d5ad9ed294"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-56.webp",
+      "bytes": 28052,
+      "sha256": "a4de6713100157dc7818ec7ac0e36fd870643af663b1a6488e6dd4bcbfe3b293"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-57.webp",
+      "bytes": 27996,
+      "sha256": "97b90602acf1ae34a865529249124bd82bb5be7753ea89e1001f691fa29da35a"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-58.webp",
+      "bytes": 34460,
+      "sha256": "50c8a3baf2855866ddb7413cad9b8b642949b4eaede850bd03cdb82e1b03d185"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-59.webp",
+      "bytes": 7672,
+      "sha256": "88c6ed4f5f3ec590365e2f4d92f30381bbbb3383c48ec0c6bd64900a52a6b7eb"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-60.webp",
+      "bytes": 22168,
+      "sha256": "78631992498f7e2a56786d024afd58e6f1ac2112f4c4e08dd0de51cde3455922"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-61.webp",
+      "bytes": 24704,
+      "sha256": "6bd86d852c601e7ca13adc704dee771ad26fc50dfe3fb2a1066bf4b8c0aaeaa1"
+    },
+    {
+      "path": "background-library/thumbnails/spring/spring-62.webp",
+      "bytes": 18452,
+      "sha256": "286aa5d41858cc776f6f57d2a30dff608b2c43e929b4553fea550dc15e0a40e9"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-01.webp",
+      "bytes": 3010,
+      "sha256": "f38e9456e197c35d0eca9971657b35776d407972188604395a855224c744d6d8"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-02.webp",
+      "bytes": 17558,
+      "sha256": "49238e7daee750e3f37fe92f991abf8af82a0edef97de7684cac10a07e107362"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-03.webp",
+      "bytes": 25660,
+      "sha256": "a0a9941e70f8b008a5ac344fca2ecee4a2b2a863982ddaa530baf112f4370352"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-04.webp",
+      "bytes": 16486,
+      "sha256": "07f8ad2b7d312c2800455f3787936f118c39c35a292c9b8e1a3606e7e05a9a83"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-05.webp",
+      "bytes": 39676,
+      "sha256": "8bca34ba3a463a8515b9f4b112119a0980552e44cbbbc25493982cc5e96a6e4b"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-06.webp",
+      "bytes": 14174,
+      "sha256": "a0a4c60fc866ff7ca0b983728fc5392768011bc5f7cd677327a10ff34687c34c"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-07.webp",
+      "bytes": 13324,
+      "sha256": "c278ba05a0deb4bdbd650fd5a397e6531ad66fc21bdb576038b637ae970f2d5d"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-08.webp",
+      "bytes": 15404,
+      "sha256": "ed0550c252d28825e0890e7354fd20934d361d43a367441277de5fa1d53ba4bc"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-09.webp",
+      "bytes": 14094,
+      "sha256": "24a43515c5cb9a546914b98a367508f252a18fa5202202c504877063f3662c79"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-10.webp",
+      "bytes": 12758,
+      "sha256": "000922363210b71e1c8520cb952a96c9c710e42152da90a6d1103051b0305420"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-11.webp",
+      "bytes": 17576,
+      "sha256": "66fbdb80cf296ab514ffafa7ea8499a37f71bc8b1e32eea9212fee3de287d4a8"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-12.webp",
+      "bytes": 18616,
+      "sha256": "fa558dc13c811781899e7c6901619192608a8c93ca086a8fbe5b4208cc4dea21"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-13.webp",
+      "bytes": 21574,
+      "sha256": "b1a4842c39e47f4f6fdf134fb301c13badfc3d3b5e29f459c263d0dfe926271b"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-14.webp",
+      "bytes": 19484,
+      "sha256": "7056117da07edef2f52fce473a081cb4ddd4d019e01fef27c7543eda709e7077"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-15.webp",
+      "bytes": 36036,
+      "sha256": "72a4c166554b2ab8caafbc323cc212abe1852b1cc9b7e766c5487622c5571de1"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-16.webp",
+      "bytes": 22264,
+      "sha256": "b0488ab42466393e73ec2d6f31816e0e9ee0939c83ff7c81a0a5b971effe1b66"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-17.webp",
+      "bytes": 62698,
+      "sha256": "b529019db165c544dff83a6dda323864bbb0a4458bfe8fdaaf5e9dab99b8aa3b"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-18.webp",
+      "bytes": 22318,
+      "sha256": "180371ca84fc328ffd6c5f4a8ef943b520dda8e412ff1ddbd53fac893acaf710"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-19.webp",
+      "bytes": 38014,
+      "sha256": "776458bfd7cff8de144ea3175f44c17b6dc815b6807bdf9208d56b4fe4860453"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-20.webp",
+      "bytes": 47138,
+      "sha256": "83803252096853d0bfd73d99fccc45930bc065f045eb5cdfb604c93783db028d"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-21.webp",
+      "bytes": 53138,
+      "sha256": "f7cf9c366d6549b4edcd8267374fde19e49527d60dfe0d5ed28c085753ec6760"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-22.webp",
+      "bytes": 38228,
+      "sha256": "f56fc79531e1dbafe512712ff7b4c2aa9a8f560347a6dd22643f088fcf0e478b"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-23.webp",
+      "bytes": 40562,
+      "sha256": "84c70b9cad4406963e13c730840633a96af0e7966533d5908a68cf33a9ac6385"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-24.webp",
+      "bytes": 47222,
+      "sha256": "44039e55dbeecf4fbf50cb403cd7f6eac52f64a9aeabc6198bd460e303ecde68"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-25.webp",
+      "bytes": 31660,
+      "sha256": "a08195935a63b4d96923420da801236ced94d671d2f5d3c4e0bef0d13b7d62f5"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-26.webp",
+      "bytes": 39820,
+      "sha256": "8fb93065b44886171fffb367a3efb11e0f36d58a55cc88e51d7a8149d598cf71"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-27.webp",
+      "bytes": 12756,
+      "sha256": "3a19eb37feded31ee5bba221630fb26af0d6bf298ca8b8bc193119862f69b320"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-28.webp",
+      "bytes": 28440,
+      "sha256": "e5cccbad24e67871c131b10a81253147e3f0c7fb8887255104e3baa3edd42db3"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-29.webp",
+      "bytes": 11694,
+      "sha256": "76f0b82199b69cd4865cde1cad2e09bb9ecbc3ea4d3c9827a1fb6c478127c5c3"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-30.webp",
+      "bytes": 46526,
+      "sha256": "2b7215c9fd17d896bfae040f856e5e4a63333416ca25ec832777dd74d1cc52ca"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-31.webp",
+      "bytes": 23618,
+      "sha256": "451d6bd7d987f5775eba2715ce7ef840fb868405cc4480c74d7e181e5aa0b145"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-32.webp",
+      "bytes": 19550,
+      "sha256": "4bcc6a695ec26e45fc2c5130dd9cbda71eaa705d11a7a760d71083b7b80c427a"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-33.webp",
+      "bytes": 36390,
+      "sha256": "7dd8269edc07df1a835d5039f57ad6acf18d6be8ca54ff846ee1a268a84a5096"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-34.webp",
+      "bytes": 34462,
+      "sha256": "7ae4fce91f289fa80e246b9ab6dfdb20064ef3e8c2cac960d5b0a638f0d5a831"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-35.webp",
+      "bytes": 17810,
+      "sha256": "0be85c92ff0dbd7b6b18d07222a78febffdcb29faf817c816f04405e258de917"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-36.webp",
+      "bytes": 20172,
+      "sha256": "4265385a12976fcd4e441ffbdf28bbe9351d5fe719dffefc0d6250c3f32fc42a"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-37.webp",
+      "bytes": 17070,
+      "sha256": "3b9a362745af2b85e82123b25ed6851f4437722536b796b5826021645d866fc9"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-38.webp",
+      "bytes": 52656,
+      "sha256": "2eb984b2060679efe2653a1db68522e47aea137dfa4c46d2433468e4ff9b0e04"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-39.webp",
+      "bytes": 8886,
+      "sha256": "ca11bc57faa32fddd17613e7c9df4edd2bb44b7d02970e2b2b2f4b08de9d8a74"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-40.webp",
+      "bytes": 15402,
+      "sha256": "69d5e90d283b51fdd8016e14212d518bf2f1f1efecce901fba2187bcff0ce36c"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-41.webp",
+      "bytes": 42178,
+      "sha256": "0faf08101d13f00e4ef32d2abb9288bb5835c1998f8d50e09b19943f9427fe3d"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-42.webp",
+      "bytes": 17940,
+      "sha256": "ce60a774d4818aa31ee2e47362d84232cbfe43f49dedf9d5c3db8befcf9e0380"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-43.webp",
+      "bytes": 11826,
+      "sha256": "f390b8a10e80162198b528ceae05f7598ba22dcd085308cba65aa5d82139e76c"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-44.webp",
+      "bytes": 42446,
+      "sha256": "520827c8ed5fe72e2fc2dd3e23e8d76fd515f2a9055b07a27ca775d89617732e"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-45.webp",
+      "bytes": 18672,
+      "sha256": "71e5455ef763b0aa441a94bae95f05085be9eb32d7b7c893176d7de669c364e1"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-46.webp",
+      "bytes": 25200,
+      "sha256": "edc869111e126fdb815a81a3a37e91d7a12b8f5a5efaa8378d1f561c9560ab5b"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-47.webp",
+      "bytes": 16182,
+      "sha256": "482debc317b77a0a389e4fa6ddd76c7ff7fba6beb73b5f68f4c30e9f1f39b3b6"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-48.webp",
+      "bytes": 12974,
+      "sha256": "0cfb826bd89c72df44f5be12afd6eb54dbec63604b0284c228c613de548f7441"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-49.webp",
+      "bytes": 34870,
+      "sha256": "28e0bc4464ec3855e3c6f5c6b2ed9692c460a28f7d3fbbc3ed6a4a0ca6f762d1"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-50.webp",
+      "bytes": 20986,
+      "sha256": "a8d291ba344542ff34180725437ce67161f7dd746dd118a734c8bc4938a65f8f"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-51.webp",
+      "bytes": 40818,
+      "sha256": "166191702ae38491dfa7289a0406615a7ede41666e8403c6faf7b0e02d7a911a"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-52.webp",
+      "bytes": 5708,
+      "sha256": "1657fefacced627b8b3194ec337594817bea9199eea1a55fa803727c5c6dc428"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-53.webp",
+      "bytes": 14306,
+      "sha256": "9cb9a01aafc82f6e0741ac4708764d77d01a0760861bc1ec0047e4b8a7bcf502"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-54.webp",
+      "bytes": 17652,
+      "sha256": "8d9bd7a66d985499f48a3e4274dd976f7eab9c02d18ad04c032e0b50a62b1337"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-55.webp",
+      "bytes": 12490,
+      "sha256": "862e8e5aaaf5914669dc79b004a650d36018130ad2df043978144124e41cab46"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-56.webp",
+      "bytes": 12742,
+      "sha256": "33d59f877d09282be3909780cae0a558f9400240e5e8d9b63a956a18c5972faa"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-57.webp",
+      "bytes": 17024,
+      "sha256": "5bad452d1f131959b8abd2767cea614f05dce6ad366f929ddca3ba9463f5cd65"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-58.webp",
+      "bytes": 35908,
+      "sha256": "47f2771dcf144fe41ca6640a2989ecef38e6e1932bb8d167efe0b58494291f5d"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-59.webp",
+      "bytes": 15392,
+      "sha256": "a17df9a45bb56c7fe279a18d5216a48b2d105474a2ce807f221a47e49ef8ceec"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-60.webp",
+      "bytes": 24428,
+      "sha256": "6de9052fd487d302bfbbc31fd175b28b352f4b93a7df13ed3957007e0749d2f9"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-61.webp",
+      "bytes": 55526,
+      "sha256": "43a912ac6943749959ecadaba34062a92aeb302fd661663a843dfc984037e11b"
+    },
+    {
+      "path": "background-library/thumbnails/summer/summer-62.webp",
+      "bytes": 45540,
+      "sha256": "4eeeafd83d0370e9cb24796b2588dc3a955df236dc4f7a7bc92b356757d37c2a"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-01.webp",
+      "bytes": 47576,
+      "sha256": "b087b4e5afd2c377717ae209c99881b6cb02b3a0b53dffff84301d28b8ee6015"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-02.webp",
+      "bytes": 43424,
+      "sha256": "700fefca0d70a41dbe61f5299ae8eef04cfc1b323ee0f3fd749abd77d48dbea4"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-03.webp",
+      "bytes": 34732,
+      "sha256": "b7f57828bc28ef4c98c6ef1aa05d7460f522d3e06e6bdf00b45125ecfddc71e6"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-04.webp",
+      "bytes": 60876,
+      "sha256": "31d6815f65fb7339b72198da409db097a4786e625248d39d0948595bcc063e91"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-05.webp",
+      "bytes": 46956,
+      "sha256": "2994ffd0e83a13ee96bf95f857ed2af362811f0432c4069eb0bad226875c0684"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-06.webp",
+      "bytes": 31700,
+      "sha256": "6a4b7e22f0192ed1eeb5166703b0adb5e7df71882f5994250bfddf0f651a1704"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-07.webp",
+      "bytes": 48630,
+      "sha256": "68d8e188a0a21d85c27de844d4571e7aa64c409a5ef94389a1325aae12da625b"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-08.webp",
+      "bytes": 40966,
+      "sha256": "8d581fe80bcb69feae25bb24437d15a14bdd27f45c20430bf54dd8ac0353d604"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-09.webp",
+      "bytes": 19074,
+      "sha256": "0ba8f2a5bd1d190800bc6ca8dfb6adcd67b10c88ebf40eed2fceb1af343bb7fe"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-10.webp",
+      "bytes": 32802,
+      "sha256": "6124a6eff0d3e2c2b23e9ab9990b87b4df2fa8ab498644a52cf5d7e54049ab43"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-11.webp",
+      "bytes": 10338,
+      "sha256": "a2a7ffc75af81df48117066cb06566a4b56aba9243a2f2c060fa78f0bf239caf"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-12.webp",
+      "bytes": 16292,
+      "sha256": "1644287cabb97e4441e27f99050cc409d075a0ead263dbeb791e4c92e0959260"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-13.webp",
+      "bytes": 24194,
+      "sha256": "1b9e9dd55962cef03cd693d0e247041e035bc8dbb8299fcb795bda8a755b2d3b"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-14.webp",
+      "bytes": 20060,
+      "sha256": "f93b38aa04a4333cc36869c3f983b603fbf1c71763fb8fac23ca42cb038d44e0"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-15.webp",
+      "bytes": 15828,
+      "sha256": "d874e9b5e4025ef9fab798b6876d696fa0a79be70978b092ec5b3f1e7d820b91"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-16.webp",
+      "bytes": 26800,
+      "sha256": "1687cad05233642ca02e02c1885cb099183b8a2e54230db056236a75d6aed504"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-17.webp",
+      "bytes": 21848,
+      "sha256": "035f3337f678f6d699a06148f176d59a9ae2430d21bfb3cb650d3e42e48b3edf"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-18.webp",
+      "bytes": 34412,
+      "sha256": "fefcbc1b7d0528429bc2e0031343e499e677c4c70d3e3568a2433f1798da5dbb"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-19.webp",
+      "bytes": 10006,
+      "sha256": "dcb183b59c091c573e772b747850afec94a152b74ca5dd78b8ccfa52a5732c42"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-20.webp",
+      "bytes": 11168,
+      "sha256": "440ef3dfc93dbae00e516c224f0fea307ee9d643aa4dc1233ba8c4726a2f96ce"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-21.webp",
+      "bytes": 34620,
+      "sha256": "07c4247692272736d17c4decffa08cf6b77427d6d7b8d885397e0303d53c43ac"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-22.webp",
+      "bytes": 33202,
+      "sha256": "7a25a96ddfe3e536330c9d14d98bf02687223438f839525f2f298b2aa3bfc20f"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-23.webp",
+      "bytes": 14246,
+      "sha256": "25e8935e63ee8dd7d8600170a1b51137a67d8290d29a161ccff3f00f55188de3"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-24.webp",
+      "bytes": 29262,
+      "sha256": "9fe5f1dbec9cb02eceabc5856e9be1b9b52d8e459f8d9772481da86f7e54c693"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-25.webp",
+      "bytes": 6844,
+      "sha256": "d2a604dfbd6916798d5a1c0300f2202b214b78ae9b36ffb19bd91eda48c381df"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-26.webp",
+      "bytes": 32252,
+      "sha256": "f7a42ac42b8431ffe657f7d40f8e5ca56154bc6826b2dc27e77259b2ba105348"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-27.webp",
+      "bytes": 33970,
+      "sha256": "7af5c778cdf980924e2f3ef91db9f9c1bd87c2e1887e657450a5dc11111b400e"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-28.webp",
+      "bytes": 32848,
+      "sha256": "e28f56919155b197ac9f5578b529e8300341275450b18540cab39756392ba986"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-29.webp",
+      "bytes": 14162,
+      "sha256": "77639ef8d94ff3793c3b17ae30f5bbfec18c264c870d087b40766f70309b0960"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-30.webp",
+      "bytes": 11218,
+      "sha256": "d65398bbbed4466e5a5cfac802de31b6a1253f877e6b860f7965b66f52b6a9e6"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-31.webp",
+      "bytes": 26106,
+      "sha256": "0418fc08be541817bca71c97b47b8ef1271ba28b2de10cb9367cd56dc1c02db8"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-32.webp",
+      "bytes": 6722,
+      "sha256": "9d0255f4992a165d4d8eb8915dddf449136282ecc6423fb8c7473fdb4e50ac32"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-33.webp",
+      "bytes": 21820,
+      "sha256": "d25a630de8c89e95032cbcbf3854202ec39cc592c2b7a78f9a7ef66955da90e4"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-34.webp",
+      "bytes": 24058,
+      "sha256": "7ddeb4fd601ed788f2f39bbfb365ff342fb783b0b060eb45daaa663d497cfeac"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-35.webp",
+      "bytes": 37136,
+      "sha256": "15a95ea9cb8acb58f99edd02e2f31ec53787ef504d859f6cc00873f9676b71e6"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-36.webp",
+      "bytes": 21886,
+      "sha256": "b119d7aa453e97f0bc76246a6447a18829eceaa5f579237234eed71af2740cd6"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-37.webp",
+      "bytes": 56204,
+      "sha256": "5198e527e5ee93afde56c767c87929b28911fc1af60d5d67d5506d3bd68810e7"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-38.webp",
+      "bytes": 34396,
+      "sha256": "cad478279eee3007cbeb4217645ffd86a99e6beaa972fa4c3be4dad0e08f238f"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-39.webp",
+      "bytes": 24792,
+      "sha256": "ea4b4c63a94cda5fdaa5166855b1ab5fc3587994be78440f828ab604db57fc45"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-40.webp",
+      "bytes": 35278,
+      "sha256": "e64a9bdd9e601d07e00b65cf400ce9a6723b1ef8231ef1a1fd39740ba3096293"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-41.webp",
+      "bytes": 5732,
+      "sha256": "11a528d88472fde4aa8041ac820388ebea06c7a77c716b5f90e5b0be61d42b12"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-42.webp",
+      "bytes": 9542,
+      "sha256": "0785027becd0fdc677b527f4d4c7d1ce6c14b57ae592d0a658a9e40557d7dda7"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-43.webp",
+      "bytes": 5000,
+      "sha256": "3142a5ab54e4d047c5fe561311781edd15952f41402bc9038d71eea34d52c57d"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-44.webp",
+      "bytes": 4000,
+      "sha256": "12e48e63aea1648a92c33609b4d5cb98fffd5aabfb72294d555d5990749bb377"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-45.webp",
+      "bytes": 8350,
+      "sha256": "99570ecff900e35fdbc57d7ec00467a10fdbc9eca7f9a0fe9cab77ee301bb3e1"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-46.webp",
+      "bytes": 3650,
+      "sha256": "c62224174ddb94e05436c5ac13306a9af41e92ee5f92b368dbd1068cb8fee16a"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-47.webp",
+      "bytes": 5472,
+      "sha256": "fb62740e63b3278c6e4083655cca7376d8bd59951de61d0b0a2724121cca5f19"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-48.webp",
+      "bytes": 2338,
+      "sha256": "7b7d99c0ccf9a74bd31f27c0b0e18209ce7f8d172b8b64fe68c906a54334dfad"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-49.webp",
+      "bytes": 4172,
+      "sha256": "a8d62d3ad8ec62ea8c5fe6376840426eca634118519cb9ea11ec0ff7d7914189"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-50.webp",
+      "bytes": 2980,
+      "sha256": "af7ade494b7cde588543db4caad4fb854154824caaabb7957c99b0c49b2a0c0f"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-51.webp",
+      "bytes": 21292,
+      "sha256": "9fbb6554620e704219cf3e86239c383fb99da7f6b21bd09c07c1652333189f85"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-52.webp",
+      "bytes": 37836,
+      "sha256": "709867b6fd7b0fb6683aef52b406ff8f0557481cc48e75ff2a2465b9de4c4148"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-53.webp",
+      "bytes": 16462,
+      "sha256": "befcf6bc6619909963ea2db92fe6d56ab7948e1b28a66baea507508d6f560ba6"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-54.webp",
+      "bytes": 6402,
+      "sha256": "4756ef3a934bdf452d5da59f4c8c8713caca60d0a6a1d463ef63c56bec1eea3c"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-55.webp",
+      "bytes": 11654,
+      "sha256": "bc5e4f545d11de9a270f738bfd9f1ba2337549fb1980e4f365d8b7f6b892068c"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-56.webp",
+      "bytes": 18490,
+      "sha256": "2ef3162cb322abd5b28964e2c6749c65fe1cae9ddbc343630867f92663a81d8e"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-57.webp",
+      "bytes": 20264,
+      "sha256": "ef9f144dd10fe1d9b5f13513ac3bea92be49177cce3919d06a2220d03062ce5c"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-58.webp",
+      "bytes": 39422,
+      "sha256": "6d6c5781b8f03f03e71b3eafc6446a85d2e02aab27bd1ec7c64080536edebdda"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-59.webp",
+      "bytes": 29308,
+      "sha256": "38ea126fee074790456d4f9b7bf1c6ad2ee0ee93294bd8199d46ec6cf03bace1"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-60.webp",
+      "bytes": 22446,
+      "sha256": "737dfdd365f60373ba9e4357a6ab080c1aea60a19690a7e75c6fa9b5b0500b5a"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-61.webp",
+      "bytes": 33276,
+      "sha256": "e4f71c79b06fd4461f51dd83f41b6ed0952c38fc5a80ba59b21b8176f3df32df"
+    },
+    {
+      "path": "background-library/thumbnails/winter/winter-62.webp",
+      "bytes": 11278,
+      "sha256": "23a0f0261b86dc294a3026027be5f793fb8b5f9f61668545065a0b120b1c65f3"
+    },
+    {
+      "path": "specifications/Four_Seasons_CSS_Theme_Studio_Developer_Specification.md",
+      "bytes": 26738,
+      "sha256": "46ad0cc153b662fce83689f71ad5f6613938be083b067b6b5a2536ff6416d864"
+    },
+    {
+      "path": "specifications/Four_Seasons_CSS_Theme_Studio_Plan.md",
+      "bytes": 73756,
+      "sha256": "a572cb4204e9722f852f07fd1cbc75ef6152e1b265d8611f5fe71637387a7b7a"
+    }
+  ]
+}
