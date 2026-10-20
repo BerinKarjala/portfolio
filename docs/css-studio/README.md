@@ -9,11 +9,14 @@ This is a working manual-theme increment, not the completed v2.2 release.
 
 - [Progress, architecture and decisions](progress.md)
 - [Acceptance ledger AC-01–AC-49](requirements-trace.md)
-- [Recorded verification](verification.md)
+- [Recorded M2 verification](verification.md)
+- [M3 image-storage verification](verification-m3-storage.md)
 - [Live AI prerequisites](live-ai-setup.md)
 - [Unmodified supplied handoff](handoff/README.md)
 
 The supplied 248-photo catalog, thumbnails, credits and standalone browser are
-integrated under public/css-studio/. Live inference remains disabled. Generated-image caching, history/comparison/downloads and protected
-server quota/identity controls are not implemented. Do not enable a provider by
+integrated under public/css-studio/. Live inference remains disabled. A bounded
+IndexedDB image cache is implemented and tested independently; Studio image
+proposals, restoration, history/comparison/downloads and protected server
+quota/identity controls still need integration. Do not enable a provider by
 replacing the disabled browser adapter with a privileged API call.

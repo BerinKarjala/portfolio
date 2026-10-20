@@ -190,3 +190,34 @@ paths, dimensions, hashes, unique original/sample identity metadata, 62 per seas
 were reviewed, plus actual Winter canvas/picker crops at 390, 1440 and 3840 px.
 Opaque text/control surfaces protect readability; these representative checks do
 not establish all-photo/all-appearance or physical-device conformance.
+
+## M3 increment: generated-image storage foundation
+
+Implemented an independently tested storage module, not a visible generated-image
+feature. `imageCache.js` provides save/list/get/remove with IndexedDB transactions,
+24-image/96-MiB limits, 4-MiB raster-image admission and least-recently-used eviction.
+The caller supplies protected IDs from saved profiles, Undo, pending proposals and
+comparison state; callbacks are evaluated inside the write transaction. The Studio
+caller and these pins are not yet wired. Full protected storage rejects admission
+without removing protected bytes. Writes are serialized, including independent
+clients using the same IndexedDB store.
+
+Records store bytes, dimensions, MIME, SHA-256, preset/appearance context,
+timestamps and optional parent ID. Saves do not persist prompts, chat, remote URLs
+or object URLs. The companion media module checks raster header dimensions before
+calling a browser decoder, bounds images to 64–2048 px per side, and compares
+actual decoded dimensions. Restoring bytes checks dimensions and SHA-256 again;
+damaged records are removed. Browser storage failure switches to a bounded
+in-memory mirror and returns an explicit visit-only warning for the future UI.
+
+Eight unit tests pass, including two initial failing tests before implementation.
+Four Chromium tests use actual IndexedDB, browser raster decoding and module imports
+from a separate Vite test server. They verify reload, exact digest/byte length,
+pinned eviction, corrupt-data recovery, denied-storage fallback and independent
+client transaction ordering. No production test route or mock provider was added.
+See verification-m3-storage.md for exact commands and scope limits.
+
+Next work is to connect validated image proposals and generated IDs to the existing
+explicit Apply flow and shared resolver, then add history, comparison and portable
+downloads. AC-31 remains partial. No inference, deployment, push or merge into main
+was performed in this increment.
