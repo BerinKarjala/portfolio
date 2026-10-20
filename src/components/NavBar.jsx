@@ -1,4 +1,5 @@
 import React from "react";
+import { MoonLauncher } from "../features/css-studio/Studio";
 import { NavLink } from "react-router-dom";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 
@@ -33,6 +34,7 @@ export default function NavBar() {
             >
               About Me!
             </NavLink>
+            <MoonLauncher />
           </nav>
           <div className="flex items-center gap-3 sm:gap-4 mt-1 sm:mt-0">
             <a
