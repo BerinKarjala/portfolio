@@ -122,3 +122,16 @@ it("keeps text and button labels readable after conflicting manual edits AC-03/4
   expect(t["--studio-surface"]).toBe(t["--studio-background"]);
   expect(t["--studio-button-text"]).toBe("#000000");
 });
+
+it("retains visible seasonal identity in dark High Contrast mode", () => {
+  const accents = ["spring", "summer", "fall", "winter"].map(
+    (season) =>
+      resolveTheme({
+        ...initialPreferences(),
+        season,
+        mode: "dark",
+        contrast: true,
+      })["--studio-accent"],
+  );
+  expect(new Set(accents).size).toBe(4);
+});

@@ -302,4 +302,10 @@ html[data-studio-theme] .studio-canvas :focus-visible {
 html[data-studio-theme] .studio-canvas * {
   transition-property: transform, box-shadow;
 }
-html { scroll-padding-top: 5rem; }
+html {
+  scroll-padding-top: 5rem;
+}
+html[data-studio-theme] .studio-canvas .studio-tooltip {
+  color: #ffffff;
+  background: #0f172a;
+}

@@ -182,7 +182,21 @@ export function resolveTheme(p) {
   const preset = (p.family === "holidays" ? HOLIDAYS : SEASONS)[profileId(p)];
   const overrides = cleanOverrides(p[p.family][profileId(p)]);
   const dark = p.mode === "dark";
-  const accent = p.contrast && dark ? "#ffff00" : overrides.accent || preset[1];
+  const baseAccent = overrides.accent || preset[1];
+  // Retain hue while lifting the accent away from the protected black surface.
+  const accent =
+    p.contrast && dark
+      ? "#" +
+        [1, 3, 5]
+          .map((i) =>
+            Math.round(
+              parseInt(baseAccent.slice(i, i + 2), 16) * 0.35 + 255 * 0.65,
+            )
+              .toString(16)
+              .padStart(2, "0"),
+          )
+          .join("")
+      : baseAccent;
   const background = p.contrast
     ? dark
       ? "#000000"

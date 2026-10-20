@@ -56,7 +56,12 @@ test("live canvas, independent profiles, navigation, clipboard fallback and exam
     .getByRole("combobox", { name: "Season", exact: true })
     .selectOption("spring");
   await expect(page.getByLabel("Accent color")).toHaveValue("#123456");
-  await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:()=>Promise.reject(new Error('denied'))}}));
+  await page.evaluate(() =>
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: () => Promise.reject(new Error("denied")) },
+    }),
+  );
   await page.getByRole("button", { name: "Copy CSS variables" }).click();
   await expect(
     page.getByRole("textbox", { name: "Reusable CSS", exact: true }),
@@ -160,12 +165,17 @@ test("every seasonal and holiday appearance has readable computed canvas tokens"
   }
 });
 
-test('themed controls and canvas pass an automated accessibility scan',async({page})=>{
- const {default:AxeBuilder}=await import('@axe-core/playwright');
- await page.setViewportSize({width:1440,height:1000});
- await page.getByRole('button',{name:'Theme Studio',exact:true}).click();
- await page.getByRole('combobox',{name:'Season',exact:true}).selectOption('winter');
- await page.getByRole('button',{name:'Chat',exact:true}).click();
- const results=await new AxeBuilder({page}).analyze();
- expect(results.violations).toEqual([]);
+test("themed controls and canvas pass an automated accessibility scan", async ({
+  page,
+}) => {
+  const { default: AxeBuilder } = await import("@axe-core/playwright");
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("button", { name: "Theme Studio", exact: true }).click();
+  await page
+    .getByRole("combobox", { name: "Season", exact: true })
+    .selectOption("winter");
+  await page.getByRole("button", { name: "Chat", exact: true }).click();
+  await page.getByRole("button", { name: "Theme Studio", exact: true }).focus();
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toEqual([]);
 });
