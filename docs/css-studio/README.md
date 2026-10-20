@@ -5,18 +5,20 @@ activate the moon in the navigation, or open the Theme Studio card on `/project`
 The current page remains the canvas. Tools are nonmodal; close them to keep your
 theme, or restore the original appearance while retaining saved profiles.
 
-This is a working manual-theme increment, not the completed v2.2 release.
+This is a working client-workflow increment, not the completed v2.2 release.
 
 - [Progress, architecture and decisions](progress.md)
 - [Acceptance ledger AC-01–AC-49](requirements-trace.md)
 - [Recorded M2 verification](verification.md)
-- [M3 image-storage verification](verification-m3-storage.md)
+- [M3 image-storage foundation verification](verification-m3-storage.md)
+- [M3 client workflow verification](verification-m3.md)
 - [Live AI prerequisites](live-ai-setup.md)
 - [Unmodified supplied handoff](handoff/README.md)
 
 The supplied 248-photo catalog, thumbnails, credits and standalone browser are
-integrated under public/css-studio/. Live inference remains disabled. A bounded
-IndexedDB image cache is implemented and tested independently; Studio image
-proposals, restoration, history/comparison/downloads and protected server
-quota/identity controls still need integration. Do not enable a provider by
+integrated under public/css-studio/. Live inference remains disabled. The bounded
+IndexedDB cache now supports Studio image proposals, explicit Apply, restoration,
+history/comparison and downloads. These paths use injected responses in tests; the
+public app has no image generator enabled. Protected server quota/identity controls
+and live-provider verification remain outstanding. Do not enable a provider by
 replacing the disabled browser adapter with a privileged API call.

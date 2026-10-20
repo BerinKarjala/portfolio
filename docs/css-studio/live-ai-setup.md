@@ -24,9 +24,11 @@ future server integration. It is not a browser-to-provider implementation.
 6. Validate server-owned operation/context schemas, fixed approved models/settings,
    trusted media references, byte/type/dimension limits and safe theme tokens.
    The client cannot declare cost, remaining quota or choose arbitrary URLs.
-7. Complete generated-image byte persistence, protected selected-image eviction,
-   bounded recent history, download/portable CSS references and image-proposal
-   preview/Apply. Do not place image bytes or credentials in localStorage.
+7. Retain and verify the implemented client persistence, protected eviction, bounded
+   history, comparison, portable downloads and proposal preview/Apply against the
+   eventual server adapter. Current tests inject responses; they do not establish
+   provider access or image-editing capability. Image bytes and credentials must
+   never enter localStorage. See verification-m3.md and image-proposal-contract.md.
 8. Only after all gates pass, compare the two named chat candidates on identical
    bounded tasks and validate the FLUX route. Include comparison compute in the
    same limits. Record validity, latency, actual usage and rationale; no winner

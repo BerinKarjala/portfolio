@@ -221,3 +221,39 @@ Next work is to connect validated image proposals and generated IDs to the exist
 explicit Apply flow and shared resolver, then add history, comparison and portable
 downloads. AC-31 remains partial. No inference, deployment, push or merge into main
 was performed in this increment.
+
+## M3 increment: client image workflow
+
+Connected the bounded cache to StudioProvider, including saved-ID restoration,
+per-preset resolver ownership, preview/Apply, refinement context, history,
+two-image comparison, selected-image protection, byte downloads and portable
+exports. New generated profiles use the existing optional schema-2 backgroundId;
+Blobs and object URLs remain outside localStorage. Only locally created URLs are
+used for runtime display, and they are revoked on removal/eviction/unmount.
+
+Image-only responses now pass through the adapter contract and raster validation
+before a proposal is shown. Exact request/preset/appearance checks remain inside
+Apply; refinement also checks the original base image. Old canceled responses do
+not paint the canvas. History choices check the current preset again after loading.
+Full protected capacity preserves a downloadable preview, disables Apply, and lets
+the user free space and retry saving without another provider request. Denied
+storage keeps a bounded visit session with warnings and falls back after its bytes
+are lost. Current selections, all other saved presets, active Undo and comparison
+images are protected from deletion/eviction.
+
+The same resolver now supplies generated images to the live canvas, real Page
+Builder examples and CSS export. Only the examples-specific CSP adds inline raster data images;
+Page Builder's compiler and scriptless preview sandbox are unchanged. A browser
+decode regression caught that blob URLs resolve in CSS but cannot decode from
+the opaque iframe origin. The example now embeds only the selected validated
+raster bytes as an ephemeral data URL; canvas object URLs and portable file paths
+retain their existing roles. Portable
+ZIPs verify and include exact cached bytes with GENERATED_IMAGE.json and relative
+paths; no visit URLs or chat are exported. Existing curated credit/license exports
+are preserved. image-proposal-contract.md documents the adapter and data boundary.
+
+Tests inject actual local raster fixture bytes, not a live provider. Browser seeds
+are explicit test setup, not public generator functionality. Production inference
+remains disabled. Account/free-tier eligibility, identity, durable shared quotas,
+provider comparison and physical/other-browser acceptance still remain. Full
+commands, source commit and scope limits are recorded in verification-m3.md.
