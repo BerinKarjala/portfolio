@@ -3,33 +3,56 @@ import { CommitField } from "./CommitField";
 import { useBuilder } from "../state/BuilderProvider";
 import { ICONS } from "../domain/icons";
 import { FIELD_KINDS, makeField } from "../domain/components";
-import { InlineIcon } from "./RichText";
+import { InlineIcon, RichTextEditor } from "./RichText";
 
-export default function ContentInspector({ element: e, patch }) {
+export default function ContentInspector({
+  element: e,
+  patch,
+  wizard = false,
+  fieldKeys,
+  onTextHistory,
+  onTextDone,
+  disabled = false,
+}) {
   const { state, dispatch, sendCommand } = useBuilder();
   const p = e.props;
   const [iconQuery, setIconQuery] = useState(""),
     [kind, setKind] = useState("text");
   const update = (value, key = "component") => patch({ props: value }, key);
-  const field = (label, key, options = {}) => (
-    <CommitField
-      key={key}
-      label={label}
-      value={p[key]}
-      onCommit={(value) => update({ [key]: value }, key)}
-      {...options}
-    />
-  );
-  const check = (label, key) => (
-    <label className="pb-checkbox" key={key}>
-      <input
-        type="checkbox"
-        checked={p[key]}
-        onChange={(event) => update({ [key]: event.target.checked }, key)}
+  const allowed = (key) => !fieldKeys || fieldKeys.includes(key);
+  const field = (label, key, options = {}) =>
+    allowed(key) && (
+      <CommitField
+        key={key}
+        label={label}
+        value={p[key]}
+        onCommit={(value) => update({ [key]: value }, key)}
+        {...options}
       />
-      {label}
-    </label>
-  );
+    );
+  const check = (label, key) =>
+    allowed(key) && (
+      <label className="pb-checkbox" key={key}>
+        <input
+          type="checkbox"
+          checked={p[key]}
+          onChange={(event) => update({ [key]: event.target.checked }, key)}
+        />
+        {label}
+      </label>
+    );
+  if (p.document && wizard)
+    return (
+      <RichTextEditor
+        disabled={disabled}
+        document={p.document}
+        onChange={(document) => update({ document })}
+        onHistory={onTextHistory}
+        onDone={onTextDone}
+        inlineToolbar
+        compact
+      />
+    );
   if (p.document)
     return (
       <>
@@ -48,23 +71,25 @@ export default function ContentInspector({ element: e, patch }) {
   if (["button", "link"].includes(e.type))
     return (
       <>
-        <label>
-          Link appearance
-          <select
-            aria-label="Link appearance"
-            value={e.type}
-            onChange={(event) =>
-              sendCommand({
-                type: "CONVERT",
-                ids: [e.id],
-                component: event.target.value,
-              })
-            }
-          >
-            <option value="link">Text link</option>
-            <option value="button">Button link</option>
-          </select>
-        </label>
+        {!wizard && (
+          <label>
+            Link appearance
+            <select
+              aria-label="Link appearance"
+              value={e.type}
+              onChange={(event) =>
+                sendCommand({
+                  type: "CONVERT",
+                  ids: [e.id],
+                  component: event.target.value,
+                })
+              }
+            >
+              <option value="link">Text link</option>
+              <option value="button">Button link</option>
+            </select>
+          </label>
+        )}
         <label>
           Section target
           <select
@@ -188,31 +213,35 @@ export default function ContentInspector({ element: e, patch }) {
         {["controls", "loop", "muted"].map((k) =>
           check(k[0].toUpperCase() + k.slice(1), k),
         )}
-        <label className="pb-checkbox">
-          <input
-            type="checkbox"
-            checked={p.autoplay}
-            onChange={(event) =>
-              update({
-                autoplay: event.target.checked,
-                ...(event.target.checked ? { muted: true } : {}),
-              })
-            }
-          />
-          Autoplay (requires muted)
-        </label>
-        <label>
-          Preload
-          <select
-            aria-label="Preload"
-            value={p.preload}
-            onChange={(event) => update({ preload: event.target.value })}
-          >
-            {["none", "metadata", "auto"].map((v) => (
-              <option key={v}>{v}</option>
-            ))}
-          </select>
-        </label>
+        {allowed("autoplay") && (
+          <label className="pb-checkbox">
+            <input
+              type="checkbox"
+              checked={p.autoplay}
+              onChange={(event) =>
+                update({
+                  autoplay: event.target.checked,
+                  ...(event.target.checked ? { muted: true } : {}),
+                })
+              }
+            />
+            Autoplay (requires muted)
+          </label>
+        )}
+        {allowed("preload") && (
+          <label>
+            Preload
+            <select
+              aria-label="Preload"
+              value={p.preload}
+              onChange={(event) => update({ preload: event.target.value })}
+            >
+              {["none", "metadata", "auto"].map((v) => (
+                <option key={v}>{v}</option>
+              ))}
+            </select>
+          </label>
+        )}
       </>
     );
   if (e.type === "form") {
@@ -264,22 +293,9 @@ export default function ContentInspector({ element: e, patch }) {
                 ))}
               </select>
             </label>
-            {["label", "name", "placeholder", "pattern", "min", "max"].map(
-              (k) => (
-                <CommitField
-                  key={k}
-                  label={`Field ${index + 1} ${k}`}
-                  value={f[k]}
-                  onCommit={(v) => edit(index, { [k]: v })}
-                />
-              ),
-            )}
-            {["minLength", "maxLength"].map((k) => (
+            {["label", "name"].map((k) => (
               <CommitField
                 key={k}
-                type="number"
-                min={0}
-                max={20000}
                 label={`Field ${index + 1} ${k}`}
                 value={f[k]}
                 onCommit={(v) => edit(index, { [k]: v })}
@@ -309,29 +325,7 @@ export default function ContentInspector({ element: e, patch }) {
                 }
               />
             )}
-            <label>
-              Autocomplete
-              <select
-                aria-label={`Field ${index + 1} autocomplete`}
-                value={f.autocomplete}
-                onChange={(event) =>
-                  edit(index, { autocomplete: event.target.value })
-                }
-              >
-                {[
-                  "off",
-                  "name",
-                  "email",
-                  "tel",
-                  "organization",
-                  "street-address",
-                  "postal-code",
-                  "new-password",
-                ].map((v) => (
-                  <option key={v}>{v}</option>
-                ))}
-              </select>
-            </label>
+            <FormAdvanced field={f} index={index} edit={edit} wizard={wizard} />
             <div className="pb-inline-actions">
               <button
                 type="button"
@@ -502,42 +496,48 @@ export default function ContentInspector({ element: e, patch }) {
           min: 1,
           max: 12,
         })}
-        <label>
-          Gallery aspect ratio
-          <select
-            aria-label="Gallery aspect ratio"
-            value={p.aspect}
-            onChange={(event) => update({ aspect: event.target.value })}
-          >
-            {["1 / 1", "4 / 3", "3 / 2", "16 / 9"].map((v) => (
-              <option key={v}>{v}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Gallery image fit
-          <select
-            aria-label="Gallery image fit"
-            value={p.fit}
-            onChange={(event) => update({ fit: event.target.value })}
-          >
-            {["cover", "contain", "fill"].map((v) => (
-              <option key={v}>{v}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Gallery hover effect
-          <select
-            aria-label="Gallery hover effect"
-            value={p.hover}
-            onChange={(event) => update({ hover: event.target.value })}
-          >
-            {["none", "zoom", "fade"].map((v) => (
-              <option key={v}>{v}</option>
-            ))}
-          </select>
-        </label>
+        {allowed("aspect") && (
+          <label>
+            Gallery aspect ratio
+            <select
+              aria-label="Gallery aspect ratio"
+              value={p.aspect}
+              onChange={(event) => update({ aspect: event.target.value })}
+            >
+              {["1 / 1", "4 / 3", "3 / 2", "16 / 9"].map((v) => (
+                <option key={v}>{v}</option>
+              ))}
+            </select>
+          </label>
+        )}
+        {allowed("fit") && (
+          <label>
+            Gallery image fit
+            <select
+              aria-label="Gallery image fit"
+              value={p.fit}
+              onChange={(event) => update({ fit: event.target.value })}
+            >
+              {["cover", "contain", "fill"].map((v) => (
+                <option key={v}>{v}</option>
+              ))}
+            </select>
+          </label>
+        )}
+        {allowed("hover") && (
+          <label>
+            Gallery hover effect
+            <select
+              aria-label="Gallery hover effect"
+              value={p.hover}
+              onChange={(event) => update({ hover: event.target.value })}
+            >
+              {["none", "zoom", "fade"].map((v) => (
+                <option key={v}>{v}</option>
+              ))}
+            </select>
+          </label>
+        )}
         {p.images.map((img, i) => (
           <details key={img.id} open className="pb-component-record">
             <summary>Image {i + 1}</summary>
@@ -611,4 +611,61 @@ export default function ContentInspector({ element: e, patch }) {
       </>
     );
   return null;
+}
+
+function FormAdvanced({ field: f, index, edit, wizard }) {
+  const controls = (
+    <>
+      {["placeholder", "pattern", "min", "max"].map((key) => (
+        <CommitField
+          key={key}
+          label={`Field ${index + 1} ${key}`}
+          value={f[key]}
+          onCommit={(value) => edit(index, { [key]: value })}
+        />
+      ))}
+      {["minLength", "maxLength"].map((key) => (
+        <CommitField
+          key={key}
+          type="number"
+          min={0}
+          max={20000}
+          label={`Field ${index + 1} ${key}`}
+          value={f[key]}
+          onCommit={(value) => edit(index, { [key]: value })}
+        />
+      ))}
+      <label>
+        Autocomplete
+        <select
+          aria-label={`Field ${index + 1} autocomplete`}
+          value={f.autocomplete}
+          onChange={(event) =>
+            edit(index, { autocomplete: event.target.value })
+          }
+        >
+          {[
+            "off",
+            "name",
+            "email",
+            "tel",
+            "organization",
+            "street-address",
+            "postal-code",
+            "new-password",
+          ].map((value) => (
+            <option key={value}>{value}</option>
+          ))}
+        </select>
+      </label>
+    </>
+  );
+  return wizard ? (
+    <details className="pb-wizard-advanced">
+      <summary>Advanced field {index + 1} settings</summary>
+      {controls}
+    </details>
+  ) : (
+    controls
+  );
 }

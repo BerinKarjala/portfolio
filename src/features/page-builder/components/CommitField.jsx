@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+// Wizard Escape dismisses the dialog; the standalone Inspector resets its field.
+export const CommitFieldEscapeContext = createContext(true);
 export function CommitField({
   label,
   value,
@@ -7,6 +9,7 @@ export function CommitField({
   ...props
 }) {
   const [draft, setDraft] = useState(value ?? "");
+  const resetOnEscape = useContext(CommitFieldEscapeContext);
   useEffect(() => setDraft(value ?? ""), [value]);
   return (
     <label>
@@ -23,7 +26,8 @@ export function CommitField({
         }}
         onKeyDown={(event) => {
           if (event.key === "Enter") event.currentTarget.blur();
-          if (event.key === "Escape") {
+          if (event.key === "Escape" && resetOnEscape) {
+            event.preventDefault();
             event.stopPropagation();
             setDraft(value ?? "");
           }

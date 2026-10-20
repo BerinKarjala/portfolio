@@ -131,6 +131,8 @@ export function RichTextEditor({
   onDone,
   onHistory,
   disabled = false,
+  inlineToolbar = false,
+  compact = false,
 }) {
   const root = useRef(null),
     saved = useRef({ start: 0, end: 0 }),
@@ -187,6 +189,10 @@ export function RichTextEditor({
     saved.current = range;
     pending.current = range;
     onChange(next, key);
+  }
+  function done() {
+    setError("");
+    onDone();
   }
   function format(value) {
     try {
@@ -301,7 +307,9 @@ export function RichTextEditor({
     node.addEventListener("beforeinput", handler);
     return () => node.removeEventListener("beforeinput", handler);
   }, []);
-  const dock = window.document.querySelector(".pb-rich-dock");
+  const dock = inlineToolbar
+    ? null
+    : window.document.querySelector(".pb-rich-dock");
   const toolbar = (
     <div
       className="pb-rich-toolbar"
@@ -439,7 +447,7 @@ export function RichTextEditor({
       >
         Insert inline icon
       </button>
-      <button type="button" onClick={onDone}>
+      <button type="button" onClick={done}>
         Done editing text
       </button>
     </div>
@@ -450,7 +458,16 @@ export function RichTextEditor({
       onClick={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
     >
-      {dock ? createPortal(toolbar, dock) : toolbar}
+      {dock ? (
+        createPortal(toolbar, dock)
+      ) : compact ? (
+        <details className="pb-wizard-advanced">
+          <summary>Advanced text formatting</summary>
+          {toolbar}
+        </details>
+      ) : (
+        toolbar
+      )}
       {error && <p role="alert">{error}</p>}
       <div
         ref={root}
@@ -492,7 +509,7 @@ export function RichTextEditor({
           if (event.key === "Escape") {
             event.preventDefault();
             event.stopPropagation();
-            onDone();
+            done();
           }
           if (event.key === "Enter") {
             event.preventDefault();

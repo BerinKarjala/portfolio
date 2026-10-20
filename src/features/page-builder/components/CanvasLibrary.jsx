@@ -84,6 +84,7 @@ function PaletteItem({
   );
 }
 export function Palette({
+  picking = false,
   add,
   parentId,
   insertion,
@@ -198,9 +199,10 @@ export function Palette({
               key={item.type}
               item={item}
               add={insert}
-              dragDisabled={readOnly}
+              dragDisabled={readOnly || picking}
               disabled={
                 readOnly ||
+                picking ||
                 (!!parentId &&
                   (isLocked(project, parentId) ||
                     treeDepth(project, parentId) >= 4)) ||
@@ -222,7 +224,15 @@ export function Palette({
   );
 }
 
-export function Layers({ expanded, setExpanded, reveal, inspect }) {
+export function Layers({
+  expanded,
+  setExpanded,
+  reveal,
+  inspect,
+  picking = false,
+  configure,
+  targetFocus,
+}) {
   const { state, select, sendCommand } = useBuilder();
   const { project, selection, readOnly } = state.editor;
   const [query, setQuery] = useState("");
@@ -250,7 +260,12 @@ export function Layers({ expanded, setExpanded, reveal, inspect }) {
     if (query || expanded.includes(id)) e.children.forEach(visit);
   }
   project.page.rootElementIds.forEach(visit);
-  function choose(id, toggle = false) {
+  function choose(id, toggle = false, activate = true) {
+    if (picking) {
+      targetFocus?.(id);
+      if (activate) configure?.(id);
+      return;
+    }
     select([id], toggle);
     reveal(id);
     if (!toggle) inspect?.();
@@ -275,7 +290,7 @@ export function Layers({ expanded, setExpanded, reveal, inspect }) {
     }
     if (event.key === "Enter" || event.key === " ") choose(id, event.shiftKey);
     if (next) {
-      choose(next);
+      choose(next, false, false);
       document.getElementById(`layer-${next}`)?.focus();
     }
     if (
@@ -344,6 +359,9 @@ export function Layers({ expanded, setExpanded, reveal, inspect }) {
                 choose(id, event.shiftKey || event.metaKey || event.ctrlKey)
               }
               onKeyDown={(event) => keyDown(event, id)}
+              onFocus={() => {
+                if (picking) targetFocus?.(id);
+              }}
             >
               <button
                 type="button"
@@ -362,6 +380,10 @@ export function Layers({ expanded, setExpanded, reveal, inspect }) {
                 checked={selection.includes(id)}
                 onClick={(event) => event.stopPropagation()}
                 onChange={() => {
+                  if (picking) {
+                    configure?.(id);
+                    return;
+                  }
                   select([id], true);
                   reveal(id);
                 }}
@@ -373,7 +395,7 @@ export function Layers({ expanded, setExpanded, reveal, inspect }) {
               </span>
               <button
                 type="button"
-                disabled={readOnly || parentLocked}
+                disabled={picking || readOnly || parentLocked}
                 aria-label={`${e.locked ? "Unlock" : "Lock"} ${e.name}`}
                 onClick={(event) => {
                   event.stopPropagation();
@@ -388,7 +410,7 @@ export function Layers({ expanded, setExpanded, reveal, inspect }) {
               </button>
               <button
                 type="button"
-                disabled={readOnly || protectedSubtree(project, id)}
+                disabled={picking || readOnly || protectedSubtree(project, id)}
                 aria-label={`${e.visibility.globalHidden ? "Show" : "Hide"} ${e.name}`}
                 onClick={(event) => {
                   event.stopPropagation();
@@ -407,7 +429,10 @@ export function Layers({ expanded, setExpanded, reveal, inspect }) {
                 <button
                   type="button"
                   disabled={
-                    readOnly || index === 0 || protectedSubtree(project, id)
+                    picking ||
+                    readOnly ||
+                    index === 0 ||
+                    protectedSubtree(project, id)
                   }
                   aria-label={`Move ${e.name} up`}
                   onClick={(event) => {
@@ -425,6 +450,7 @@ export function Layers({ expanded, setExpanded, reveal, inspect }) {
                 <button
                   type="button"
                   disabled={
+                    picking ||
                     readOnly ||
                     index === siblings.length - 1 ||
                     protectedSubtree(project, id)

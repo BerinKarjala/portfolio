@@ -34,6 +34,7 @@ import ReusableControls from "./ReusableControls";
 import CanvasStyles from "./CanvasStyles";
 import { reactStyles } from "../domain/styles";
 import ExternalPaste from "./ExternalPaste";
+import ElementWizard from "./ElementWizard";
 
 function keyboardCoordinates(event, { context, currentCoordinates }) {
   if (!["ArrowDown", "ArrowRight", "ArrowUp", "ArrowLeft"].includes(event.code))
@@ -124,6 +125,11 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
   const [layerMenu, setLayerMenu] = useState(null);
   const [help, setHelp] = useState(false);
   const [helpQuery, setHelpQuery] = useState("");
+  const [picking, setPicking] = useState(false);
+  const [wizardTarget, setWizardTarget] = useState(null);
+  const [wizardId, setWizardId] = useState(null);
+  const [pickerError, setPickerError] = useState("");
+  const wandRef = useRef(null);
   const widthGesture = useRef(null);
   const lastPoint = useRef(null);
   const previousSelection = useRef("");
@@ -188,6 +194,77 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
     useSensor(KeyboardSensor, { coordinateGetter: keyboardCoordinates }),
   );
   const update = (patch) => setWorkspace((ws) => ({ ...ws, ...patch }));
+  useEffect(() => {
+    setPicking(false);
+    setWizardTarget(null);
+    setWizardId(null);
+  }, [project.projectId]);
+  useEffect(() => {
+    if (readOnly || state.editor.masterEdit) setPicking(false);
+  }, [readOnly, state.editor.masterEdit]);
+  function armWizard() {
+    pointer.cancel();
+    endWidth(null, true);
+    dispatch({ type: "RICH_MODE", id: null });
+    setDrag(null);
+    dragRef.current = null;
+    setPickerError("");
+    setWizardTarget(null);
+    setPicking(!picking);
+  }
+  function configureTarget(id) {
+    if (!project.page.elements[id] || readOnly || state.editor.masterEdit)
+      return;
+    if (protectedSubtree(project, id)) {
+      setPickerError(
+        "Unlock this element and its locked descendants before configuring it.",
+      );
+      return;
+    }
+    select([id]);
+    setPicking(false);
+    setWizardId(id);
+    update({ mobilePanel: null });
+  }
+  function restoreWizardFocus() {
+    const target = elementNode(wizardId);
+    const layer = document.getElementById(`layer-${wizardId}`);
+    const visible = (node) => node?.isConnected && node.getClientRects().length;
+    (visible(target)
+      ? target
+      : visible(layer)
+        ? layer
+        : wandRef.current
+    )?.focus();
+  }
+  function targetAt(event) {
+    return event.target.closest?.("[data-element-id]")?.dataset.elementId;
+  }
+  function pickerClick(event) {
+    if (!picking) {
+      camera.handlers.onClickCapture?.(event);
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const id = targetAt(event);
+    if (id) configureTarget(id);
+  }
+  function pickerDown(event) {
+    if (picking) event.stopPropagation();
+  }
+  function pickerKey(event) {
+    if (
+      !picking ||
+      !["Enter", " "].includes(event.key) ||
+      isTextInput(event.target)
+    )
+      return;
+    event.preventDefault();
+    event.stopPropagation();
+    const id = targetAt(event);
+    if (id) configureTarget(id);
+  }
   useEffect(() => {
     if (typeof ResizeObserver !== "function") return;
     const observer = new ResizeObserver(() =>
@@ -260,6 +337,10 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
     ];
   }
   function selectAt(event, id) {
+    if (picking) {
+      configureTarget(id);
+      return;
+    }
     if (window.matchMedia?.("(max-width: 760px)").matches)
       update({ mobilePanel: "right", rightOpen: true });
     if (event.clientX !== undefined && event.clientY !== undefined)
@@ -276,7 +357,7 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
   }
   function canDrop(destination) {
     const data = dragRef.current;
-    if (!data || readOnly) return false;
+    if (!data || readOnly || picking || wizardId) return false;
     if (data.kind === "element")
       return canMoveTo(
         project,
@@ -293,6 +374,7 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
     );
   }
   function add(component, destination = parentId, beforeId) {
+    if (picking || wizardId) return;
     setWorkspace((ws) => ({
       ...ws,
       rightOpen: true,
@@ -437,11 +519,23 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
     requestDelete,
     clipboard,
     pointer,
+    picking,
+    wizardId,
     cancelWidth: () => endWidth(null, true),
   };
   useEffect(() => {
     function key(event) {
       const current = actions.current;
+      if (current.wizardId) return;
+      if (current.picking) {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          setPicking(false);
+          wandRef.current?.focus();
+        }
+        return;
+      }
       if (event.key === "Escape" && widthGesture.current) {
         event.preventDefault();
         event.stopPropagation();
@@ -536,7 +630,7 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
     return () => window.removeEventListener("keydown", key, true);
   }, [deletion, layerMenu, help, workspace.zoom]);
   const selectedLocked = selection.some((id) => protectedSubtree(project, id));
-  return (
+  const canvas = (
     <DndContext
       key={readOnly ? "read-only" : "editable"}
       sensors={sensors}
@@ -570,6 +664,34 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
         replay={state.editor.replayVersion}
       />
       <div className="pb-canvas-actions">
+        <button
+          ref={wandRef}
+          type="button"
+          className="pb-wizard-wand"
+          aria-label="Configure an element"
+          aria-pressed={picking}
+          disabled={readOnly || !!state.editor.masterEdit}
+          title={
+            state.editor.masterEdit
+              ? "Exit master editing to configure a selected copy."
+              : "Choose an element to configure"
+          }
+          onClick={armWizard}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            aria-hidden="true"
+          >
+            <path
+              d="m4 20 12-12 4 4L8 24M14 10l4 4M6 3v6M3 6h6M18 1v4M16 3h4M21 18v4M19 20h4"
+              transform="translate(0 -2)"
+            />
+          </svg>
+          Configure
+        </button>
         <button
           type="button"
           aria-label="Undo"
@@ -660,6 +782,26 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
           Shortcuts
         </button>
       </div>
+      {picking && (
+        <div className="pb-wizard-picker-message" role="status">
+          <p>Choose an element to configure.</p>
+          <p>
+            {wizardTarget
+              ? pathName(project, wizardTarget)
+              : "Click the canvas or choose a layer. Enter or Space confirms a focused element."}
+          </p>
+          {pickerError && <p role="alert">{pickerError}</p>}
+          <button
+            type="button"
+            onClick={() => {
+              setPicking(false);
+              wandRef.current?.focus();
+            }}
+          >
+            Cancel configuration
+          </button>
+        </div>
+      )}
       {selection.length >= 2 && (
         <div className="pb-arrange-toolbar" aria-label="Arrange selection">
           {[
@@ -750,10 +892,20 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
                 <ReusableControls library />
               ) : workspace.leftTab === "palette" ? (
                 <Palette
-                  {...{ add, parentId, insertion, setInsertion, recentVersion }}
+                  picking={picking}
+                  {...{
+                    add,
+                    parentId,
+                    insertion,
+                    setInsertion,
+                    recentVersion,
+                  }}
                 />
               ) : (
                 <Layers
+                  picking={picking}
+                  configure={configureTarget}
+                  targetFocus={setWizardTarget}
                   expanded={workspace.expandedIds}
                   setExpanded={(expandedIds) => update({ expandedIds })}
                   reveal={reveal}
@@ -766,7 +918,10 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
             </ErrorBoundary>
           </div>
         </aside>
-        <section className="pb-canvas-area" aria-label="Page canvas">
+        <section
+          className={`pb-canvas-area ${picking ? "pb-wizard-picking" : ""}`}
+          aria-label="Page canvas"
+        >
           <div className="pb-canvas-toolbar">
             <label>
               Layout width
@@ -870,6 +1025,23 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
             data-testid="canvas-scroll"
             className={`pb-canvas-scroll ${camera.panning ? "pb-camera-panning" : ""}`}
             {...camera.handlers}
+            onClickCapture={pickerClick}
+            onDoubleClickCapture={(event) => {
+              if (picking || wizardId) {
+                event.preventDefault();
+                event.stopPropagation();
+              }
+            }}
+            onPointerDownCapture={pickerDown}
+            onMouseDownCapture={pickerDown}
+            onTouchStartCapture={pickerDown}
+            onKeyDownCapture={pickerKey}
+            onPointerMoveCapture={(event) => {
+              if (picking) setWizardTarget(targetAt(event) || null);
+            }}
+            onFocusCapture={(event) => {
+              if (picking) setWizardTarget(targetAt(event) || null);
+            }}
             onScroll={(e) => {
               const scrollTop = e.currentTarget.scrollTop,
                 scrollLeft = e.currentTarget.scrollLeft;
@@ -916,6 +1088,8 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
                         readOnly,
                         canDrop,
                         workspace,
+                        picking,
+                        wizardTarget,
                       }}
                       draft={pointer.draft}
                       guides={pointer.draft}
@@ -1095,5 +1269,20 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
         </Modal>
       )}
     </DndContext>
+  );
+  return (
+    <>
+      {canvas}
+      {wizardId && (
+        <ElementWizard
+          key={`${project.projectId}:${wizardId}`}
+          targetId={wizardId}
+          designWidth={workspace.viewport}
+          measure={placements}
+          restoreFocus={restoreWizardFocus}
+          onClose={() => setWizardId(null)}
+        />
+      )}
+    </>
   );
 }

@@ -6,8 +6,32 @@ export default function Dialog({
   onDismiss,
   children,
   fullScreen = false,
+  className = "",
+  restoreFocus,
 }) {
   const ref = useRef(null);
+  const available = (node) => {
+    for (
+      let parent = node;
+      parent && parent !== ref.current;
+      parent = parent.parentElement
+    ) {
+      if (
+        parent.hidden ||
+        parent.inert ||
+        getComputedStyle(parent).display === "none" ||
+        getComputedStyle(parent).visibility === "hidden"
+      )
+        return false;
+      if (
+        parent.tagName === "DETAILS" &&
+        !parent.open &&
+        !parent.querySelector(":scope > summary")?.contains(node)
+      )
+        return false;
+    }
+    return true;
+  };
   useEffect(() => {
     const dialog = ref.current;
     const previousFocus = document.activeElement;
@@ -15,14 +39,17 @@ export default function Dialog({
     document.body.style.overflow = "hidden";
     if (typeof dialog.showModal === "function") dialog.showModal();
     else dialog.setAttribute("open", "");
-    const first = dialog.querySelector(
-      "[autofocus], button, input, select, textarea, [tabindex='0']",
-    );
+    const first = [
+      ...dialog.querySelectorAll(
+        "[autofocus], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), summary, [tabindex='0']",
+      ),
+    ].find(available);
     first?.focus();
     return () => {
       if (typeof dialog.close === "function") dialog.close();
       document.body.style.overflow = overflow;
-      if (previousFocus?.isConnected) previousFocus.focus();
+      if (restoreFocus) restoreFocus();
+      else if (previousFocus?.isConnected) previousFocus.focus();
     };
   }, []);
 
@@ -39,7 +66,7 @@ export default function Dialog({
         ...ref.current.querySelectorAll(
           "button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], summary, [tabindex='0']",
         ),
-      ];
+      ].filter(available);
       const first = focusable[0];
       const last = focusable.at(-1);
       if (event.shiftKey && document.activeElement === first) {
@@ -56,7 +83,7 @@ export default function Dialog({
       ref={ref}
       aria-labelledby={labelledBy}
       aria-modal="true"
-      className={`pb-root ${fullScreen ? "pb-workspace" : "pb-modal"}`}
+      className={`pb-root ${fullScreen ? "pb-workspace" : "pb-modal"} ${className}`}
       onKeyDown={keyDown}
       onCancel={(event) => {
         event.preventDefault();
