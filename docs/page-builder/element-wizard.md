@@ -65,7 +65,14 @@ Run the repository's five baseline commands from `docs/development-standards.md`
 Record the tested commit and actual engine/runtime versions in the pull request.
 Keep failed checks visible; do not update existing image baselines merely to
 make a different browser/font environment pass. The CI workflow includes this
-spec automatically in its Chromium, Firefox, and WebKit matrix.
+spec automatically in its Chromium, Firefox, and WebKit matrix. A separate
+wizard gate runs with retries disabled before the full regression suite.
+
+CI follow-up regressions keep picker instructions visible while the prospective
+target changes, so hover cannot shift the canvas under the pointer. They also
+verify that visible opaque previews return keyboard focus to the dialog without
+depending on a host-window blur event. Preview clicks must return focus before
+Tab or Escape is tested; the sandbox and script policy remain unchanged.
 
 Security review scope includes every changed source file, the command/reducer
 boundary, existing project validation and master permissions, browser ownership,

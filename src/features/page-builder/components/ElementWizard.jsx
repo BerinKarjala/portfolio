@@ -87,26 +87,23 @@ export function safeWizardPreview(project) {
   return previewDocument(compiled);
 }
 
-function Preview({ source, designWidth }) {
+function Preview({ source, designWidth, visible }) {
   const ref = useRef(null);
   const frameRef = useRef(null);
   const [available, setAvailable] = useState(320);
   useEffect(() => {
+    if (!visible) return;
     let frame;
     const retainDialogFocus = () => {
-      frame = requestAnimationFrame(() => {
-        // The opaque sandbox cannot forward Escape/Tab. Keep keyboard focus in
-        // the parent dialog while allowing wheel/touch scrolling in the frame.
-        if (document.activeElement === frameRef.current)
-          ref.current?.focus({ preventScroll: true });
-      });
+      // Opaque frames cannot forward keys. Window blur is not emitted reliably
+      // by every engine, so watch focus only while this preview is visible.
+      if (document.activeElement === frameRef.current)
+        ref.current?.focus({ preventScroll: true });
+      frame = requestAnimationFrame(retainDialogFocus);
     };
-    window.addEventListener("blur", retainDialogFocus);
-    return () => {
-      window.removeEventListener("blur", retainDialogFocus);
-      cancelAnimationFrame(frame);
-    };
-  }, []);
+    frame = requestAnimationFrame(retainDialogFocus);
+    return () => cancelAnimationFrame(frame);
+  }, [visible]);
   useEffect(() => {
     const measure = () => {
       if (ref.current?.clientWidth) setAvailable(ref.current.clientWidth);
@@ -539,6 +536,7 @@ export default function ElementWizard({
                 <Preview
                   source={lastPreview.current}
                   designWidth={designWidth}
+                  visible={!narrow || view === "preview"}
                 />
               ) : (
                 <p>

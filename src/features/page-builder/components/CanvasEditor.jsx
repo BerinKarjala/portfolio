@@ -786,9 +786,16 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
         <div className="pb-wizard-picker-message" role="status">
           <p>Choose an element to configure.</p>
           <p>
+            Click the canvas or choose a layer. Enter or Space confirms a
+            focused element.
+          </p>
+          <p
+            className="pb-wizard-picker-target"
+            title={wizardTarget ? pathName(project, wizardTarget) : undefined}
+          >
             {wizardTarget
               ? pathName(project, wizardTarget)
-              : "Click the canvas or choose a layer. Enter or Space confirms a focused element."}
+              : "No element targeted"}
           </p>
           {pickerError && <p role="alert">{pickerError}</p>}
           <button

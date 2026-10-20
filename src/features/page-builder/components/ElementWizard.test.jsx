@@ -432,6 +432,19 @@ describe("element configuration wizard", () => {
     expect(wand().getAttribute("aria-pressed")).toBe("false");
   });
 
+  it("returns focus from the opaque preview even when the host window does not emit blur", async () => {
+    start();
+    const dialog = open();
+    const frame = within(dialog).getByTitle("Element configuration preview");
+    frame.focus();
+    expect(document.activeElement).toBe(frame);
+    await waitFor(() =>
+      expect(document.activeElement).toBe(
+        within(dialog).getByRole("group", { name: "Read-only page preview" }),
+      ),
+    );
+  });
+
   it("lets Done dismiss an abandoned text-formatting error before completing the valid document", () => {
     start("heading");
     const dialog = open("heading");

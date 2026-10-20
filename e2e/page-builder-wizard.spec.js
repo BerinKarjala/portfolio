@@ -165,6 +165,14 @@ test("phone preview preserves drafts, traps focus, and fits a short keyboard vie
   const frame = dialog.getByTitle("Element configuration preview");
   await expect(frame).toBeVisible();
   await expect(frame).toHaveAttribute("sandbox", "");
+  await frame.click();
+  await expect(
+    dialog.getByRole("group", { name: "Read-only page preview" }),
+  ).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(
+    dialog.getByRole("button", { name: "Return to settings" }),
+  ).toBeFocused();
   await dialog.getByRole("button", { name: "Return to settings" }).click();
   await expect(
     dialog.getByLabel("Image description", { exact: true }),
@@ -406,6 +414,30 @@ test("long contextual previews can scroll without activating page actions", asyn
     )
     .toBeGreaterThan(0);
   await frame.click();
+  await expect(
+    dialog.getByRole("group", { name: "Read-only page preview" }),
+  ).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
+});
+
+test("picker hover keeps instructions and canvas targets stationary on phones", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await boot(page, "paragraph");
+  await page
+    .getByRole("button", { name: "Configure an element", exact: true })
+    .click();
+  const target = page.getByTestId("canvas-paragraph");
+  await target.scrollIntoViewIfNeeded();
+  const message = page.locator(".pb-wizard-picker-message");
+  const before = await message.boundingBox();
+  await target.hover();
+  await expect(target).toHaveAttribute("data-wizard-target", "true");
+  expect((await message.boundingBox()).height).toBeCloseTo(before.height, 1);
+  await target.click();
+  await expect(
+    page.getByRole("dialog", { name: "Configure Paragraph" }),
+  ).toBeVisible();
 });
