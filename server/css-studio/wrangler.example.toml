@@ -1,0 +1,23 @@
+# Configuration example only. No production route or AI binding is enabled.
+name = "css-studio-boundary"
+main = "worker.js"
+compatibility_date = "2026-07-01"
+workers_dev = false
+preview_urls = false
+
+[vars]
+APP_ORIGIN = "https://your-domain.invalid"
+# For a same-origin frontend proxy, set its fixed Worker backend origin separately.
+# ENDPOINT_ORIGIN = "https://your-worker.your-subdomain.workers.dev"
+
+[[durable_objects.bindings]]
+name = "QUOTA"
+class_name = "QuotaAuthority"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["QuotaAuthority"]
+
+# IDENTITY_SECRET is a server-only 32-byte random hex secret provisioned through
+# the approved Cloudflare secret workflow, never a browser-prefixed variable.
+# Adding a secret does not enable inference: production has no provider plan.
