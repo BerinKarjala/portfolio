@@ -9,16 +9,16 @@
   grid-row: 1;
 }
 .studio-has-left {
-  grid-template-columns: 260px minmax(0, 1fr);
+  grid-template-columns: 16.25rem minmax(0, 1fr);
 }
 .studio-has-left .studio-canvas {
   grid-column: 2;
 }
 .studio-has-right {
-  grid-template-columns: minmax(0, 1fr) 260px;
+  grid-template-columns: minmax(0, 1fr) 16.25rem;
 }
 .studio-has-left.studio-has-right {
-  grid-template-columns: 260px minmax(0, 1fr) 260px;
+  grid-template-columns: 16.25rem minmax(0, 1fr) 16.25rem;
 }
 .studio-panel {
   background: #f8fafc;
