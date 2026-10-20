@@ -234,3 +234,31 @@ it("listens only on request and inserts editable speech without submitting AC-07
   view.unmount();
   delete window.SpeechRecognition;
 });
+
+it("opens the on-demand photo picker and preserves a manual image across presets AC-40/49", async () => {
+  render(<Site />);
+  fireEvent.click(screen.getByRole("button", { name: "Theme Studio" }));
+  fireEvent.click(
+    screen.getByRole("button", { name: "Choose a background photo" }),
+  );
+  expect(
+    await screen.findByRole("button", {
+      name: /Use photo: A forest in spring/,
+    }),
+  ).toBeTruthy();
+  fireEvent.click(
+    screen.getByRole("button", { name: /Use photo: A forest in spring/ }),
+  );
+  expect(
+    document.documentElement.style.getPropertyValue("--studio-image"),
+  ).toContain("spring-01");
+  fireEvent.change(screen.getByLabelText("Season"), {
+    target: { value: "winter" },
+  });
+  fireEvent.change(screen.getByLabelText("Season"), {
+    target: { value: "spring" },
+  });
+  expect(
+    document.documentElement.style.getPropertyValue("--studio-image"),
+  ).toContain("spring-01");
+});

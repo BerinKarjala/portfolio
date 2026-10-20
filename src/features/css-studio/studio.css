@@ -309,3 +309,51 @@ html[data-studio-theme] .studio-canvas .studio-tooltip {
   color: #ffffff;
   background: #0f172a;
 }
+.studio-photo-probe {
+  display: none;
+}
+html[data-studio-theme] .studio-canvas {
+  background-image: var(--studio-image);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+html[data-studio-theme] .studio-canvas :is(main, .forest-bg) {
+  background: transparent;
+}
+.studio-photo-attribution {
+  padding: 1rem;
+  background: var(--studio-surface, #f8fafc);
+  color: var(--studio-text, #111827);
+  font:
+    0.875rem/1.5 system-ui,
+    sans-serif;
+}
+.studio-photo-credit a {
+  text-decoration: underline;
+}
+.studio-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.studio-photo-grid button {
+  margin: 0;
+  padding: 4px;
+  font-size: 12px;
+}
+.studio-photo-grid img {
+  width: 100%;
+  aspect-ratio: 3/2;
+  object-fit: cover;
+}
+.studio-photo-grid button[aria-pressed="true"] {
+  outline: 3px solid #0284c7;
+}
+.studio-panel input[type="search"] {
+  width: 100%;
+  padding: 8px;
+  background: white;
+  color: #111827;
+  border: 1px solid #475569;
+}

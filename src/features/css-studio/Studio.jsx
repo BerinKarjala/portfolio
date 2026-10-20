@@ -29,6 +29,11 @@ import {
   validateProposal,
   canApply,
 } from "./ai";
+import { selectedBackground, backgroundUrl } from "./backgrounds";
+const PhotoLibrary = lazy(() => import("./PhotoLibrary"));
+const PhotoCredit = lazy(() =>
+  import("./PhotoLibrary").then((module) => ({ default: module.PhotoCredit })),
+);
 const Examples = lazy(() => import("./Examples"));
 const StudioContext = createContext(null);
 export function StudioProvider({ children, designer = unavailableDesigner }) {
@@ -43,6 +48,13 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
     }
   });
   const [preferences, setPreferences] = useState(loaded.preferences);
+  const [photosOpen, setPhotosOpen] = useState(false);
+  const [failedPhotos, setFailedPhotos] = useState(new Set());
+  const photoProfile = `${preferences.family}:${preferences.family === "holidays" ? preferences.holiday : preferences.season}:${preferences[preferences.family][preferences.family === "holidays" ? preferences.holiday : preferences.season]?.backgroundId || "auto"}`;
+  useEffect(() => setFailedPhotos(new Set()), [photoProfile]);
+  const photo = preferences.themed
+    ? selectedBackground(preferences, failedPhotos)
+    : null;
   const [warning, setWarning] = useState(loaded.warning);
   const [open, setOpen] = useState(false);
   const [left, setLeft] = useState(true);
@@ -84,7 +96,7 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
   }, [preferences]);
   useEffect(() => {
     const root = document.documentElement;
-    const tokens = resolveTheme(preferences);
+    const tokens = resolveTheme(preferences, { failed: failedPhotos });
     if (preferences.themed) {
       root.setAttribute("data-studio-theme", "");
       for (const [key, value] of Object.entries(tokens))
@@ -97,7 +109,7 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
       root.removeAttribute("data-studio-theme");
       for (const key of Object.keys(tokens)) root.style.removeProperty(key);
     };
-  }, [preferences]);
+  }, [preferences, failedPhotos]);
   function launch(event) {
     launcher.current = event.currentTarget;
     setOpen(true);
@@ -123,7 +135,7 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
     setCss("");
     setPreferences((p) => ({ ...p, themed: true, ...changes }));
   }
-  const tokens = resolveTheme(preferences);
+  const tokens = resolveTheme(preferences, { failed: failedPhotos });
   const profile =
     preferences[preferences.family][
       preferences.family === "holidays"
@@ -131,7 +143,10 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
         : preferences.season
     ] || {};
   async function copy() {
-    const value = exportCss(preferences);
+    const value = exportCss(preferences, {
+      failed: failedPhotos,
+      assetBase: "./css-studio/",
+    });
     setCss(value);
     try {
       await navigator.clipboard.writeText(value);
@@ -209,6 +224,7 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
         <Suspense fallback={<p role="status">Opening examples…</p>}>
           <Examples
             preferences={preferences}
+            failed={failedPhotos}
             onClose={() => setExamples(false)}
           />
         </Suspense>
@@ -228,6 +244,12 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
               this browser.
             </p>
             {warning && <p role="status">{warning}</p>}
+            {failedPhotos.size > 0 && (
+              <p role="status">
+                The selected photo could not load. A fallback background is
+                shown.
+              </p>
+            )}
             <label>
               Theme family
               <select
@@ -364,6 +386,20 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
             <button onClick={() => choose({ themed: false })}>
               Restore original portfolio appearance
             </button>
+            <button onClick={() => setPhotosOpen((v) => !v)}>
+              Choose a background photo
+            </button>
+            {photosOpen && (
+              <Suspense fallback={<p role="status">Opening photos…</p>}>
+                <PhotoLibrary
+                  preferences={preferences}
+                  failed={failedPhotos}
+                  onSelect={(backgroundId) =>
+                    setPreferences((p) => updateProfile(p, { backgroundId }))
+                  }
+                />
+              </Suspense>
+            )}
             <button onClick={() => setExamples(true)}>
               Preview Page Builder examples
             </button>
@@ -383,19 +419,44 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
                   Reusable CSS
                   <textarea
                     readOnly
-                    value={exportCss(preferences)}
+                    value={exportCss(preferences, {
+                      failed: failedPhotos,
+                      assetBase: "./css-studio/",
+                    })}
                     onFocus={(e) => e.target.select()}
                   />
                 </label>
                 <p>
-                  These variables match the active preset. Reference them in
-                  your own stylesheet to reuse the design.
+                  These variables match the active preset. Photo paths are
+                  relative to your stylesheet; Download portable theme includes
+                  the image and its credits.
                 </p>
               </>
             )}
           </aside>
         )}
-        <div className="studio-canvas">{children}</div>
+        <div className="studio-canvas">
+          {photo && (
+            <img
+              className="studio-photo-probe"
+              alt=""
+              aria-hidden="true"
+              src={backgroundUrl(photo)}
+              onError={() =>
+                setFailedPhotos((previous) => new Set([...previous, photo.id]))
+              }
+            />
+          )}
+          {children}
+          {photo && (
+            <details className="studio-photo-attribution">
+              <summary>Background: {photo.title} · photo credits</summary>
+              <Suspense fallback={<p>Loading photo credits…</p>}>
+                <PhotoCredit imageId={photo.id} />
+              </Suspense>
+            </details>
+          )}
+        </div>
         {open && right && (
           <aside
             id="studio-chat"

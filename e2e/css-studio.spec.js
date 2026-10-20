@@ -179,3 +179,132 @@ test("themed controls and canvas pass an automated accessibility scan", async ({
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations).toEqual([]);
 });
+
+test("curated holiday photos are lazy, credited, persistent and downloadable without inference", async ({
+  page,
+}) => {
+  const requested = [];
+  page.on("request", (request) => requested.push(request.url()));
+  await page.getByRole("button", { name: "Theme Studio", exact: true }).click();
+  expect(
+    requested.filter((url) => url.includes("/css-studio/images/")),
+  ).toHaveLength(0);
+  await page
+    .getByRole("combobox", { name: "Theme family", exact: true })
+    .selectOption("holidays");
+  await page
+    .getByRole("combobox", { name: "Holiday", exact: true })
+    .selectOption("christmas");
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.documentElement.style.getPropertyValue("--studio-image"),
+      ),
+    )
+    .toContain("winter-51");
+  await page.getByRole("button", { name: "Choose a background photo" }).click();
+  const library = page.getByRole("region", {
+    name: "Background photo library",
+  });
+  await expect(
+    library.getByRole("button", { name: /^Use photo:/ }),
+  ).toHaveCount(3);
+  await library
+    .getByRole("button", { name: /^Use photo:/ })
+    .last()
+    .click();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.documentElement.style.getPropertyValue("--studio-image"),
+      ),
+    )
+    .toContain("winter-53");
+  await expect(
+    library.getByRole("link", { name: "Original resolution", exact: true }),
+  ).toHaveAttribute("href", /^https:/);
+  const downloaded = page.waitForEvent("download");
+  await library
+    .getByRole("button", { name: "Download portable theme" })
+    .click();
+  const download = await downloaded;
+  expect(download.suggestedFilename()).toBe("css-studio-theme.zip");
+  await page.reload();
+  await page.getByRole("button", { name: "Theme Studio", exact: true }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.documentElement.style.getPropertyValue("--studio-image"),
+      ),
+    )
+    .toContain("winter-53");
+  expect(
+    new Set(requested.filter((url) => url.includes("/css-studio/images/")))
+      .size,
+  ).toBeLessThanOrEqual(3);
+  expect(
+    requested.filter((url) =>
+      /cloudflare|openai|\/api\/.*(?:chat|generate)/i.test(url),
+    ),
+  ).toHaveLength(0);
+});
+test("a broken manually selected photo falls back without erasing its saved profile", async ({
+  page,
+}) => {
+  await page.route(
+    "**/css-studio/images/winter/winter-42-aurora.webp",
+    (route) => route.fulfill({ status: 404, body: "Missing" }),
+  );
+  await page.getByRole("button", { name: "Theme Studio", exact: true }).click();
+  await page
+    .getByRole("combobox", { name: "Season", exact: true })
+    .selectOption("winter");
+  await page.getByRole("button", { name: "Choose a background photo" }).click();
+  await page
+    .getByRole("searchbox", { name: "Search photos or holidays" })
+    .fill("winter-42");
+  await page.getByRole("button", { name: /^Use photo:/ }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.documentElement.style.getPropertyValue("--studio-image"),
+      ),
+    )
+    .toContain("winter-01");
+  expect(
+    await page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("css-studio:preferences")).seasons
+          .winter.backgroundId,
+    ),
+  ).toBe("winter-42");
+  await page.getByRole("button", { name: "Copy CSS variables" }).click();
+  await expect(
+    page.getByRole("textbox", { name: "Reusable CSS", exact: true }),
+  ).toContainText("winter-01");
+});
+
+test("standalone supplied catalog filters all 248 local assets by season and holiday", async ({
+  page,
+}) => {
+  await page.goto("/css-studio/index.html");
+  await expect(page.locator("#result")).toContainText("248 of 248");
+  await page.getByRole("button", { name: "Winter", exact: true }).click();
+  await expect(page.locator("#result")).toContainText("62 of 248");
+  await page.locator("#kind").selectOption("celebration");
+  await expect(page.locator("#result")).toContainText("12 of 248");
+  await page.locator("#holiday").selectOption("Christmas");
+  await expect(page.locator("#result")).toContainText("3 of 248");
+  await page
+    .getByRole("button", { name: /^Preview / })
+    .first()
+    .click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect
+    .poll(() =>
+      page
+        .locator("#viewer-image")
+        .evaluate((image) => image.complete && image.naturalWidth > 0),
+    )
+    .toBe(true);
+});

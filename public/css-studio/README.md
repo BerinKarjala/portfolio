@@ -1,0 +1,12 @@
+- Four Seasons CSS Theme Studio sample background library, version 1.0.0, October 20, 2026.
+- Contains 248 downloaded photograph samples: exactly 62 each for Spring, Summer, Fall, and Winter.
+- Each season contains 50 wilderness scenes for weekdays and 12 celebration images for holidays. The 50/12 split is a revisable curation default.
+- Extract the ZIP, then open index.html for the offline image browser. Lightweight thumbnails load in the grid; full-size samples open on demand. Filter by season, wilderness/celebration, holiday, or search text. The browser uses local photos and needs no API key or live AI.
+- catalog.json records IDs, local paths, original URLs, dimensions, file hashes, season/topic tags, holiday labels, descriptive text, creators, source pages, and individual license URLs.
+- ATTRIBUTION.md contains the photo credits and reuse instructions. Images retain their own licenses; keep the matching attribution and license links when reusing them.
+- Non-holiday weekdays use wilderness scenes. A selected holiday uses matching celebration imagery and takes precedence on a weekday. Wilderness is the proposed weekend default when no holiday is selected.
+- Seasonal folders group images by visual theme. They are not universal holiday-date assignments. Holiday dates can vary by year, calendar, region, and observed-date rules. The existing manual holiday selector remains available.
+- Curated assets do not consume Cloudflare AI quotas. AI generation and refinements retain the existing $0 policy and shared limits.
+- Photos are landscape samples with source width at least 1400 px. Exact bundled dimensions and original-resolution links are provided per image.
+- The image library has been assembled and visually reviewed. It has not been integrated into or deployed with the portfolio. Product contrast checks are still required when placing text over photos.
+- Source licensing guidance: https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia

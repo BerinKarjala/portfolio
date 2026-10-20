@@ -1,3 +1,8 @@
+import {
+  BACKGROUND_BY_ID,
+  selectedBackground,
+  backgroundUrl,
+} from "./backgrounds";
 export const STORAGE_KEY = "css-studio:preferences";
 export const SEASONS = {
   spring: ["Spring", "#166534"],
@@ -71,6 +76,11 @@ export function cleanOverrides(value) {
   if (own(FONTS, value?.font)) safe.font = value.font;
   if (["0px", "8px", "20px"].includes(value?.radius))
     safe.radius = value.radius;
+  if (
+    value?.backgroundId === "none" ||
+    Object.hasOwn(BACKGROUND_BY_ID, value?.backgroundId)
+  )
+    safe.backgroundId = value.backgroundId;
   return safe;
 }
 export function decodePreferences(raw) {
@@ -178,7 +188,10 @@ const readable = (preferred, background) =>
         contrastRatio("#ffffff", background)
       ? "#000000"
       : "#ffffff";
-export function resolveTheme(p) {
+export function resolveTheme(
+  p,
+  { assetBase = "/css-studio/", failed = new Set() } = {},
+) {
   const preset = (p.family === "holidays" ? HOLIDAYS : SEASONS)[profileId(p)];
   const overrides = cleanOverrides(p[p.family][profileId(p)]);
   const dark = p.mode === "dark";
@@ -210,7 +223,11 @@ export function resolveTheme(p) {
       : overrides.text || (dark ? "#f8fafc" : "#111827"),
     background,
   );
+  const image = selectedBackground(p, failed);
   return {
+    "--studio-image": image
+      ? `url("${backgroundUrl(image, assetBase)}")`
+      : "none",
     "--studio-accent": accent,
     "--studio-background": background,
     "--studio-surface": background,
@@ -224,10 +241,10 @@ export function resolveTheme(p) {
     "--studio-radius": overrides.radius || "8px",
   };
 }
-export function exportCss(p) {
+export function exportCss(p, options) {
   return (
     "/* Theme Studio: system fonts; no external font dependencies. */\n:root {\n" +
-    Object.entries(resolveTheme(p))
+    Object.entries(resolveTheme(p, options))
       .map(([k, v]) => `  ${k}: ${v};`)
       .join("\n") +
     "\n}\n"

@@ -7,7 +7,7 @@ import {
   previewDocument,
 } from "../page-builder/exporters/compiler";
 import { exportCss } from "./theme";
-export default function Examples({ preferences, onClose }) {
+export default function Examples({ preferences, failed, onClose }) {
   const [template, setTemplate] = useState("blank");
   const dialog = useRef(null);
   const id = useId();
@@ -20,10 +20,13 @@ export default function Examples({ preferences, onClose }) {
   );
   const source = useMemo(() => {
     const themed =
-      exportCss(preferences) +
-      `body,.pb-page,.pb-node { background-color:var(--studio-background) !important; color:var(--studio-text) !important; font-family:var(--studio-font) !important; } a {color:var(--studio-link) !important;} .pb-button,button {background:var(--studio-accent) !important;color:var(--studio-button-text) !important;border-radius:var(--studio-radius) !important;}`;
-    return previewDocument({ ...compiled, css: compiled.css + "\n" + themed });
-  }, [compiled, preferences]);
+      exportCss(preferences, { failed }) +
+      `body {background-image:var(--studio-image);background-size:cover;background-position:center;} .pb-page {background:transparent !important;} .pb-node { background-color:var(--studio-background) !important; color:var(--studio-text) !important; font-family:var(--studio-font) !important; } a {color:var(--studio-link) !important;} .pb-button,button {background:var(--studio-accent) !important;color:var(--studio-button-text) !important;border-radius:var(--studio-radius) !important;}`;
+    return previewDocument({
+      ...compiled,
+      css: compiled.css + "\n" + themed,
+    }).replace("img-src https:;", `img-src https: ${window.location.origin};`);
+  }, [compiled, preferences, failed]);
   useEffect(() => {
     const previous = document.activeElement;
     if (dialog.current.showModal) dialog.current.showModal();
