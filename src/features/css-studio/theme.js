@@ -1,3 +1,4 @@
+import { isGeneratedId } from "./imageIds";
 import {
   BACKGROUND_BY_ID,
   selectedBackground,
@@ -78,6 +79,7 @@ export function cleanOverrides(value) {
     safe.radius = value.radius;
   if (
     value?.backgroundId === "none" ||
+    isGeneratedId(value?.backgroundId) ||
     Object.hasOwn(BACKGROUND_BY_ID, value?.backgroundId)
   )
     safe.backgroundId = value.backgroundId;
@@ -190,7 +192,7 @@ const readable = (preferred, background) =>
       : "#ffffff";
 export function resolveTheme(
   p,
-  { assetBase = "/css-studio/", failed = new Set() } = {},
+  { assetBase = "/css-studio/", failed = new Set(), generatedImages = {} } = {},
 ) {
   const preset = (p.family === "holidays" ? HOLIDAYS : SEASONS)[profileId(p)];
   const overrides = cleanOverrides(p[p.family][profileId(p)]);
@@ -223,7 +225,7 @@ export function resolveTheme(
       : overrides.text || (dark ? "#f8fafc" : "#111827"),
     background,
   );
-  const image = selectedBackground(p, failed);
+  const image = selectedBackground(p, failed, generatedImages);
   return {
     "--studio-image": image
       ? `url("${backgroundUrl(image, assetBase)}")`

@@ -1,3 +1,4 @@
+import { generatedPath, imageBlobAllowed } from "./imageIds";
 import { crc32 } from "../page-builder/exporters/zip";
 import { selectedBackground, backgroundUrl } from "./backgrounds";
 import { exportCss } from "./theme";
@@ -57,14 +58,60 @@ export function assetZip(files) {
   v.setUint32(16, offset, true);
   return new Blob([...locals, ...centrals, end], { type: "application/zip" });
 }
-export async function themeArchive(p, failed, catalog, fetchImage = fetch) {
-  const selected = selectedBackground(p, failed);
+export async function themeArchive(
+  p,
+  failed,
+  catalog,
+  fetchImage = fetch,
+  { generatedImages = {}, getGeneratedImage } = {},
+) {
+  const selected = selectedBackground(p, failed, generatedImages);
   const files = {
-    "styles.css": exportCss(p, { assetBase: "./css-studio/", failed }),
+    "styles.css": exportCss(p, {
+      assetBase: "./css-studio/",
+      failed,
+      generatedImages,
+    }),
     "README.txt":
       "Use styles.css variables in your stylesheet. Preserve the css-studio folder beside styles.css. Photo licenses are separate from application code; retain CREDITS.json and its license/source/change notices. System fonts require no external dependencies.",
   };
-  if (selected) {
+  if (selected?.kind === "generated") {
+    const image = await getGeneratedImage?.(selected.id);
+    if (
+      !image ||
+      image.id !== selected.id ||
+      !imageBlobAllowed(image.blob) ||
+      !generatedPath(image)
+    )
+      throw Error("Generated image unavailable");
+    const bytes = new Uint8Array(await image.blob.arrayBuffer());
+    const digest = [
+      ...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
+    ]
+      .map((value) => value.toString(16).padStart(2, "0"))
+      .join("");
+    if (digest !== image.sha256 || image.mime !== selected.mime)
+      throw Error("Generated image integrity check failed");
+    files["css-studio/" + generatedPath(image)] = bytes;
+    files["GENERATED_IMAGE.json"] = JSON.stringify(
+      {
+        id: image.id,
+        mime: image.mime,
+        width: image.width,
+        height: image.height,
+        bytes: bytes.length,
+        sha256: digest,
+        createdAt: image.createdAt,
+        context: image.context,
+        ...(image.parentId ? { parentId: image.parentId } : {}),
+        notice: "Generated background. No curated-photo license is claimed.",
+      },
+      null,
+      2,
+    );
+    files["README.txt"] =
+      "Use styles.css variables in your stylesheet. Preserve the css-studio folder beside styles.css. Retain GENERATED_IMAGE.json. This generated background is separate from the curated photo catalog. System fonts require no external dependencies.";
+  } else if (selected) {
     const metadata = catalog.find((i) => i.id === selected.id);
     if (!metadata?.attribution || !metadata.licenseUrl)
       throw Error("Missing credits");

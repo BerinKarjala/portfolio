@@ -262,3 +262,38 @@ it("opens the on-demand photo picker and preserves a manual image across presets
     document.documentElement.style.getPropertyValue("--studio-image"),
   ).toContain("spring-01");
 });
+
+it("keeps typed drafts usable after denied microphone permission and never sends the transcript automatically", () => {
+  let recognition;
+  window.SpeechRecognition = class {
+    constructor() {
+      recognition = this;
+    }
+    start() {}
+    abort = vi.fn();
+  };
+  const designer = { available: true, propose: vi.fn() };
+  const view = render(
+    <StudioProvider designer={designer}>
+      <MoonLauncher />
+    </StudioProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Theme Studio" }));
+  fireEvent.click(screen.getByRole("button", { name: "Chat", exact: true }));
+  fireEvent.change(screen.getByLabelText("Message"), {
+    target: { value: "Keep this typed draft" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Use microphone" }));
+  act(() => recognition.onerror({ error: "not-allowed" }));
+  expect(
+    screen.getByText(/Microphone unavailable or permission denied/),
+  ).toBeTruthy();
+  expect(screen.getByLabelText("Message").value).toBe("Keep this typed draft");
+  expect(designer.propose).not.toHaveBeenCalled();
+  expect(
+    screen.getByRole("button", { name: "Send", exact: true }).disabled,
+  ).toBe(false);
+  view.unmount();
+  expect(recognition.abort).toHaveBeenCalledOnce();
+  delete window.SpeechRecognition;
+});

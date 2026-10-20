@@ -7,7 +7,7 @@ export const IMAGE_LIMITS = Object.freeze({
   maxItems: 24,
   maxBytes: 96 * 1024 * 1024,
 });
-class CacheLimitError extends Error {}
+export class CacheLimitError extends Error {}
 function contextValid(c) {
   return (
     c &&

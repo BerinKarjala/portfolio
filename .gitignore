@@ -10,6 +10,7 @@ studio13/.sanity/
 /coverage
 /playwright-report
 /test-results
+/test-results-images
 
 # production
 /build

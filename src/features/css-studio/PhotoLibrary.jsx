@@ -6,7 +6,6 @@ import {
   selectedBackground,
   backgroundUrl,
 } from "./backgrounds";
-import { exportCss } from "./theme";
 let catalogPromise;
 async function readCatalog() {
   if (!catalogPromise)
@@ -95,7 +94,13 @@ export function PhotoCredit({ imageId }) {
     </div>
   );
 }
-export default function PhotoLibrary({ preferences, failed, onSelect }) {
+export default function PhotoLibrary({
+  preferences,
+  failed,
+  generatedImages,
+  getGeneratedImage,
+  onSelect,
+}) {
   const { images, error } = useCatalog();
   const [scope, setScope] = useState("matching");
   const [season, setSeason] = useState("all");
@@ -115,7 +120,7 @@ export default function PhotoLibrary({ preferences, failed, onSelect }) {
   );
   const totalPages = Math.max(1, Math.ceil(filtered.length / 12));
   const activePage = Math.min(page, totalPages - 1);
-  const selected = selectedBackground(preferences, failed);
+  const selected = selectedBackground(preferences, failed, generatedImages);
   function filter(set, value) {
     set(value);
     setPage(0);
@@ -124,7 +129,13 @@ export default function PhotoLibrary({ preferences, failed, onSelect }) {
     try {
       setStatus("Preparing theme download…");
       const { themeArchive } = await import("./photoExport");
-      const blob = await themeArchive(preferences, failed, await readCatalog());
+      const blob = await themeArchive(
+        preferences,
+        failed,
+        selected?.kind === "generated" ? [] : await readCatalog(),
+        undefined,
+        { generatedImages, getGeneratedImage },
+      );
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -132,7 +143,9 @@ export default function PhotoLibrary({ preferences, failed, onSelect }) {
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       setStatus(
-        "Theme download ready. Photo credits and portable paths are included.",
+        selected?.kind === "generated"
+          ? "Theme download ready. Generated-image metadata and portable paths are included."
+          : "Theme download ready. Photo credits and portable paths are included.",
       );
     } catch {
       setStatus("Download unavailable. Your theme remains active; try again.");
@@ -228,13 +241,20 @@ export default function PhotoLibrary({ preferences, failed, onSelect }) {
       <button onClick={() => onSelect(undefined)}>Use automatic photo</button>
       {selected && (
         <>
-          <h3>Selected photo</h3>
-          <PhotoCredit imageId={selected.id} />
+          <h3>Selected background</h3>
+          {selected.kind === "generated" ? (
+            <p>Generated background · saved in this browser.</p>
+          ) : (
+            <PhotoCredit imageId={selected.id} />
+          )}
         </>
       )}
       {error && <p role="status">{error}</p>}
       <button
-        disabled={!preferences.themed || (selected && !images.length)}
+        disabled={
+          !preferences.themed ||
+          (selected && selected.kind !== "generated" && !images.length)
+        }
         onClick={download}
       >
         Download portable theme

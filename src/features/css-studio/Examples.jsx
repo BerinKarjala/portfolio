@@ -7,8 +7,41 @@ import {
   previewDocument,
 } from "../page-builder/exporters/compiler";
 import { exportCss } from "./theme";
-export default function Examples({ preferences, failed, onClose }) {
+import { selectedBackground } from "./backgrounds";
+export default function Examples({
+  preferences,
+  failed,
+  generatedImages,
+  onClose,
+}) {
   const [template, setTemplate] = useState("blank");
+  const [inlineImage, setInlineImage] = useState(null);
+  const selected = selectedBackground(preferences, failed, generatedImages);
+  const selectedGenerated =
+    selected?.kind === "generated" ? generatedImages[selected.id] : null;
+  useEffect(() => {
+    setInlineImage(null);
+    if (!selectedGenerated) return;
+    const reader = new FileReader();
+    let active = true;
+    reader.onload = () => {
+      if (active)
+        setInlineImage({ ...selectedGenerated, displayUrl: reader.result });
+    };
+    reader.readAsDataURL(selectedGenerated.blob);
+    return () => {
+      active = false;
+      if (reader.readyState === FileReader.LOADING) reader.abort();
+    };
+  }, [selectedGenerated]);
+  const previewImages = useMemo(
+    () =>
+      inlineImage && inlineImage.id === selected?.id
+        ? { [inlineImage.id]: inlineImage }
+        : {},
+    [inlineImage, selected?.id],
+  );
+
   const dialog = useRef(null);
   const id = useId();
   const compiled = useMemo(
@@ -20,13 +53,16 @@ export default function Examples({ preferences, failed, onClose }) {
   );
   const source = useMemo(() => {
     const themed =
-      exportCss(preferences, { failed }) +
+      exportCss(preferences, { failed, generatedImages: previewImages }) +
       `body {background-image:var(--studio-image);background-size:cover;background-position:center;} .pb-page {background:transparent !important;} .pb-node { background-color:var(--studio-background) !important; color:var(--studio-text) !important; font-family:var(--studio-font) !important; } a {color:var(--studio-link) !important;} .pb-button,button {background:var(--studio-accent) !important;color:var(--studio-button-text) !important;border-radius:var(--studio-radius) !important;}`;
     return previewDocument({
       ...compiled,
       css: compiled.css + "\n" + themed,
-    }).replace("img-src https:;", `img-src https: ${window.location.origin};`);
-  }, [compiled, preferences, failed]);
+    }).replace(
+      "img-src https:;",
+      `img-src https: data: ${window.location.origin};`,
+    );
+  }, [compiled, preferences, failed, previewImages]);
   useEffect(() => {
     const previous = document.activeElement;
     if (dialog.current.showModal) dialog.current.showModal();

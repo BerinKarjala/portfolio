@@ -308,3 +308,352 @@ test("standalone supplied catalog filters all 248 local assets by season and hol
     )
     .toBe(true);
 });
+
+async function seedGeneratedImages(
+  page,
+  { missing = false, allProfiles = false } = {},
+) {
+  return page.evaluate(
+    async ({ missing, allProfiles }) => {
+      const blob = await (
+        await fetch("/css-studio/images/spring/spring-01-woodland.webp")
+      ).blob();
+      const contexts = [
+        { family: "seasons", id: "spring" },
+        { family: "seasons", id: "spring" },
+        ...(allProfiles
+          ? [
+              { family: "seasons", id: "winter" },
+              { family: "holidays", id: "diwali" },
+              { family: "holidays", id: "christmas" },
+            ]
+          : []),
+      ];
+      const ids = contexts.map(
+        (_, index) =>
+          `generated-00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
+      );
+      const records = await Promise.all(
+        contexts.map(async (context, index) => {
+          const media =
+            index % 2
+              ? await (
+                  await fetch(
+                    "/css-studio/images/spring/spring-02-woodland.webp",
+                  )
+                ).blob()
+              : blob;
+          const decoded = await createImageBitmap(media);
+          const dimensions = { width: decoded.width, height: decoded.height };
+          decoded.close();
+          const digest = [
+            ...new Uint8Array(
+              await crypto.subtle.digest("SHA-256", await media.arrayBuffer()),
+            ),
+          ]
+            .map((v) => v.toString(16).padStart(2, "0"))
+            .join("");
+          return {
+            schemaVersion: 1,
+            id: ids[index],
+            blob: media,
+            mime: media.type,
+            bytes: media.size,
+            ...dimensions,
+            sha256: digest,
+            context: { ...context, mode: "light", contrast: false },
+            createdAt: 1000 + index,
+            lastUsedAt: 1000 + index,
+          };
+        }),
+      );
+      const db = await new Promise((resolve, reject) => {
+        const request = indexedDB.open("css-studio-images", 1);
+        request.onupgradeneeded = () =>
+          request.result.createObjectStore("images", { keyPath: "id" });
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      if (!missing)
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction("images", "readwrite");
+          records.forEach((record) => tx.objectStore("images").put(record));
+          tx.oncomplete = resolve;
+          tx.onabort = () => reject(tx.error);
+        });
+      db.close();
+      localStorage.setItem(
+        "css-studio:preferences",
+        JSON.stringify({
+          schemaVersion: 2,
+          themed: true,
+          family: "seasons",
+          season: "spring",
+          holiday: "new-year",
+          mode: "light",
+          contrast: false,
+          seasons: {
+            spring: { backgroundId: ids[0] },
+            ...(allProfiles ? { winter: { backgroundId: ids[2] } } : {}),
+          },
+          holidays: allProfiles
+            ? {
+                diwali: { backgroundId: ids[3] },
+                christmas: { backgroundId: ids[4] },
+              }
+            : {},
+        }),
+      );
+      return ids;
+    },
+    { missing, allProfiles },
+  );
+}
+
+test("saved generated backgrounds restore, compare, download exact bytes and export portable themes", async ({
+  page,
+}) => {
+  const ids = await seedGeneratedImages(page);
+  await page.reload();
+  await page.getByRole("button", { name: "Theme Studio", exact: true }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.documentElement.style.getPropertyValue("--studio-image"),
+      ),
+    )
+    .toContain("blob:");
+  await page
+    .getByRole("button", { name: "Generated backgrounds", exact: true })
+    .click();
+  const history = page.getByRole("region", {
+    name: "Generated background history",
+  });
+  await expect(
+    history.getByRole("button", { name: "Remove background 2" }),
+  ).toBeDisabled();
+  await history.getByLabel("Compare background 1").check();
+  await history.getByLabel("Compare background 2").check();
+  await expect(history.getByAltText("Comparison background 1")).toBeVisible();
+  await expect(history.getByAltText("Comparison background 2")).toBeVisible();
+  await expect(
+    history.getByRole("button", { name: "Remove background 1" }),
+  ).toBeDisabled();
+  const imageDownload = page.waitForEvent("download");
+  await history.getByRole("button", { name: "Download background 2" }).click();
+  const imageFile = await imageDownload;
+  expect(imageFile.suggestedFilename()).toBe(`${ids[0]}.webp`);
+  const { readFile } = await import("node:fs/promises");
+  const actual = await readFile(await imageFile.path());
+  expect(actual).toEqual(
+    await readFile("public/css-studio/images/spring/spring-01-woodland.webp"),
+  );
+  await page.getByRole("button", { name: "Copy CSS variables" }).click();
+  const css = page.getByRole("textbox", { name: "Reusable CSS", exact: true });
+  await expect(css).toContainText(`./css-studio/generated/${ids[0]}.webp`);
+  await expect(css).not.toContainText("blob:");
+  await page
+    .getByRole("button", { name: "Preview Page Builder examples" })
+    .click();
+  const frame = page.frameLocator(
+    'iframe[title="Themed Page Builder example"]',
+  );
+  await expect
+    .poll(() =>
+      frame
+        .locator("body")
+        .evaluate((body) => getComputedStyle(body).backgroundImage),
+    )
+    .toContain("data:image/webp;base64,");
+  expect(
+    await frame.locator("body").evaluate(async (body) => {
+      const image = new Image();
+      image.src = JSON.parse(
+        getComputedStyle(body).backgroundImage.slice(4, -1),
+      );
+      await image.decode();
+      return image.naturalWidth;
+    }),
+  ).toBe(1600);
+  await page.getByRole("button", { name: "Close examples" }).click();
+  await page.getByRole("button", { name: "Choose a background photo" }).click();
+  const zipDownload = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download portable theme" }).click();
+  const zip = await readFile(await (await zipDownload).path());
+  expect(zip.includes(Buffer.from(`css-studio/generated/${ids[0]}.webp`))).toBe(
+    true,
+  );
+  expect(zip.includes(Buffer.from("GENERATED_IMAGE.json"))).toBe(true);
+  expect(zip.includes(Buffer.from("blob:"))).toBe(false);
+  await page
+    .getByRole("combobox", { name: "Season", exact: true })
+    .selectOption("winter");
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.documentElement.style.getPropertyValue("--studio-image"),
+      ),
+    )
+    .toContain("winter-01");
+  await page
+    .getByRole("combobox", { name: "Season", exact: true })
+    .selectOption("spring");
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.documentElement.style.getPropertyValue("--studio-image"),
+      ),
+    )
+    .toContain("blob:");
+  await history.getByRole("button", { name: "Clear comparison" }).click();
+  await page.getByRole("button", { name: "Reset current season" }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.documentElement.style.getPropertyValue("--studio-image"),
+      ),
+    )
+    .toContain("spring-01");
+  await expect(
+    history.getByRole("button", { name: "Remove background 2" }),
+  ).toBeDisabled();
+  await page.getByRole("button", { name: "Undo reset" }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.documentElement.style.getPropertyValue("--studio-image"),
+      ),
+    )
+    .toContain("blob:");
+
+  await history.getByRole("button", { name: "Remove background 1" }).click();
+  await expect(
+    history.getByRole("button", { name: "Use background 2" }),
+  ).toHaveCount(0);
+});
+
+test("missing generated bytes show a curated fallback without erasing the saved reference", async ({
+  page,
+}) => {
+  const ids = await seedGeneratedImages(page, { missing: true });
+  await page.reload();
+  await page.getByRole("button", { name: "Theme Studio", exact: true }).click();
+  await expect(
+    page
+      .getByRole("status")
+      .filter({ hasText: "saved generated background is unavailable" }),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.documentElement.style.getPropertyValue("--studio-image"),
+      ),
+    )
+    .toContain("spring-01");
+  expect(
+    await page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("css-studio:preferences")).seasons
+          .spring.backgroundId,
+    ),
+  ).toBe(ids[0]);
+});
+
+test("generated history comparison fits phone through 4K viewports and has labeled controls", async ({
+  page,
+}) => {
+  await seedGeneratedImages(page);
+  await page.reload();
+  await page.getByRole("button", { name: "Theme Studio", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Generated backgrounds", exact: true })
+    .click();
+  const history = page.getByRole("region", {
+    name: "Generated background history",
+  });
+  await history.getByLabel("Compare background 1").check();
+  await history.getByLabel("Compare background 2").check();
+  await expect(history.getByAltText("Comparison background 2")).toBeVisible();
+  for (const [width, height] of [
+    [320, 740],
+    [390, 844],
+    [768, 1024],
+    [1440, 900],
+    [1920, 1080],
+    [3840, 2160],
+  ]) {
+    await page.setViewportSize({ width, height });
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth + 1,
+        ),
+      )
+      .toBe(true);
+    const geometry = await history.evaluate((node) => ({
+      scroll: node.scrollWidth,
+      width: node.clientWidth,
+    }));
+    expect(geometry.scroll).toBeLessThanOrEqual(geometry.width + 1);
+    if ([390, 3840].includes(width))
+      await page.screenshot({
+        path: `/workspace/work/generated-history-${width}.png`,
+      });
+  }
+  const { default: AxeBuilder } = await import("@axe-core/playwright");
+  const result = await new AxeBuilder({ page })
+    .include("#studio-styles")
+    .analyze();
+  expect(result.violations).toEqual([]);
+});
+
+test("two seasons and two holidays independently restore generated backgrounds and appearance changes", async ({
+  page,
+}) => {
+  const ids = await seedGeneratedImages(page, { allProfiles: true });
+  await page.reload();
+  await page.getByRole("button", { name: "Theme Studio", exact: true }).click();
+  for (const [family, id, imageId] of [
+    ["seasons", "winter", ids[2]],
+    ["holidays", "diwali", ids[3]],
+    ["holidays", "christmas", ids[4]],
+    ["seasons", "spring", ids[0]],
+  ]) {
+    await page
+      .getByRole("combobox", { name: "Theme family", exact: true })
+      .selectOption(family);
+    await page
+      .getByRole("combobox", {
+        name: family === "seasons" ? "Season" : "Holiday",
+        exact: true,
+      })
+      .selectOption(id);
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          document.documentElement.style.getPropertyValue("--studio-image"),
+        ),
+      )
+      .toContain("blob:");
+    await page.getByRole("button", { name: "Copy CSS variables" }).click();
+    await expect(
+      page.getByRole("textbox", { name: "Reusable CSS", exact: true }),
+    ).toContainText(`generated/${imageId}.webp`);
+    await page
+      .getByRole("combobox", { name: "Appearance", exact: true })
+      .selectOption("dark");
+    await page
+      .getByRole("checkbox", { name: "High Contrast", exact: true })
+      .check();
+    await page.getByRole("button", { name: "Copy CSS variables" }).click();
+    await expect(
+      page.getByRole("textbox", { name: "Reusable CSS", exact: true }),
+    ).toContainText(`generated/${imageId}.webp`);
+  }
+  await page.reload();
+  await page.getByRole("button", { name: "Theme Studio", exact: true }).click();
+  await page.getByRole("button", { name: "Copy CSS variables" }).click();
+  await expect(
+    page.getByRole("textbox", { name: "Reusable CSS", exact: true }),
+  ).toContainText(`generated/${ids[0]}.webp`);
+});

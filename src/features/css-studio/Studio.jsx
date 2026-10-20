@@ -19,6 +19,7 @@ import {
   resetProfile,
   restoreReset,
   exportCss,
+  profileId,
 } from "./theme";
 import { moonPath, moonPhase } from "./moon";
 import "./studio.css";
@@ -29,6 +30,9 @@ import {
   validateProposal,
   canApply,
 } from "./ai";
+import { useGeneratedImages, saveDownload } from "./useGeneratedImages";
+import { isGeneratedId, generatedPath } from "./imageIds";
+import GeneratedHistory from "./GeneratedHistory";
 import { selectedBackground, backgroundUrl } from "./backgrounds";
 const PhotoLibrary = lazy(() => import("./PhotoLibrary"));
 const PhotoCredit = lazy(() =>
@@ -36,7 +40,11 @@ const PhotoCredit = lazy(() =>
 );
 const Examples = lazy(() => import("./Examples"));
 const StudioContext = createContext(null);
-export function StudioProvider({ children, designer = unavailableDesigner }) {
+export function StudioProvider({
+  children,
+  designer = unavailableDesigner,
+  imageCache,
+}) {
   const [loaded] = useState(() => {
     try {
       return readPreferences(window.localStorage);
@@ -48,12 +56,22 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
     }
   });
   const [preferences, setPreferences] = useState(loaded.preferences);
+  const generated = useGeneratedImages(imageCache);
+  const [generatedOpen, setGeneratedOpen] = useState(false);
+  const [comparison, setComparison] = useState([]);
+  const [operation, setOperation] = useState("theme");
+  const currentGeneratedId =
+    preferences[preferences.family][profileId(preferences)]?.backgroundId;
+  useEffect(() => {
+    if (isGeneratedId(currentGeneratedId))
+      void generated.ensure(currentGeneratedId);
+  }, [currentGeneratedId, generated.ensure]);
   const [photosOpen, setPhotosOpen] = useState(false);
   const [failedPhotos, setFailedPhotos] = useState(new Set());
   const photoProfile = `${preferences.family}:${preferences.family === "holidays" ? preferences.holiday : preferences.season}:${preferences[preferences.family][preferences.family === "holidays" ? preferences.holiday : preferences.season]?.backgroundId || "auto"}`;
   useEffect(() => setFailedPhotos(new Set()), [photoProfile]);
   const photo = preferences.themed
-    ? selectedBackground(preferences, failedPhotos)
+    ? selectedBackground(preferences, failedPhotos, generated.images)
     : null;
   const [warning, setWarning] = useState(loaded.warning);
   const [open, setOpen] = useState(false);
@@ -71,6 +89,33 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
   useEffect(() => () => activeRequest.current?.abort(), []);
   const [draft, setDraft] = useState("");
   const [undo, setUndo] = useState(null);
+  const pinState = useRef(null);
+  pinState.current = { preferences, undo, proposal, comparison };
+  function pinnedIds() {
+    const state = pinState.current;
+    return [
+      ...Object.values(state.preferences.seasons),
+      ...Object.values(state.preferences.holidays),
+    ]
+      .map((profile) => profile.backgroundId)
+      .concat(
+        state.undo?.previous?.backgroundId,
+        state.proposal?.imageId,
+        state.comparison,
+      )
+      .filter(isGeneratedId);
+  }
+  const [unsavedUrl, setUnsavedUrl] = useState("");
+  const [savingPreview, setSavingPreview] = useState(false);
+  useEffect(() => {
+    if (!proposal?.unsavedImage) {
+      setUnsavedUrl("");
+      return;
+    }
+    const url = URL.createObjectURL(proposal.unsavedImage);
+    setUnsavedUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [proposal?.unsavedImage]);
   const [css, setCss] = useState("");
   const [examples, setExamples] = useState(false);
   const [copyStatus, setCopyStatus] = useState("");
@@ -96,7 +141,10 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
   }, [preferences]);
   useEffect(() => {
     const root = document.documentElement;
-    const tokens = resolveTheme(preferences, { failed: failedPhotos });
+    const tokens = resolveTheme(preferences, {
+      failed: failedPhotos,
+      generatedImages: generated.images,
+    });
     if (preferences.themed) {
       root.setAttribute("data-studio-theme", "");
       for (const [key, value] of Object.entries(tokens))
@@ -109,7 +157,7 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
       root.removeAttribute("data-studio-theme");
       for (const key of Object.keys(tokens)) root.style.removeProperty(key);
     };
-  }, [preferences, failedPhotos]);
+  }, [preferences, failedPhotos, generated.images]);
   function launch(event) {
     launcher.current = event.currentTarget;
     setOpen(true);
@@ -135,7 +183,10 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
     setCss("");
     setPreferences((p) => ({ ...p, themed: true, ...changes }));
   }
-  const tokens = resolveTheme(preferences, { failed: failedPhotos });
+  const tokens = resolveTheme(preferences, {
+    failed: failedPhotos,
+    generatedImages: generated.images,
+  });
   const profile =
     preferences[preferences.family][
       preferences.family === "holidays"
@@ -146,6 +197,7 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
     const value = exportCss(preferences, {
       failed: failedPhotos,
       assetBase: "./css-studio/",
+      generatedImages: generated.images,
     });
     setCss(value);
     try {
@@ -159,7 +211,10 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
     if (!designer.available || pending) return;
     let request;
     try {
-      request = makeRequest(preferences, draft, history);
+      request = makeRequest(preferences, draft, history, undefined, {
+        operation,
+        baseImageId: currentGeneratedId,
+      });
     } catch (error) {
       setAiStatus(error.message);
       return;
@@ -175,11 +230,48 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
     );
     setDraft("");
     try {
+      const baseImage =
+        request.operation === "refine"
+          ? await generated.ensure(request.baseImageId)
+          : null;
+      if (controller.signal.aborted) return;
+      if (request.operation === "refine" && !baseImage)
+        throw Error("Selected image unavailable");
       const response = await designer.propose(request, {
         signal: controller.signal,
+        ...(baseImage ? { baseImage: baseImage.blob } : {}),
       });
       if (controller.signal.aborted) return;
-      const result = validateProposal(response, request);
+      let result = validateProposal(response, request);
+      if (result.image) {
+        const saved = await generated.save(
+          {
+            blob: result.image,
+            context: request.context,
+            parentId: request.baseImageId,
+          },
+          pinnedIds,
+        );
+        if (controller.signal.aborted) {
+          if (saved.recordId) await generated.remove(saved.recordId, pinnedIds);
+          return;
+        }
+        const { image: responseBytes, ...proposalData } = result;
+        result = {
+          ...proposalData,
+          ...saved,
+          ...(saved.image
+            ? {
+                imageId: saved.image.id,
+                overrides: {
+                  ...result.overrides,
+                  backgroundId: saved.image.id,
+                },
+              }
+            : {}),
+        };
+      }
+      if (controller.signal.aborted) return;
       setProposal(result);
       setHistory((h) =>
         [...h, { role: "assistant", text: result.message }].slice(-30),
@@ -195,6 +287,39 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
         setPending(false);
         activeRequest.current = null;
       }
+    }
+  }
+  async function retryImageSave() {
+    if (!proposal?.unsavedImage || savingPreview) return;
+    const original = proposal;
+    setSavingPreview(true);
+    try {
+      const saved = await generated.save(
+        {
+          blob: original.unsavedImage,
+          context: original.context,
+          parentId: original.baseImageId,
+        },
+        pinnedIds,
+      );
+      setProposal((current) => {
+        if (current !== original) return current;
+        if (!saved.image)
+          return { ...current, imageWarning: saved.imageWarning };
+        const { unsavedImage, imageWarning, ...rest } = current;
+        return {
+          ...rest,
+          ...saved,
+          imageId: saved.image.id,
+          overrides: { ...rest.overrides, backgroundId: saved.image.id },
+        };
+      });
+    } catch {
+      setAiStatus(
+        "This preview could not be saved. You can still download it.",
+      );
+    } finally {
+      setSavingPreview(false);
     }
   }
   const value = { launch, navLauncher };
@@ -225,6 +350,7 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
           <Examples
             preferences={preferences}
             failed={failedPhotos}
+            generatedImages={generated.images}
             onClose={() => setExamples(false)}
           />
         </Suspense>
@@ -244,6 +370,7 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
               this browser.
             </p>
             {warning && <p role="status">{warning}</p>}
+            {generated.warning && <p role="status">{generated.warning}</p>}
             {failedPhotos.size > 0 && (
               <p role="status">
                 The selected photo could not load. A fallback background is
@@ -394,11 +521,38 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
                 <PhotoLibrary
                   preferences={preferences}
                   failed={failedPhotos}
+                  generatedImages={generated.images}
+                  getGeneratedImage={(id) => generated.cache.get(id)}
                   onSelect={(backgroundId) =>
                     setPreferences((p) => updateProfile(p, { backgroundId }))
                   }
                 />
               </Suspense>
+            )}
+            <button
+              onClick={() => {
+                setGeneratedOpen((value) => !value);
+                void generated.refresh();
+              }}
+            >
+              Generated backgrounds
+            </button>
+            {generatedOpen && (
+              <GeneratedHistory
+                preferences={preferences}
+                generated={generated}
+                comparison={comparison}
+                setComparison={setComparison}
+                pinnedIds={pinnedIds}
+                onSelect={(image) =>
+                  setPreferences((p) =>
+                    image.context.family === p.family &&
+                    image.context.id === profileId(p)
+                      ? updateProfile(p, { backgroundId: image.id })
+                      : p,
+                  )
+                }
+              />
             )}
             <button onClick={() => setExamples(true)}>
               Preview Page Builder examples
@@ -422,6 +576,7 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
                     value={exportCss(preferences, {
                       failed: failedPhotos,
                       assetBase: "./css-studio/",
+                      generatedImages: generated.images,
                     })}
                     onFocus={(e) => e.target.select()}
                   />
@@ -450,10 +605,20 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
           {children}
           {photo && (
             <details className="studio-photo-attribution">
-              <summary>Background: {photo.title} · photo credits</summary>
-              <Suspense fallback={<p>Loading photo credits…</p>}>
-                <PhotoCredit imageId={photo.id} />
-              </Suspense>
+              <summary>
+                Background: {photo.title}
+                {photo.kind === "generated" ? "" : " · photo credits"}
+              </summary>
+              {photo.kind === "generated" ? (
+                <p>
+                  Generated background · saved in this browser. No curated-photo
+                  license is claimed.
+                </p>
+              ) : (
+                <Suspense fallback={<p>Loading photo credits…</p>}>
+                  <PhotoCredit imageId={photo.id} />
+                </Suspense>
+              )}
             </details>
           )}
         </div>
@@ -469,6 +634,7 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
                 ? aiStatus
                 : "AI design is currently unavailable. Keep exploring presets and manual controls."}
             </p>
+            {generated.warning && <p role="status">{generated.warning}</p>}
             <ol aria-label="Conversation">
               {history.map((message, index) => (
                 <li key={index}>
@@ -479,6 +645,23 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
                 </li>
               ))}
             </ol>
+            <label>
+              Design action
+              <select
+                value={operation}
+                onChange={(e) => setOperation(e.target.value)}
+                disabled={pending}
+              >
+                <option value="theme">Theme styling</option>
+                <option value="image">Generate background</option>
+                <option
+                  value="refine"
+                  disabled={!isGeneratedId(currentGeneratedId)}
+                >
+                  Refine selected background
+                </option>
+              </select>
+            </label>
             <label>
               Message
               <textarea
@@ -491,7 +674,9 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
             <p>Your draft stays here during this visit.</p>
             <Voice draft={draft} setDraft={setDraft} />
             <button
-              disabled={!designer.available || pending || !draft.trim()}
+              disabled={
+                !designer.available || pending || savingPreview || !draft.trim()
+              }
               onClick={send}
             >
               Send
@@ -520,17 +705,76 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
                 <div
                   className="studio-proposal-preview"
                   style={resolveTheme(
-                    updateProfile(preferences, proposal.overrides),
+                    updateProfile(
+                      {
+                        ...preferences,
+                        family: proposal.context.family,
+                        ...(proposal.context.family === "holidays"
+                          ? { holiday: proposal.context.id }
+                          : { season: proposal.context.id }),
+                        mode: proposal.context.mode,
+                        contrast: proposal.context.contrast,
+                      },
+                      proposal.overrides,
+                    ),
+                    { generatedImages: generated.images },
                   )}
                 >
                   <p>Preview your proposed palette and typography</p>
                   <button disabled>Example button</button>
                 </div>
+                {(proposal.imageId || unsavedUrl) && (
+                  <img
+                    className="studio-generated-preview"
+                    src={
+                      proposal.imageId
+                        ? generated.images[proposal.imageId]?.displayUrl
+                        : unsavedUrl
+                    }
+                    alt="Proposed generated background"
+                  />
+                )}
+                {proposal.imageWarning && (
+                  <p role="status">
+                    {proposal.imageWarning} Download this preview before
+                    leaving.
+                  </p>
+                )}
+                {(proposal.imageId || proposal.unsavedImage) && (
+                  <button
+                    onClick={async () => {
+                      const image = proposal.imageId
+                        ? await generated.cache.get(proposal.imageId)
+                        : null;
+                      const blob = image?.blob || proposal.unsavedImage;
+                      if (blob)
+                        saveDownload(
+                          blob,
+                          image
+                            ? generatedPath(image).split("/").pop()
+                            : `background-preview.${proposal.unsavedImage.type.split("/")[1] === "jpeg" ? "jpg" : proposal.unsavedImage.type.split("/")[1]}`,
+                        );
+                    }}
+                  >
+                    Download proposed background
+                  </button>
+                )}
+                {proposal.unsavedImage && (
+                  <button disabled={savingPreview} onClick={retryImageSave}>
+                    Save proposed background
+                  </button>
+                )}
                 <pre>{JSON.stringify(proposal.overrides, null, 2)}</pre>
                 <button
-                  disabled={!canApply(proposal, preferences, requestId)}
+                  disabled={
+                    Boolean(proposal.unsavedImage) ||
+                    !canApply(proposal, preferences, requestId)
+                  }
                   onClick={() => {
-                    if (canApply(proposal, preferences, requestId)) {
+                    if (
+                      !proposal.unsavedImage &&
+                      canApply(proposal, preferences, requestId)
+                    ) {
                       setPreferences((p) =>
                         canApply(proposal, p, requestId)
                           ? updateProfile(p, proposal.overrides)
@@ -544,9 +788,11 @@ export function StudioProvider({ children, designer = unavailableDesigner }) {
                   Apply proposal
                 </button>
                 <p>
-                  {canApply(proposal, preferences, requestId)
-                    ? "Applies only after you choose Apply."
-                    : "Return to the original preset and appearance to apply this proposal."}
+                  {proposal.unsavedImage
+                    ? "Free space in image history, then save this preview before applying."
+                    : canApply(proposal, preferences, requestId)
+                      ? "Applies only after you choose Apply."
+                      : "Return to the original preset, appearance and selected background to apply this proposal."}
                 </p>
               </section>
             )}
