@@ -126,3 +126,37 @@ test("4K text and content grow together and scaling stays bounded", async ({ pag
   expect(larger.text).toBe(television.text);
   expect(larger.content).toBe(television.content);
 });
+
+test("4K Page Builder keeps its full-screen editor and text-field keyboard behavior", async ({ page }, testInfo) => {
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.setViewportSize({ width: 3840, height: 2160 });
+  await page.goto("/projects/page-builder");
+  const launcher = page.getByRole("button", { name: "Open Page Builder full screen" });
+  await launcher.focus();
+  await page.keyboard.press("Enter");
+  const workspace = page.getByRole("dialog", { name: "Page Builder", exact: true });
+  await expect(workspace).toBeVisible();
+  expect(await workspace.boundingBox()).toMatchObject({ x: 0, y: 0, width: 3840, height: 2160 });
+  await page.getByRole("button", { name: "New project" }).click();
+  const create = page.getByRole("dialog", { name: "Create a project", exact: true });
+  await create.getByLabel("Project name", { exact: true }).fill("Wide display");
+  await create.getByRole("radio", { name: /^Blank / }).check();
+  await create.getByRole("button", { name: "Create project", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Wide display", exact: true })).toBeVisible();
+  const title = page.getByLabel("Page title", { exact: true });
+  await title.fill("Wide screen editing");
+  await title.press("Home");
+  await title.press("ArrowRight");
+  await expect(title).toBeFocused();
+  expect(await title.evaluate((input) => input.selectionStart)).toBe(1);
+  await expect(page.getByRole("status", { name: "Save status" })).toHaveText("Saved in this browser");
+  const width = await workspace.evaluate((dialog) => ({ scroll: dialog.scrollWidth, client: dialog.clientWidth }));
+  expect(width.scroll).toBeLessThanOrEqual(width.client + 1);
+  await testInfo.attach("workspace-3840", { body: await page.screenshot(), contentType: "image/png" });
+  await page.getByRole("button", { name: "Close Page Builder" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(workspace).toHaveCount(0);
+  await expect(launcher).toBeFocused();
+  expect(errors).toEqual([]);
+});
