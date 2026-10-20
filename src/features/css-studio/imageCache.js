@@ -1,3 +1,4 @@
+import { isMediaReceipt } from "../../shared/studioTransfer.js";
 import { SEASONS, HOLIDAYS } from "./theme";
 import { isGeneratedId, imageBlobAllowed } from "./imageIds";
 import { inspectImage, validateImage } from "./imageMedia";
@@ -35,7 +36,8 @@ function metadataValid(r) {
     r.height <= 2048 &&
     Number.isFinite(r.createdAt) &&
     Number.isFinite(r.lastUsedAt) &&
-    (!r.parentId || isGeneratedId(r.parentId))
+    (!r.parentId || isGeneratedId(r.parentId)) &&
+    (r.receipt === undefined || isMediaReceipt(r.receipt))
   );
 }
 export function imageMetadata(record) {
@@ -182,11 +184,12 @@ export function createImageCache(
   }
   return {
     status: () => ({ persistent, warning }),
-    async save({ blob, context, parentId }, { pinnedIds = [] } = {}) {
+    async save({ blob, context, parentId, receipt }, { pinnedIds = [] } = {}) {
       if (
         !imageBlobAllowed(blob) ||
         !contextValid(context) ||
-        (parentId && !isGeneratedId(parentId))
+        (parentId && !isGeneratedId(parentId)) ||
+        (receipt !== undefined && !isMediaReceipt(receipt))
       )
         throw Error("Unsupported generated image");
       const { sha256, ...dimensions } = await validateImage(blob, inspect);
@@ -207,6 +210,7 @@ export function createImageCache(
         createdAt: now(),
         lastUsedAt: now(),
         ...(parentId ? { parentId } : {}),
+        ...(receipt ? { receipt } : {}),
       };
       if (!metadataValid(record))
         throw Error("Unsupported image dimensions or metadata");

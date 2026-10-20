@@ -15,6 +15,7 @@ This is a working client-workflow increment, not the completed v2.2 release.
 - [Server boundary and accounting contract](server-boundary.md)
 - [Cloudflare readiness observations](cloudflare-readiness.md)
 - [M4 server verification](verification-m4-server.md)
+- [Owned-media transport and activation limits](owned-media.md)
 - [Live AI prerequisites](live-ai-setup.md)
 - [Unmodified supplied handoff](handoff/README.md)
 

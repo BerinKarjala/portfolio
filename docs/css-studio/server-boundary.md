@@ -22,7 +22,7 @@ No production Netlify proxy has been configured or verified. Direct cross-origin
 browser access is not offered; there are no CORS response headers. Forwarded-host
 headers are not trusted to choose an origin or upstream.
 
-POST requires the configured public Origin, JSON content type, X-CSS-Studio: 1,
+POST requires the configured public Origin, a supported content type, X-CSS-Studio: 1,
 and same-origin fetch metadata when present. Unsupported encodings, query strings,
 methods and origins are rejected. The API uses no-store and nosniff responses.
 
@@ -68,10 +68,11 @@ use; evaluations and future deployment contexts must use the same shared authori
   only when configuration and the injected provider plan are ready.
 - POST `/api/css-studio/propose`: server-owned request schema, valid identity and
   atomic admission precede provider dispatch. Production always returns unavailable.
-  Image/refinement dispatch remains unavailable even in the injected theme route:
-  a local generated ID is not proof of server media ownership.
+  Image/refinement requires an additional trusted image adapter, decoder/inspector
+  and bounded image cost/geometry/step plan. A local generated ID alone is never
+  proof of server media ownership. See [owned-media.md](owned-media.md).
 
-Bodies are bounded to 96 KiB, 2,048 chunks and five seconds independently of
+JSON bodies are bounded to 96 KiB, 2,048 chunks and five seconds independently of
 Content-Length. Prompt length is 4,000 characters; history is at most ten messages
 of 2,000 characters each. Only the shipped preset IDs, known appearance/operation
 values and exact schema keys are accepted. Client cost, model, endpoint and
@@ -104,6 +105,6 @@ not browser bundles.
 
 Activation remains blocked on actual Cloudflare account/Free-plan eligibility,
 current model availability/terms and conservative costs, supporting-service usage
-measurement, an owned-media path, a verified same-origin proxy, live model tests,
+measurement, a verified live media decoder/adapter, a verified same-origin proxy, live model tests,
 and public-route operational review. No AI binding should be added to the example
 configuration before those gates pass. See cloudflare-readiness.md and live-ai-setup.md.

@@ -296,3 +296,23 @@ The next work requires actual Free-plan account evidence, verified model bounds,
 owned server media handling and a real same-origin proxy before any provider is
 wired or enabled. AC-30/33–37/42 are partial, not completed live acceptance. No
 push, deployment, inference, account mutation or merge into main was performed.
+
+## M4 owned-media transport increment
+
+Added an encrypted, owner/preset/byte-bound seven-day receipt and bounded multipart
+image/refinement protocol. Verification precedes quota admission. The server seam
+requires a trusted raster inspector and fixed geometry, steps and cost plan; no
+real adapter or provider is configured. The explicit client HTTP adapter handles
+session readiness and image uploads without proposal retries. Studio preserves
+receipts with cached media and surfaces safe verification errors; portable exports
+omit receipts. App still uses unavailableDesigner.
+
+Local verification: 204 tests across 37 files, production build (377 modules),
+130 Page Builder decisions/options and 16 mapped gates, and build budgets pass.
+The three real workerd checks and Chromium cookie/proxy check also pass. These
+runtime checks cover the existing session/accounting foundation, not a live image
+provider. See [owned-media.md](owned-media.md) for the new contract and limits.
+
+Chromium regression checks also pass: 17 production Studio tests (including
+responsive layouts from phone through 4K) and four actual browser image-storage
+and raster-decoder checks. No external inference was performed.

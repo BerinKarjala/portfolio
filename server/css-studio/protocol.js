@@ -21,12 +21,8 @@ export const PRESETS = Object.freeze({
     "christmas",
   ],
 });
-export class HttpError extends Error {
-  constructor(status, message) {
-    super(message);
-    this.status = status;
-  }
-}
+import { HttpError } from "../../src/shared/studioTransfer.js";
+export { HttpError, readJson } from "../../src/shared/studioTransfer.js";
 const invalid = () => {
   throw new HttpError(400, "Invalid design request.");
 };
@@ -91,7 +87,7 @@ export function validateInput(value) {
     ...(value.operation === "refine" ? { baseImageId: value.baseImageId } : {}),
   };
 }
-export function validateOutput(value) {
+export function validateOutput(value, { allowEmpty = false } = {}) {
   if (
     !keys(value, ["message", "overrides"]) ||
     typeof value.message !== "string" ||
@@ -103,7 +99,7 @@ export function validateOutput(value) {
       "font",
       "radius",
     ]) ||
-    !Object.keys(value.overrides).length
+    (!allowEmpty && !Object.keys(value.overrides).length)
   )
     throw Error("Invalid designer output");
   for (const [key, entry] of Object.entries(value.overrides)) {
@@ -117,56 +113,6 @@ export function validateOutput(value) {
       throw Error("Unsupported designer output");
   }
   return { message: value.message, overrides: { ...value.overrides } };
-}
-export async function readJson(
-  request,
-  maxBytes = BODY_LIMIT,
-  timeoutMs = 5000,
-) {
-  const declared = request.headers.get("content-length");
-  if (
-    declared !== null &&
-    (!/^\d+$/.test(declared) || Number(declared) > maxBytes)
-  )
-    throw new HttpError(413, "Request too large.");
-  if (!request.body) throw new HttpError(400, "Invalid JSON request.");
-  const reader = request.body.getReader();
-  let size = 0,
-    chunks = 0,
-    timer;
-  const parts = [];
-  const timeout = new Promise((_, reject) => {
-    timer = setTimeout(() => {
-      reject(new HttpError(408, "Request body timed out."));
-      void reader.cancel().catch(() => {});
-    }, timeoutMs);
-  });
-  try {
-    while (true) {
-      const { done, value } = await Promise.race([reader.read(), timeout]);
-      if (done) break;
-      size += value.byteLength;
-      if (size > maxBytes || ++chunks > 2048) {
-        void reader.cancel().catch(() => {});
-        throw new HttpError(413, "Request too large.");
-      }
-      parts.push(value);
-    }
-  } finally {
-    clearTimeout(timer);
-    reader.releaseLock();
-  }
-  const bytes = new Uint8Array(size);
-  let offset = 0;
-  for (const part of parts) {
-    bytes.set(part, offset);
-    offset += part.byteLength;
-  }
-  try {
-    return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
-  } catch {
-    throw new HttpError(400, "Invalid JSON request.");
-  }
 }
 export async function fingerprint(input) {
   return [

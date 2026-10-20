@@ -1,3 +1,4 @@
+import { DesignerError } from "./httpDesigner";
 import {
   lazy,
   Suspense,
@@ -239,7 +240,9 @@ export function StudioProvider({
         throw Error("Selected image unavailable");
       const response = await designer.propose(request, {
         signal: controller.signal,
-        ...(baseImage ? { baseImage: baseImage.blob } : {}),
+        ...(baseImage
+          ? { baseImage: baseImage.blob, baseReceipt: baseImage.receipt }
+          : {}),
       });
       if (controller.signal.aborted) return;
       let result = validateProposal(response, request);
@@ -249,6 +252,7 @@ export function StudioProvider({
             blob: result.image,
             context: request.context,
             parentId: request.baseImageId,
+            receipt: result.receipt,
           },
           pinnedIds,
         );
@@ -277,10 +281,12 @@ export function StudioProvider({
         [...h, { role: "assistant", text: result.message }].slice(-30),
       );
       setAiStatus("Review the proposal before applying.");
-    } catch {
+    } catch (error) {
       if (!controller.signal.aborted)
         setAiStatus(
-          "The designer could not complete this request. Your existing theme is unchanged.",
+          error instanceof DesignerError
+            ? error.publicMessage
+            : "The designer could not complete this request. Your existing theme is unchanged.",
         );
     } finally {
       if (activeRequest.current === controller) {
@@ -299,6 +305,7 @@ export function StudioProvider({
           blob: original.unsavedImage,
           context: original.context,
           parentId: original.baseImageId,
+          receipt: original.receipt,
         },
         pinnedIds,
       );

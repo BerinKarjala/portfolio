@@ -1,3 +1,5 @@
+import { createMediaReceipts } from "./media.js";
+import { readImageRequest, imageResponse } from "./mediaWire.js";
 import { createIdentity } from "./identity.js";
 import {
   fingerprint,
@@ -8,6 +10,7 @@ import {
 } from "./protocol.js";
 import { LIMITS } from "./quota.js";
 export class ProviderLimitError extends Error {}
+class ProviderOutputError extends Error {}
 const reply = (status, body, headers = {}) =>
   new Response(JSON.stringify(body), {
     status,
@@ -28,6 +31,7 @@ export function createApp({
   clock = Date.now,
 } = {}) {
   const plan = policy ? Object.freeze({ ...policy }) : null;
+  let receipts;
   let identity,
     validOrigins = false;
   try {
@@ -40,6 +44,7 @@ export function createApp({
       throw Error();
     validOrigins = true;
     identity = createIdentity(secret, { clock });
+    receipts = createMediaReceipts(secret, { clock });
   } catch {
     /* Missing developer configuration keeps the route unavailable. */
   }
@@ -61,6 +66,20 @@ export function createApp({
       plan.timeoutMs >= 1 &&
       plan.timeoutMs <= 25000,
     );
+  const imageReady = () =>
+    ready() &&
+    receipts &&
+    typeof provider.image?.propose === "function" &&
+    typeof provider.image?.inspectImage === "function" &&
+    Number.isSafeInteger(plan.imageNeurons) &&
+    plan.imageNeurons >= 1 &&
+    plan.imageNeurons <= LIMITS.neurons &&
+    [plan.imageWidth, plan.imageHeight].every(
+      (value) => Number.isInteger(value) && value >= 64 && value <= 2048,
+    ) &&
+    Number.isInteger(plan.imageSteps) &&
+    plan.imageSteps >= 1 &&
+    plan.imageSteps <= 8;
   return async function handle(request) {
     const url = new URL(request.url),
       route = url.pathname;
@@ -118,15 +137,21 @@ export function createApp({
           sharedRemaining: snapshot.sharedRemaining,
         });
       }
+      const jsonType = /^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(
+        request.headers.get("content-type") || "",
+      );
+      const multipart = /^multipart\/form-data;/i.test(
+        request.headers.get("content-type") || "",
+      );
       if (
-        !/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(
-          request.headers.get("content-type") || "",
-        ) ||
+        (!jsonType && !multipart) ||
         (request.headers.get("content-encoding") &&
           request.headers.get("content-encoding") !== "identity")
       )
-        return reply(415, { error: "Use a JSON request." });
+        return reply(415, { error: "Use a supported design request." });
       if (route.endsWith("/session")) {
+        if (!jsonType)
+          return reply(415, { error: "Use a JSON session request." });
         const body = await readJson(request, 64);
         if (
           !body ||
@@ -141,18 +166,43 @@ export function createApp({
       }
       if (!visitor)
         return reply(401, { error: "Open a Studio session first." });
-      const input = validateInput(await readJson(request));
-      // Local browser image IDs are not trusted server media. These routes stay closed until an approved media adapter exists.
-      if (input.operation !== "theme")
+      if (multipart && !imageReady())
         return reply(503, { error: "Image design is currently unavailable." });
+      const attachment = multipart ? await readImageRequest(request) : null;
+      const input = attachment
+        ? attachment.input
+        : validateInput(await readJson(request));
+      const imageOperation = input.operation !== "theme";
+      if (imageOperation && !imageReady())
+        return reply(503, { error: "Image design is currently unavailable." });
+      if (input.operation === "refine" && !attachment)
+        throw new HttpError(
+          409,
+          "Saved background verification is required.",
+          "media-unavailable",
+        );
+      const base = attachment
+        ? await receipts.verify({
+            owner: visitor,
+            context: input.context,
+            image: attachment.image,
+            receipt: attachment.receipt,
+          })
+        : null;
       if (!ready())
         return reply(503, { error: "AI design is currently unavailable." });
       const reservation = await ledger.reserve({
         visitor,
         requestId: input.id,
-        fingerprint: await fingerprint(input),
+        fingerprint: await fingerprint(
+          base
+            ? { ...input, ownedMedia: { id: base.id, sha256: base.sha256 } }
+            : input,
+        ),
         operation: input.operation,
-        reservedNeurons: plan.reservedNeurons,
+        reservedNeurons: imageOperation
+          ? plan.imageNeurons
+          : plan.reservedNeurons,
       });
       if (!reservation.admitted)
         return reply(
@@ -184,15 +234,59 @@ export function createApp({
           }, plan.timeoutMs);
         });
         result = await Promise.race([
-          Promise.resolve().then(() =>
-            provider.propose(input, {
-              signal: controller.signal,
-              maxOutputTokens: plan.maxOutputTokens,
-            }),
-          ),
+          Promise.resolve().then(async () => {
+            const output = imageOperation
+              ? await provider.image.propose(input, {
+                  signal: controller.signal,
+                  width: plan.imageWidth,
+                  height: plan.imageHeight,
+                  steps: plan.imageSteps,
+                  ...(base ? { baseImage: attachment.image } : {}),
+                })
+              : await provider.propose(input, {
+                  signal: controller.signal,
+                  maxOutputTokens: plan.maxOutputTokens,
+                });
+            try {
+              const proposal = validateOutput(output?.proposal, {
+                allowEmpty: imageOperation,
+              });
+              const proof = imageOperation
+                ? await receipts.issue({
+                    owner: visitor,
+                    context: input.context,
+                    image: output.image,
+                    inspect: (image) =>
+                      provider.image.inspectImage(image, {
+                        signal: controller.signal,
+                      }),
+                  })
+                : null;
+              if (
+                proof &&
+                (proof.metadata.width !== plan.imageWidth ||
+                  proof.metadata.height !== plan.imageHeight)
+              )
+                throw Error("Unexpected image geometry");
+              return { output, proposal, proof };
+            } catch {
+              throw new ProviderOutputError();
+            }
+          }),
           timeout,
         ]);
       } catch (error) {
+        if (error instanceof ProviderOutputError) {
+          await ledger.settle({
+            visitor,
+            requestId: input.id,
+            outcome: "complete",
+          });
+          return reply(502, {
+            error:
+              "The designer returned unsupported styling or media. Existing themes remain available.",
+          });
+        }
         const exhausted = error instanceof ProviderLimitError;
         await ledger.settle({
           visitor,
@@ -207,27 +301,13 @@ export function createApp({
       } finally {
         clearTimeout(timer);
       }
-      let proposal;
-      try {
-        proposal = validateOutput(result?.proposal);
-      } catch {
-        await ledger.settle({
-          visitor,
-          requestId: input.id,
-          outcome: "complete",
-        });
-        return reply(502, {
-          error:
-            "The designer returned unsupported styling. Existing themes remain available.",
-        });
-      }
       // Usage comes from a trusted provider adapter, never model text or the request body.
       const settlement = await ledger.settle({
         visitor,
         requestId: input.id,
         outcome: "complete",
-        ...(result.usage?.verified === true
-          ? { measuredNeurons: result.usage.neurons }
+        ...(result.output.usage?.verified === true
+          ? { measuredNeurons: result.output.usage.neurons }
           : {}),
       });
       if (!settlement.settled)
@@ -235,9 +315,21 @@ export function createApp({
           error:
             "AI accounting is unavailable. Existing themes remain available.",
         });
-      return reply(200, { requestId: input.id, ...proposal });
+      if (imageOperation)
+        return imageResponse(
+          {
+            requestId: input.id,
+            ...result.proposal,
+            receipt: result.proof.receipt,
+          },
+          result.output.image,
+        );
+      return reply(200, { requestId: input.id, ...result.proposal });
     } catch (error) {
       return reply(error instanceof HttpError ? error.status : 503, {
+        ...(error instanceof HttpError && error.code
+          ? { code: error.code }
+          : {}),
         error:
           error instanceof HttpError
             ? error.message

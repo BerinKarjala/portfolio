@@ -1,3 +1,4 @@
+import { isMediaReceipt } from "../../shared/studioTransfer.js";
 import { imageBlobAllowed, isGeneratedId } from "./imageIds";
 import { cleanOverrides, profileId } from "./theme";
 export const unavailableDesigner = Object.freeze({
@@ -53,7 +54,9 @@ export function validateProposal(data, request) {
   if (
     (data.image !== undefined && !imageBlobAllowed(data.image)) ||
     (["image", "refine"].includes(request.operation) && !data.image) ||
-    isGeneratedId(data.overrides.backgroundId)
+    isGeneratedId(data.overrides.backgroundId) ||
+    (data.receipt !== undefined &&
+      (!data.image || !isMediaReceipt(data.receipt)))
   )
     throw Error("The designer returned an invalid image proposal.");
   const overrides = cleanOverrides(data.overrides);
@@ -69,6 +72,7 @@ export function validateProposal(data, request) {
     message: data.message,
     overrides,
     ...(data.image ? { image: data.image } : {}),
+    ...(data.receipt ? { receipt: data.receipt } : {}),
   };
 }
 export function canApply(proposal, p, latestId) {

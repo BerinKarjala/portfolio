@@ -151,3 +151,14 @@ it("checks the digest even when corrupted bytes retain their size and dimensions
   expect(await images.get(saved.id)).toBeNull();
   expect(await images.list()).toHaveLength(0);
 });
+
+it("preserves opaque refinement receipts across cache instances and rejects malformed receipts", async () => {
+  const backend = memoryImageBackend();
+  const receipt = `media-v1.${"a".repeat(16)}.${"b".repeat(400)}`;
+  const saved = await cache(backend).save({ blob: blob(), context, receipt });
+  expect((await cache(backend).get(saved.id)).receipt).toBe(receipt);
+  await expect(
+    cache(backend).save({ blob: blob(), context, receipt: "invalid" }),
+  ).rejects.toThrow();
+  expect(await cache(backend).list()).toHaveLength(1);
+});
