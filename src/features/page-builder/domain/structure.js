@@ -6,6 +6,7 @@ import { defaultEffects } from "./styles";
 import { applyDesignCommand } from "./designCommands";
 import { applyMasterCommand, LOCAL_STYLES } from "./masters";
 import { remapRichLinks } from "./richText";
+import { applyWizardStep } from "./elementWizard";
 
 const ensure = (condition, message) => {
   if (!condition) throw new Error(message);
@@ -132,6 +133,8 @@ export function captureClipboard(project, ids) {
  */
 export function applyCommand(original, command) {
   validateProject(original);
+  if (command.type === "CONFIGURE_ELEMENT")
+    return applyWizardStep(original, command, { blocked: protectedSubtree, run: applyCommand });
   const p = structuredClone(original);
   if (command.type === "MASTER_COPY") validateProject(command.source);
   const elements = p.page.elements;

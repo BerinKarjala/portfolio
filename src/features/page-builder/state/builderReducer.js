@@ -169,12 +169,17 @@ export function builderReducer(state, action) {
     case "COMMAND": {
       if (!editor || editor.readOnly) return state;
       try {
+        if (action.command.type === "CONFIGURE_ELEMENT" && editor.masterEdit)
+          throw new Error(
+            "Exit master editing before configuring a local copy.",
+          );
         const result = applyCommand(editor.project, action.command);
         return commit(
           state,
           result.project,
           [
             "PATCH",
+            "CONFIGURE_ELEMENT",
             "STYLE",
             "PRESET_SAVE",
             "PRESET_REMOVE",
@@ -185,7 +190,9 @@ export function builderReducer(state, action) {
           ].includes(action.command.type)
             ? editor.selection
             : result.selection,
-          action,
+          action.command.type === "CONFIGURE_ELEMENT"
+            ? { ...action, historyKey: null }
+            : action,
         );
       } catch (error) {
         return { ...state, editor: { ...editor, commandError: error.message } };

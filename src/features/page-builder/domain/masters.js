@@ -355,7 +355,8 @@ export function applyMasterCommand(p, c, run, locked) {
       roots.forEach(check);
       const command = structuredClone(c.command);
       ensure(
-        !command.type.startsWith("MASTER") &&
+        command.type !== "CONFIGURE_ELEMENT" &&
+          !command.type.startsWith("MASTER") &&
           !["PRESET_SAVE", "PRESET_REMOVE"].includes(command.type) &&
           !["GLOBAL_STYLE", "RESET_TEMPLATE"].includes(command.type),
         "Exit master editing before this action.",

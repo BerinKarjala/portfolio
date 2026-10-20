@@ -43,6 +43,8 @@ export function CanvasNode({
   workspace,
   draft,
   guides,
+  picking = false,
+  wizardTarget,
 }) {
   const { state, dispatch, sendCommand, select } = useBuilder();
   const editing = state.editor.richEditingId === id;
@@ -50,10 +52,11 @@ export function CanvasNode({
   const masterReadOnly = !!e.instance && !state.editor.masterEdit;
   const effective = resolveStyles(project, id);
   const blocked = readOnly || protectedSubtree(project, id);
+  const gestureBlocked = picking || blocked;
   const selected = selection.includes(id);
   const drag = useDraggable({
     id: `element:${id}`,
-    disabled: blocked || e.positionMode === "absolute",
+    disabled: gestureBlocked || e.positionMode === "absolute",
     data: { kind: "element", id, label: e.name },
   });
   const viewport =
@@ -149,6 +152,8 @@ export function CanvasNode({
             workspace,
             draft,
             guides,
+            picking,
+            wizardTarget,
           }}
         />
       ))}
@@ -182,6 +187,7 @@ export function CanvasNode({
     <div
       ref={drag.setNodeRef}
       data-element-id={id}
+      data-wizard-target={picking && wizardTarget === id}
       data-type={e.type}
       data-testid={`canvas-${e.type}`}
       data-selected={selected}
@@ -197,7 +203,7 @@ export function CanvasNode({
         else event.stopPropagation();
       }}
       onDoubleClick={(event) => {
-        if (e.props.document && !blocked && !masterReadOnly) {
+        if (e.props.document && !gestureBlocked && !masterReadOnly) {
           event.stopPropagation();
           select([id]);
           dispatch({ type: "RICH_MODE", id });
@@ -244,7 +250,7 @@ export function CanvasNode({
             ref={drag.setActivatorNodeRef}
             {...drag.attributes}
             {...drag.listeners}
-            disabled={blocked}
+            disabled={gestureBlocked}
             aria-label={`Move ${e.name}`}
             className="pb-move-handle"
             onClick={(event) => event.stopPropagation()}
@@ -254,7 +260,7 @@ export function CanvasNode({
         ) : (
           <button
             type="button"
-            disabled={blocked}
+            disabled={gestureBlocked}
             className="pb-move-handle"
             aria-label={`Move ${e.name}`}
             onPointerDown={(event) => pointer.start(event, id, "move")}
@@ -269,7 +275,7 @@ export function CanvasNode({
         <button
           type="button"
           className="pb-resize-handle"
-          disabled={blocked}
+          disabled={gestureBlocked}
           aria-label={`Resize ${e.name}`}
           onPointerDown={(event) => pointer.start(event, id, "resize")}
           {...pointer.handlers}
