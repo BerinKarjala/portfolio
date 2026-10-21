@@ -10,6 +10,8 @@ keep_vars = true
 [vars]
 APP_ORIGIN = "https://berinkarjala.netlify.app"
 ENDPOINT_ORIGIN = "https://css-studio-ai.berin-karjala.workers.dev"
+CANARY_APP_ORIGIN = "https://deploy-preview-245--berinkarjala.netlify.app"
+CANARY_MODEL = "llama"
 
 [ai]
 binding = "AI"

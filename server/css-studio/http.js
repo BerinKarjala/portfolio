@@ -10,6 +10,11 @@ import {
 } from "./protocol.js";
 import { LIMITS } from "./quota.js";
 import { ProviderLimitError, ProviderOutputError } from "./providerErrors.js";
+import {
+  GPT_THEME_MODEL,
+  GPT_MAX_CONTEXT_TOKENS,
+  GPT_THEME_PLAN,
+} from "./gptProvider.js";
 export { ProviderLimitError } from "./providerErrors.js";
 const reply = (status, body, headers = {}) =>
   new Response(JSON.stringify(body), {
@@ -48,6 +53,15 @@ export function createApp({
   } catch {
     /* Missing developer configuration keeps the route unavailable. */
   }
+  const boundedOutput = () =>
+    provider?.model === GPT_THEME_MODEL
+      ? provider.maxContextTokens === GPT_MAX_CONTEXT_TOKENS &&
+        Object.entries(GPT_THEME_PLAN).every(
+          ([key, value]) => plan?.[key] === value,
+        )
+      : Number.isSafeInteger(plan?.maxOutputTokens) &&
+        plan.maxOutputTokens >= 1 &&
+        plan.maxOutputTokens <= 512;
   const ready = () =>
     Boolean(
       identity &&
@@ -59,9 +73,7 @@ export function createApp({
       Number.isSafeInteger(plan.reservedNeurons) &&
       plan.reservedNeurons >= 1 &&
       plan.reservedNeurons <= LIMITS.neurons &&
-      Number.isSafeInteger(plan.maxOutputTokens) &&
-      plan.maxOutputTokens >= 1 &&
-      plan.maxOutputTokens <= 512 &&
+      boundedOutput() &&
       Number.isSafeInteger(plan.timeoutMs) &&
       plan.timeoutMs >= 1 &&
       plan.timeoutMs <= 25000,

@@ -1,0 +1,25 @@
+# Private Netlify proxy verification. Browser checks use only session/status.
+name = "css-studio-ai"
+account_id = "d33da711f0acb00005de85f10c11ab0f"
+main = "worker.js"
+compatibility_date = "2026-07-01"
+workers_dev = true
+preview_urls = false
+keep_vars = true
+
+[vars]
+APP_ORIGIN = "https://berinkarjala.netlify.app"
+ENDPOINT_ORIGIN = "https://css-studio-ai.berin-karjala.workers.dev"
+CANARY_APP_ORIGIN = "https://deploy-preview-245--berinkarjala.netlify.app"
+CANARY_MODEL = "llama"
+
+[ai]
+binding = "AI"
+
+[[durable_objects.bindings]]
+name = "QUOTA"
+class_name = "QuotaAuthority"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["QuotaAuthority"]

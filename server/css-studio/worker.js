@@ -5,6 +5,7 @@ import {
   createCloudflareProvider,
   CLOUDFLARE_THEME_PLAN,
 } from "./cloudflareProvider.js";
+import { createGptProvider, GPT_THEME_PLAN } from "./gptProvider.js";
 export const AUTHORITY_NAME = "css-studio-global-v1";
 export class QuotaAuthority {
   constructor(ctx) {
@@ -58,17 +59,38 @@ export default {
       typeof env.CANARY_SECRET === "string" &&
       /^[0-9a-f]{64}$/.test(env.CANARY_SECRET) &&
       request.headers.get("X-CSS-Studio-Canary") === env.CANARY_SECRET;
+    const origin =
+      canary &&
+      env.CANARY_APP_ORIGIN &&
+      request.headers.get("Origin") === env.CANARY_APP_ORIGIN
+        ? env.CANARY_APP_ORIGIN
+        : env.APP_ORIGIN;
+    let selected = {};
+    if (canary) {
+      const configuredModel =
+        env.CANARY_MODEL === undefined ? "llama" : env.CANARY_MODEL;
+      const model =
+        request.headers.get("X-CSS-Studio-Canary-Model") ?? configuredModel;
+      const approvedConfiguration = ["llama", "gpt-oss-20b"].includes(
+        configuredModel,
+      );
+      if (approvedConfiguration && model === "llama")
+        selected = {
+          provider: createCloudflareProvider(env.AI),
+          policy: CLOUDFLARE_THEME_PLAN,
+        };
+      else if (approvedConfiguration && model === "gpt-oss-20b")
+        selected = {
+          provider: createGptProvider(env.AI),
+          policy: GPT_THEME_PLAN,
+        };
+    }
     return createApp({
-      origin: env.APP_ORIGIN,
+      origin,
       endpointOrigin: env.ENDPOINT_ORIGIN || env.APP_ORIGIN,
       secret: env.IDENTITY_SECRET,
       ledger: env.QUOTA ? quotaClient(env.QUOTA) : undefined,
-      ...(canary
-        ? {
-            provider: createCloudflareProvider(env.AI),
-            policy: CLOUDFLARE_THEME_PLAN,
-          }
-        : {}),
+      ...selected,
     })(request);
   },
 };

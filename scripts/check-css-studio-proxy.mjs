@@ -1,0 +1,517 @@
+import { pathToFileURL } from "node:url";
+import { readJson } from "../src/shared/studioTransfer.js";
+
+export const PROXY_PREVIEW =
+  "https://deploy-preview-245--berinkarjala.netlify.app";
+export const PROXY_BACKEND = "https://css-studio-ai.berin-karjala.workers.dev";
+const FOREIGN_ORIGIN = "https://css-studio-cross-origin.invalid";
+const COOKIE_NAME = "__Host-css-studio";
+const API = "/api/css-studio/";
+const PROBE_HEADER = "x-css-studio-proxy-probe";
+export class ProxyCheckError extends Error {}
+
+function requireCheck(condition, message) {
+  if (!condition) throw new ProxyCheckError(message);
+}
+
+// No credentials are needed to classify requests. No forwarded host is trusted.
+export function classifyProxyRequest({
+  url,
+  method,
+  phase,
+  marked = false,
+  redirected = false,
+}) {
+  let target;
+  try {
+    target = new URL(url);
+  } catch {
+    return "deny";
+  }
+  if (redirected) return "deny";
+  if (
+    target.origin === FOREIGN_ORIGIN &&
+    target.pathname === "/" &&
+    !target.search &&
+    method === "GET" &&
+    phase === "cross-origin"
+  )
+    return "fixture";
+  if (!target.pathname.startsWith("/api/css-studio")) return "resource";
+  if (target.origin !== PROXY_PREVIEW || target.search || target.hash)
+    return "deny";
+  const status = target.pathname === API + "status" && method === "GET";
+  const session = target.pathname === API + "session" && method === "POST";
+  if (status && !marked) return "public";
+  if (phase === "private" && marked && (status || session)) return "private";
+  if (phase === "cross-origin" && session) return "cross-origin-check";
+  return "deny";
+}
+
+function validateSnapshot(value, day) {
+  requireCheck(
+    value?.available === true &&
+      value.day === day &&
+      Array.isArray(value.operations) &&
+      value.operations.length === 1 &&
+      value.operations[0] === "theme",
+    "Private proxy status is unavailable or invalid.",
+  );
+  for (const [key, maximum] of [
+    ["prompts", 10],
+    ["images", 3],
+  ])
+    requireCheck(
+      Number.isInteger(value.remaining?.[key]) &&
+        value.remaining[key] >= 0 &&
+        value.remaining[key] <= maximum,
+      "Private proxy allowance is invalid.",
+    );
+  requireCheck(
+    Number.isInteger(value.sharedRemaining) &&
+      value.sharedRemaining >= 0 &&
+      value.sharedRemaining <= 8000,
+    "Private proxy shared allowance is invalid.",
+  );
+  return {
+    day: value.day,
+    prompts: value.remaining.prompts,
+    images: value.remaining.images,
+    sharedRemaining: value.sharedRemaining,
+  };
+}
+
+function sameSnapshot(a, b) {
+  return (
+    a.day === b.day &&
+    a.prompts === b.prompts &&
+    a.images === b.images &&
+    a.sharedRemaining === b.sharedRemaining
+  );
+}
+
+export async function runProxyCheck({
+  secret,
+  chromium,
+  fetch = globalThis.fetch,
+  now = Date.now,
+  log = console.log,
+} = {}) {
+  requireCheck(
+    typeof secret === "string" && /^[0-9a-f]{64}$/.test(secret),
+    "Private proxy credential is missing or invalid.",
+  );
+  let browser;
+  try {
+    const started = now(),
+      day = new Date(started).toISOString().slice(0, 10);
+    requireCheck(
+      86400000 - (started % 86400000) >= 120000,
+      "Proxy verification will not start near UTC midnight.",
+    );
+    async function publicStatus(origin) {
+      let response, value;
+      try {
+        response = await fetch(origin + API + "status", {
+          method: "GET",
+          redirect: "error",
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+          signal: AbortSignal.timeout(15000),
+        });
+        requireCheck(
+          response.ok &&
+            /(?:^|,)\s*no-store\b/i.test(
+              response.headers.get("cache-control") || "",
+            ),
+          "Public proxy status is unavailable or cacheable.",
+        );
+        value = await readJson(response, 4096);
+      } catch (error) {
+        if (error instanceof ProxyCheckError) throw error;
+        throw new ProxyCheckError("Public proxy status verification failed.");
+      }
+      requireCheck(
+        value?.available === false,
+        "Public inference must remain unavailable.",
+      );
+    }
+    await publicStatus(PROXY_PREVIEW);
+    await publicStatus(PROXY_BACKEND);
+    const browserType = chromium || (await import("@playwright/test")).chromium;
+    browser = await browserType.launch({
+      env: Object.fromEntries(
+        Object.entries(process.env).filter(
+          ([name]) =>
+            ![
+              "CLOUDFLARE_API_TOKEN",
+              "CLOUDFLARE_API_KEY",
+              "CLOUDFLARE_EMAIL",
+              "CANARY_SECRET",
+              "IDENTITY_SECRET",
+            ].includes(name),
+        ),
+      ),
+    });
+    const context = await browser.newContext({ serviceWorkers: "block" });
+    let phase = "loading",
+      blocked = false,
+      crossRequestSafe = false;
+    context.on("response", (response) => {
+      if ([301, 302, 303, 307, 308].includes(response.status())) blocked = true;
+    });
+    await context.route("**/*", async (route) => {
+      try {
+        const request = route.request(),
+          headers = await request.allHeaders();
+        const classification = classifyProxyRequest({
+          url: request.url(),
+          method: request.method(),
+          phase,
+          marked: headers[PROBE_HEADER] === "1",
+          redirected: Boolean(request.redirectedFrom()),
+        });
+        if (
+          classification === "deny" ||
+          Object.keys(headers).some(
+            (name) => name.toLowerCase() === "x-css-studio-canary",
+          )
+        ) {
+          blocked = true;
+          await route.abort("blockedbyclient");
+          return;
+        }
+        if (classification === "fixture") {
+          await route.fulfill({
+            status: 200,
+            contentType: "text/html",
+            body: "<!doctype html><title>Foreign origin fixture</title><main>Foreign origin fixture</main>",
+          });
+          return;
+        }
+        if (classification === "private") {
+          await route.continue({
+            headers: { ...headers, "X-CSS-Studio-Canary": secret },
+          });
+          return;
+        }
+        if (classification === "cross-origin-check") {
+          crossRequestSafe =
+            !headers.cookie &&
+            headers.origin === FOREIGN_ORIGIN &&
+            headers["sec-fetch-site"] === "cross-site";
+          await route.continue({
+            headers: {
+              ...headers,
+              "X-CSS-Studio-Canary": secret,
+              "X-CSS-Studio": "1",
+              "content-type": "application/json",
+            },
+          });
+          return;
+        }
+        await route.continue();
+      } catch {
+        blocked = true;
+        try {
+          await route.abort("blockedbyclient");
+        } catch {
+          /* Browser teardown can cancel an intercepted request. */
+        }
+      }
+    });
+    const page = await context.newPage();
+    const navigation = await page.goto(PROXY_PREVIEW + "/", {
+      waitUntil: "domcontentloaded",
+      timeout: 30000,
+    });
+    requireCheck(
+      !blocked &&
+        page.url() === PROXY_PREVIEW + "/" &&
+        navigation?.status() === 200 &&
+        !navigation?.request().redirectedFrom(),
+      "An unexpected or redirected browser request was blocked.",
+    );
+    phase = "private";
+    async function call(path, method = "GET") {
+      const responsePromise = page.waitForResponse(
+        (response) =>
+          response.url() === PROXY_PREVIEW + API + path &&
+          response.request().method() === method &&
+          response.request().headers()[PROBE_HEADER] === "1",
+        { timeout: 15000 },
+      );
+      const [result, response] = await Promise.all([
+        page.evaluate(
+          async ({ path, method }) => {
+            const response = await fetch("/api/css-studio/" + path, {
+              method,
+              credentials: "same-origin",
+              mode: "same-origin",
+              redirect: "error",
+              cache: "no-store",
+              signal: AbortSignal.timeout(15000),
+              headers: {
+                "X-CSS-Studio": "1",
+                "x-css-studio-proxy-probe": "1",
+                ...(method === "POST"
+                  ? { "Content-Type": "application/json" }
+                  : {}),
+              },
+              ...(method === "POST" ? { body: "{}" } : {}),
+            });
+            let value;
+            const reader = response.body?.getReader();
+            if (reader) {
+              const parts = [];
+              let size = 0;
+              while (true) {
+                const part = await reader.read();
+                if (part.done) break;
+                size += part.value.byteLength;
+                if (size > 16384 || parts.length >= 2048) {
+                  void reader.cancel().catch(() => {});
+                  break;
+                }
+                parts.push(part.value);
+              }
+              if (size <= 16384 && parts.length < 2048) {
+                const bytes = new Uint8Array(size);
+                let offset = 0;
+                for (const part of parts) {
+                  bytes.set(part, offset);
+                  offset += part.byteLength;
+                }
+                try {
+                  value = JSON.parse(
+                    new TextDecoder("utf-8", { fatal: true }).decode(bytes),
+                  );
+                } catch {
+                  /* Validation below fails closed. */
+                }
+              }
+            }
+            return {
+              status: response.status,
+              value,
+              cache: response.headers.get("cache-control"),
+            };
+          },
+          { path, method },
+        ),
+        responsePromise,
+      ]);
+      requireCheck(
+        !blocked,
+        "An unexpected or redirected browser request was blocked.",
+      );
+      requireCheck(
+        /(?:^|,)\s*no-store\b/i.test(result.cache || ""),
+        "Private proxy response is cacheable.",
+      );
+      return { ...result, cookies: await response.headerValues("set-cookie") };
+    }
+    requireCheck(
+      (await call("status")).status === 401,
+      "A fresh browser unexpectedly has a private identity.",
+    );
+    const issued = await call("session", "POST");
+    requireCheck(
+      issued.status === 200 &&
+        issued.value?.available === true &&
+        issued.cookies.length === 1,
+      "Private proxy session could not be opened.",
+    );
+    const header = issued.cookies[0];
+    requireCheck(
+      header.length <= 1024 &&
+        /^__Host-css-studio=[^;\s]+;/.test(header) &&
+        /;\s*Secure(?:;|$)/i.test(header) &&
+        /;\s*HttpOnly(?:;|$)/i.test(header) &&
+        /;\s*SameSite=Strict(?:;|$)/i.test(header) &&
+        /;\s*Path=\/(?:;|$)/i.test(header) &&
+        !/;\s*Domain=/i.test(header),
+      "Private proxy cookie attributes are invalid.",
+    );
+    async function identity() {
+      const cookies = (await context.cookies(PROXY_PREVIEW + "/")).filter(
+        (cookie) => cookie.name === COOKIE_NAME,
+      );
+      requireCheck(
+        cookies.length === 1,
+        "Private proxy browser cookie is missing or duplicated.",
+      );
+      const cookie = cookies[0];
+      requireCheck(
+        cookie.domain === new URL(PROXY_PREVIEW).hostname &&
+          cookie.path === "/" &&
+          cookie.secure === true &&
+          cookie.httpOnly === true &&
+          cookie.sameSite === "Strict" &&
+          cookie.expires > now() / 1000,
+        "Private proxy browser cookie scope is invalid.",
+      );
+      const visible = await page.evaluate(
+        ({ kind }) => (kind === "document-cookie" ? document.cookie : ""),
+        { kind: "document-cookie" },
+      );
+      requireCheck(
+        !visible.includes(COOKIE_NAME + "="),
+        "The private identity is exposed to page scripts.",
+      );
+      return cookie.value;
+    }
+    const cookie = await identity();
+    requireCheck(
+      header.split(";")[0] === COOKIE_NAME + "=" + cookie,
+      "The browser did not retain the issued private identity.",
+    );
+    const initial = await call("status");
+    requireCheck(
+      initial.status === 200,
+      "Private proxy identity did not authenticate.",
+    );
+    const before = validateSnapshot(initial.value, day);
+    const reused = await call("session", "POST");
+    requireCheck(
+      reused.status === 200 &&
+        reused.value?.available === true &&
+        reused.cookies.length === 0 &&
+        (await identity()) === cookie,
+      "Private proxy session identity was unexpectedly replaced.",
+    );
+    const reloaded = await page.reload({
+      waitUntil: "domcontentloaded",
+      timeout: 30000,
+    });
+    requireCheck(
+      !blocked &&
+        page.url() === PROXY_PREVIEW + "/" &&
+        reloaded?.status() === 200 &&
+        !reloaded?.request().redirectedFrom(),
+      "An unexpected or redirected browser request was blocked.",
+    );
+    requireCheck(
+      (await identity()) === cookie,
+      "Private proxy identity did not survive reload.",
+    );
+    const after = await call("status");
+    requireCheck(
+      after.status === 200 &&
+        sameSnapshot(before, validateSnapshot(after.value, day)),
+      "Proxy verification changed the allowance counters.",
+    );
+    phase = "cross-origin";
+    await page.goto(FOREIGN_ORIGIN + "/", {
+      waitUntil: "domcontentloaded",
+      timeout: 15000,
+    });
+    const [cross] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.url() === PROXY_PREVIEW + API + "session" &&
+          response.request().method() === "POST",
+        { timeout: 15000 },
+      ),
+      page.evaluate(
+        async ({ kind, target }) => {
+          if (kind === "cross-origin")
+            await fetch(target, {
+              method: "POST",
+              mode: "no-cors",
+              credentials: "include",
+              redirect: "error",
+              signal: AbortSignal.timeout(15000),
+              body: "{}",
+            });
+        },
+        { kind: "cross-origin", target: PROXY_PREVIEW + API + "session" },
+      ),
+    ]);
+    requireCheck(
+      !blocked &&
+        crossRequestSafe &&
+        cross.status() === 403 &&
+        (await cross.headerValues("set-cookie")).length === 0,
+      "Cross-origin session protection did not hold.",
+    );
+    phase = "private";
+    const returned = await page.goto(PROXY_PREVIEW + "/", {
+      waitUntil: "domcontentloaded",
+      timeout: 30000,
+    });
+    requireCheck(
+      !blocked &&
+        page.url() === PROXY_PREVIEW + "/" &&
+        returned?.status() === 200 &&
+        !returned?.request().redirectedFrom(),
+      "An unexpected or redirected browser request was blocked.",
+    );
+    requireCheck(
+      (await identity()) === cookie,
+      "Private proxy identity changed after foreign navigation.",
+    );
+    const final = await call("status");
+    requireCheck(
+      final.status === 200 &&
+        sameSnapshot(before, validateSnapshot(final.value, day)),
+      "Proxy verification changed the allowance counters.",
+    );
+    requireCheck(
+      new Date(now()).toISOString().slice(0, 10) === day,
+      "UTC day changed during proxy verification.",
+    );
+    await publicStatus(PROXY_PREVIEW);
+    await publicStatus(PROXY_BACKEND);
+    log(
+      JSON.stringify({
+        fixture: "browser-proxy-identity",
+        cookieRetained: true,
+        crossOriginRejected: true,
+        remainingPrompts: before.prompts,
+        remainingImages: before.images,
+        sharedRemaining: before.sharedRemaining,
+      }),
+    );
+    log(
+      "PASS: Chromium proxy identity, reload and cross-origin checks passed; no inference requested.",
+    );
+    return {
+      browser: "chromium",
+      session: true,
+      cookie: true,
+      crossOriginRejected: true,
+      remainingPrompts: before.prompts,
+      remainingImages: before.images,
+      sharedRemaining: before.sharedRemaining,
+    };
+  } catch (error) {
+    throw error instanceof ProxyCheckError
+      ? error
+      : new ProxyCheckError(
+          "Private browser proxy verification failed; details withheld.",
+        );
+  } finally {
+    try {
+      await browser?.close();
+    } catch {
+      /* Never expose browser diagnostics or credentials. */
+    }
+  }
+}
+
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  try {
+    await runProxyCheck({ secret: process.env.CANARY_SECRET });
+  } catch (error) {
+    console.error(
+      error instanceof ProxyCheckError
+        ? error.message
+        : "Private browser proxy verification failed.",
+    );
+    process.exitCode = 1;
+  }
+}
