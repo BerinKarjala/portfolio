@@ -12,6 +12,7 @@ on:
 permissions:
   contents: read
 concurrency:
+  # Serialize with the existing canary so both share the same daily authority.
   group: css-studio-private-canary-global
   cancel-in-progress: false
 jobs:
