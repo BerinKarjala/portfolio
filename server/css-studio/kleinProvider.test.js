@@ -1,6 +1,7 @@
 import { expect, it, vi } from "vitest";
 import { createKleinImageProvider, KLEIN_IMAGE_PLAN } from "./kleinProvider.js";
 import { ProviderLimitError, ProviderOutputError } from "./providerErrors.js";
+import { MEDIA_LIMIT } from "../../src/shared/studioTransfer.js";
 
 const input = {
   id: "00000000-0000-4000-8000-000000000001",
@@ -41,6 +42,105 @@ async function fixture() {
     normalized,
   };
 }
+async function withNativeDecoder(decoder, action) {
+  const previous = Object.getOwnPropertyDescriptor(Uint8Array, "fromBase64");
+  Object.defineProperty(Uint8Array, "fromBase64", {
+    configurable: true,
+    writable: true,
+    value: decoder,
+  });
+  try {
+    return await action();
+  } finally {
+    if (previous) Object.defineProperty(Uint8Array, "fromBase64", previous);
+    else delete Uint8Array.fromBase64;
+  }
+}
+
+it("uses native decoding when available and preserves fallback bytes including nonzero unused pad bits", async () => {
+  const alphabet =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  const header = Buffer.from(await png().arrayBuffer());
+  const cases = [];
+  for (const paddingBytes of [0, 1, 2]) {
+    const bytes = Buffer.concat([header, Buffer.alloc(paddingBytes)]);
+    const encoded = bytes.toString("base64");
+    cases.push({ bytes, encoded });
+    if (encoded.endsWith("=")) {
+      const last = encoded.indexOf("=") - 1;
+      // atob accepts nonzero unused bits; native loose mode must preserve that
+      // existing contract rather than silently switching to canonical padding.
+      const altered =
+        encoded.slice(0, last) +
+        alphabet[alphabet.indexOf(encoded[last]) | 1] +
+        encoded.slice(last + 1);
+      cases.push({ bytes, encoded: altered });
+    }
+  }
+  const limitBytes = Buffer.alloc(MEDIA_LIMIT);
+  header.copy(limitBytes);
+  cases.push({ bytes: limitBytes, encoded: limitBytes.toString("base64") });
+  for (const native of [false, true]) {
+    const decoder = vi.fn((encoded) =>
+      Uint8Array.from(Buffer.from(encoded, "base64")),
+    );
+    const legacy = vi.spyOn(globalThis, "atob");
+    try {
+      await withNativeDecoder(native ? decoder : undefined, async () => {
+        for (const { bytes, encoded } of cases) {
+          const { ai, provider, normalizer } = await fixture();
+          ai.run.mockResolvedValueOnce(Response.json({ image: encoded }));
+          await provider.propose(input);
+          const blob = normalizer.normalize.mock.calls[0][0];
+          expect(Buffer.from(await blob.arrayBuffer()).equals(bytes)).toBe(
+            true,
+          );
+        }
+      });
+      expect(decoder).toHaveBeenCalledTimes(native ? cases.length : 0);
+      expect(legacy).toHaveBeenCalledTimes(native ? 0 : cases.length);
+    } finally {
+      legacy.mockRestore();
+    }
+  }
+});
+
+it("rejects malformed wire encoding and decoded-size overflow before native or fallback decoding", async () => {
+  const tooManyBytes = "A".repeat(Math.ceil(MEDIA_LIMIT / 3) * 4);
+  for (const native of [false, true]) {
+    const decoder = vi.fn((encoded) =>
+      Uint8Array.from(Buffer.from(encoded, "base64")),
+    );
+    const legacy = vi.spyOn(globalThis, "atob");
+    try {
+      await withNativeDecoder(native ? decoder : undefined, async () => {
+        for (const encoded of [
+          "",
+          "A",
+          "AA=A",
+          "A===",
+          "AAAA====",
+          "AAAA\nAAA",
+          "-_==",
+          "data:image/png;base64,AAAA",
+          tooManyBytes,
+          tooManyBytes.slice(0, -1) + "=",
+        ]) {
+          const { ai, provider, normalizer } = await fixture();
+          ai.run.mockResolvedValueOnce(Response.json({ image: encoded }));
+          await expect(provider.propose(input)).rejects.toBeInstanceOf(
+            ProviderOutputError,
+          );
+          expect(normalizer.normalize).not.toHaveBeenCalled();
+        }
+      });
+      expect(decoder.mock.calls.length).toBe(0);
+      expect(legacy.mock.calls.length).toBe(0);
+    } finally {
+      legacy.mockRestore();
+    }
+  }
+});
 it("serializes one fixed multipart generation and retains the conservative model-wide reservation", async () => {
   const { ai, normalizer, provider, normalized } = await fixture();
   const signal = new AbortController().signal;

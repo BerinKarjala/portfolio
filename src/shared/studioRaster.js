@@ -1,3 +1,6 @@
+const JPEG_MARKER_LIMIT = 2048;
+const JPEG_FILL_LIMIT = 4096;
+
 export function boundedDimensions(bytes, mime) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   let width = 0,
@@ -34,10 +37,20 @@ export function boundedDimensions(bytes, mime) {
       height = view.getUint16(28, true) & 0x3fff;
     }
   } else if (mime === "image/jpeg" && bytes[0] === 255 && bytes[1] === 216) {
-    let offset = 2;
-    while (offset + 4 <= bytes.length) {
+    let offset = 2,
+      markers = 0,
+      fillBytes = 0;
+    // Segment lengths jump over payload bytes. Bound both remaining JS loops;
+    // fill bytes share one budget across the entire JPEG header.
+    while (offset + 4 <= bytes.length && markers < JPEG_MARKER_LIMIT) {
+      markers++;
       if (bytes[offset++] !== 255) break;
-      while (bytes[offset] === 255) offset++;
+      while (bytes[offset] === 255) {
+        if (fillBytes >= JPEG_FILL_LIMIT)
+          throw Error("Unsupported image bytes or dimensions");
+        fillBytes++;
+        offset++;
+      }
       const marker = bytes[offset++];
       if (marker === 217 || marker === 218) break;
       if (offset + 2 > bytes.length) break;

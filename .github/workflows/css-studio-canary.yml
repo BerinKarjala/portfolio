@@ -12,9 +12,9 @@ on:
   workflow_dispatch:
     inputs:
       check:
-        description: "Private check (proxy/image-info make no model calls)"
+        description: "Private check (image makes one 500-Neuron/one-transform request)"
         type: choice
-        options: [proxy, image-info, theme]
+        options: [proxy, image-info, image, theme]
         default: proxy
 permissions:
   contents: read
@@ -32,10 +32,10 @@ jobs:
           node-version-file: ".nvmrc"
           cache: npm
       - run: npm ci
-      - run: npm test -- server/css-studio scripts/check-css-studio-canary.test.mjs scripts/deploy-css-studio-canary.test.mjs scripts/check-css-studio-proxy.test.mjs scripts/deploy-css-studio-proxy.test.mjs scripts/check-css-studio-image-readiness.test.mjs scripts/probe-css-studio-image-info.test.mjs
+      - run: npm test -- server/css-studio src/shared/studioRaster.test.js scripts/check-css-studio-canary.test.mjs scripts/deploy-css-studio-canary.test.mjs scripts/check-css-studio-proxy.test.mjs scripts/deploy-css-studio-proxy.test.mjs scripts/check-css-studio-image-readiness.test.mjs scripts/probe-css-studio-image-info.test.mjs scripts/run-css-studio-image-pilot.test.mjs scripts/trace-css-studio-pilot.test.mjs
       - run: npm run test:css-studio:server
       - name: Install Chromium for session-only verification
-        if: github.event_name == 'workflow_dispatch' && (inputs.check == 'proxy' || inputs.check == 'image-info')
+        if: github.event_name == 'workflow_dispatch' && (inputs.check == 'proxy' || inputs.check == 'image-info' || inputs.check == 'image')
         run: npx --no-install playwright install --with-deps chromium
       - name: Verify private proxy identity and cross-site rejection without inference
         if: github.event_name == 'workflow_dispatch' && inputs.check == 'proxy'
@@ -55,12 +55,28 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           WRANGLER_SEND_METRICS: "false"
+      - name: Verify one private image with retained daily and monthly charges
+        if: github.event_name == 'workflow_dispatch' && inputs.check == 'image'
+        run: node scripts/run-css-studio-image-pilot.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WRANGLER_SEND_METRICS: "false"
       - name: Retain public model-schema contract only
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: css-studio-model-schema-contract
           path: artifacts/css-studio-canary/gpt-oss-schema-contract.json
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Retain safe single-image pilot result and generated PNG only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: css-studio-image-pilot
+          path: |
+            artifacts/css-studio-image-pilot/result.json
+            artifacts/css-studio-image-pilot/background.png
           if-no-files-found: ignore
           retention-days: 7
       - name: Retain safe account visibility and metadata-probe results

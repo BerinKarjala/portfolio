@@ -51,15 +51,25 @@ function raster(encoded) {
     (encoded.includes("=") && !/^[^=]+={1,2}$/.test(encoded))
   )
     throw new ProviderOutputError();
+  const padding = encoded.endsWith("==") ? 2 : encoded.endsWith("=") ? 1 : 0;
+  const decodedLength = (encoded.length / 4) * 3 - padding;
+  if (decodedLength < 1 || decodedLength > MEDIA_LIMIT)
+    throw new ProviderOutputError();
   let bytes;
   try {
-    const decoded = atob(encoded);
-    bytes = new Uint8Array(decoded.length);
-    for (let i = 0; i < decoded.length; i++) bytes[i] = decoded.charCodeAt(i);
+    if (typeof Uint8Array.fromBase64 === "function") {
+      // Default loose final-chunk handling preserves atob's unused-pad-bit
+      // acceptance; the wire checks above still reject whitespace/URL syntax.
+      bytes = Uint8Array.fromBase64(encoded);
+    } else {
+      const decoded = atob(encoded);
+      bytes = new Uint8Array(decoded.length);
+      for (let i = 0; i < decoded.length; i++) bytes[i] = decoded.charCodeAt(i);
+    }
   } catch {
     throw new ProviderOutputError();
   }
-  if (!bytes.length || bytes.length > MEDIA_LIMIT)
+  if (bytes.length !== decodedLength || bytes.length > MEDIA_LIMIT)
     throw new ProviderOutputError();
   const mime =
     bytes[0] === 137 && bytes[1] === 80
@@ -76,8 +86,8 @@ function raster(encoded) {
   }
   return new Blob([bytes], { type: mime });
 }
-// This factory is not wired into the Worker. A verified Images Free account,
-// monthly admission and a measured private runtime pilot are still required.
+// The Worker selects this only behind its existing private secret and exact
+// image-pilot header. Public activation still requires runtime/CPU review.
 export function createKleinImageProvider(binding, normalizer) {
   if (
     typeof binding?.run !== "function" ||

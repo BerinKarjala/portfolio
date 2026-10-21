@@ -267,3 +267,52 @@ it("exposes media operations only with an inspected image adapter and bounded im
     );
   }
 });
+
+it("exposes monthly transform allowance only for an exact server-owned diagnostics opt-in", async () => {
+  const { app, cookie, ledger, provider } = await fixture({
+    diagnostics: true,
+  });
+  ledger.snapshot.mockResolvedValue({
+    available: true,
+    imageTransformsRemaining: 5000,
+  });
+  const status = () =>
+    app(
+      new Request(origin + "/api/css-studio/status", { headers: { cookie } }),
+    );
+  expect((await (await status()).json()).imageTransformsRemaining).toBe(5000);
+  ledger.snapshot.mockResolvedValue({
+    available: true,
+    imageTransformsRemaining: 4999,
+  });
+  expect((await (await status()).json()).imageTransformsRemaining).toBe(4999);
+  expect(provider.propose).not.toHaveBeenCalled();
+  expect(ledger.reserve).not.toHaveBeenCalled();
+});
+
+it.each([undefined, false, "true", 1])(
+  "omits monthly diagnostics for option %s, even with a request diagnostics header",
+  async (diagnostics) => {
+    const { app, cookie, ledger } = await fixture({ diagnostics });
+    ledger.snapshot.mockResolvedValue({
+      available: true,
+      imageTransformsRemaining: 4999,
+    });
+    const response = await app(
+      new Request(origin + "/api/css-studio/status", {
+        headers: { cookie, "X-CSS-Studio-Diagnostics": "true" },
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).not.toHaveProperty(
+      "imageTransformsRemaining",
+    );
+    const query = await app(
+      new Request(origin + "/api/css-studio/status?diagnostics=true", {
+        headers: { cookie },
+      }),
+    );
+    expect(query.status).toBe(403);
+    expect(await query.json()).not.toHaveProperty("imageTransformsRemaining");
+  },
+);

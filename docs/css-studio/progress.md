@@ -22,8 +22,13 @@ now pass generation, owned refinement, corrupt-raster rejection and the private
 metadata route. The free metadata-only live check then passed, confirming the
 native Images binding and fixed PNG metadata without inference, transformations
 or shared quota changes. Billing visibility returned 403; Images Free status and
-production decoding/CPU behavior remain unverified. The adapter
-is not selected by the Worker. See [the implementation](image-adapter.md) and
+production decoding/CPU behavior remain unverified. The later plan review reuses
+the owner's complete subscription screenshot and Cloudflare's default-Free rule;
+the 0/5,000 Zones counter alone cannot establish plan or binding headroom.
+The Worker now selects images only behind the existing secret and an exact
+private image header. One quota-accounted pilot is prepared, with native base64
+decoding, bounded JPEG inspection and optional request-correlated CPU telemetry.
+See [the private pilot](private-image-pilot.md), [the implementation](image-adapter.md) and
 [runtime evidence and activation limits](image-runtime-verification.md).
 Earlier increment
 sections below are chronological records; later entries supersede their status.

@@ -21,6 +21,7 @@ This is a working client-workflow increment, not the completed v2.2 release.
 - [Image-model contract and decoding research](image-model-research.md)
 - [Image adapter and monthly transformation accounting](image-adapter.md)
 - [Images runtime and private metadata verification](image-runtime-verification.md)
+- [One private image pilot and Free-plan evidence](private-image-pilot.md)
 - [M5 accessibility and reflow verification](verification-m5.md)
 - [M4 server verification](verification-m4-server.md)
 - [Owned-media transport and activation limits](owned-media.md)

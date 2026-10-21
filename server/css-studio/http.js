@@ -38,6 +38,7 @@ export function createApp({
   ledger,
   provider,
   policy,
+  diagnostics = false,
   clock = Date.now,
 } = {}) {
   const plan = policy ? Object.freeze({ ...policy }) : null;
@@ -166,6 +167,9 @@ export function createApp({
           day: snapshot.day,
           remaining: snapshot.remaining,
           sharedRemaining: snapshot.sharedRemaining,
+          ...(diagnostics === true
+            ? { imageTransformsRemaining: snapshot.imageTransformsRemaining }
+            : {}),
         });
       }
       const jsonType = /^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(

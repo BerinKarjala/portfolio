@@ -1,8 +1,9 @@
 # Images runtime and private metadata verification
 
-October 21, 2026. The live private metadata check passed; image generation
-remains disabled. This increment adds that diagnostic and actual local Images
-runtime tests. Neither selects the Klein provider in production.
+October 21, 2026. The live private metadata check passed; public image generation
+remains disabled. A later [single private image pilot](private-image-pilot.md)
+adds an exact secret/header gate and resource bounds. The metadata run below
+did not select Klein or request an image transformation.
 
 ## Observed live result
 
@@ -94,9 +95,11 @@ eligibility. The observed live results are retained above.
 
 ## Remaining activation gates
 
-Confirm the account's Images plan before the first remote transformation. The
-generic subscriptions schema has no documented Images Free discriminator;
-missing records, free-looking names and a working binding are insufficient.
+The [later plan-evidence review](private-image-pilot.md) reuses the owner's
+complete same-session subscription screenshot plus the documented default-Free
+rule. The generic API schema alone still has no documented Images Free
+discriminator; missing API records, free-looking names and a working binding are
+insufficient. No API-confirmed plan is claimed.
 On confirmed Images Free, the provider hard-stops at its transformation limit
 with code 9422. The application independently reserves at most 5,000 monthly
 transformations; neither limit is evidence of the account's current headroom.
@@ -104,11 +107,10 @@ transformations; neither limit is evidence of the account's current headroom.
 A separately bounded private pilot still needs full production decoding,
 request-correlated Worker CPU/memory evidence and output-quality review.
 JavaScript base64 conversion and repeated container scans at the accepted 4 MiB
-bound remain resource concerns. A future optimization can feature-detect native
-`Uint8Array.fromBase64` (available in the pinned local workerd) while preserving
-all current wire bounds and fallback behavior. JPEG limits must cover both marker
-steps and fill-byte scanning. Neither change is part of this increment, and local
-elapsed time does not prove the Workers Free CPU allowance. No paid upgrade,
+bound remain resource concerns. The later private-pilot increment feature-detects
+native `Uint8Array.fromBase64`, retains the fallback and current wire acceptance,
+and bounds JPEG marker steps and fill-byte scanning. These changes do not prove
+the Workers Free CPU allowance. No paid upgrade,
 inference, remote transformation, public
 activation, automatic retry, ledger reset or allowance refund is authorized by
 the metadata workflow.

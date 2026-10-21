@@ -18,6 +18,8 @@ const facts = {
   inferencePerformed: false,
   aiCalls: 0,
   infoCalls: 0,
+  nativeBase64Available: typeof Uint8Array.fromBase64 === "function",
+  nativeBase64Decodes: 0,
   transforms: [],
   completedDecodes: 0,
   references: [],
@@ -25,6 +27,14 @@ const facts = {
   settlements: [],
   events: [],
 };
+// Wrap the actual workerd built-in only to count use. No decoder replacement
+// or Node base64 shim participates in these runtime cases.
+const nativeFromBase64 = Uint8Array.fromBase64;
+if (facts.nativeBase64Available)
+  Uint8Array.fromBase64 = function (...args) {
+    facts.nativeBase64Decodes++;
+    return nativeFromBase64.apply(this, args);
+  };
 export default {
   async fetch(request, env) {
     const authority = quotaClient(env.QUOTA);

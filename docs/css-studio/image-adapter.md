@@ -1,7 +1,8 @@
 # Private image adapter implementation
 
-October 21, 2026. The Worker does not select the Klein adapter. No remote image
-inference or transformation has been requested. Public inference remains off.
+October 21, 2026. The Worker selects Klein only behind an exact private image
+header and the existing secret. A single bounded private pilot is prepared;
+public inference remains off. See [its scope and plan evidence](private-image-pilot.md).
 The private metadata-only binding check and actual local decoding evidence are
 tracked in [Images runtime verification](image-runtime-verification.md).
 

@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-21",
+  "determination": "default-images-free-based-on-session-billing-evidence",
+  "basis": {
+    "userSuppliedCompleteSubscriptionsScreenshot": true,
+    "activeSubscriptionsShown": ["Workers Free"],
+    "paymentMethodShown": "none",
+    "subsequentBillingChangesPerformedOrReported": false,
+    "documentedDefault": "Images Free unless Images Paid is purchased",
+    "pricingSource": "https://developers.cloudflare.com/images/pricing/",
+    "subscriptionListSource": "https://developers.cloudflare.com/billing/understand/how-billing-works/"
+  },
+  "currentUserScreenshot": {
+    "page": "Images Transformations, Zones",
+    "uniqueTransformationsShown": 0,
+    "includedAllowanceShown": 5000,
+    "zonesShown": 0,
+    "counterAloneIdentifiesPlan": false,
+    "counterCoverageOfBindingCallsEstablished": false
+  },
+  "apiBillingVisibility": "forbidden",
+  "apiPlanVerified": false,
+  "zoneRequiredForRawByteWorkerBinding": false,
+  "paidUpgradePerformed": false,
+  "scope": "Operational evidence for one bounded private pilot; provider runtime access, full decoding, billed CPU and output quality require separate evidence. Images Free hard-stops at its allowance."
+}
