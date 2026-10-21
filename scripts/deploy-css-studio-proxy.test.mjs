@@ -13,6 +13,8 @@ function fixture({
   failDryRun = false,
   failSecret = false,
   badOrigin = false,
+  beforeBindings = (bindings) => bindings,
+  afterBindings = (bindings) => bindings,
 } = {}) {
   let reads = 0;
   const common = [
@@ -37,8 +39,8 @@ function fixture({
       result: {
         bindings:
           reads === 1
-            ? common
-            : [
+            ? beforeBindings(common)
+            : afterBindings([
                 ...common.filter((binding) => binding.name !== "QUOTA"),
                 {
                   name: "QUOTA",
@@ -65,7 +67,8 @@ function fixture({
                     : "https://deploy-preview-245--berinkarjala.netlify.app",
                 },
                 { name: "CANARY_MODEL", type: "plain_text", text: "llama" },
-              ],
+                { name: "IMAGES", type: "images" },
+              ]),
       },
     });
   });
@@ -181,4 +184,99 @@ it("requires a valid credential and redacts upstream, transport and CLI exceptio
     }),
   ).rejects.toThrow(/command failed/i);
   expect(f.check).not.toHaveBeenCalled();
+});
+
+it("accepts an absent or correctly named existing Images binding and retained value bindings", async () => {
+  for (const images of [[], [{ name: "IMAGES", type: "images" }]]) {
+    const retained = [
+      { name: "OTHER_SECRET", type: "secret_text" },
+      { name: "OTHER_VARIABLE", type: "plain_text", text: "retained" },
+      { name: "OTHER_JSON", type: "json", json: { retained: true } },
+    ];
+    const f = fixture({
+      beforeBindings: (bindings) => [...bindings, ...images, ...retained],
+      afterBindings: (bindings) => [...bindings, ...retained],
+    });
+    await expect(deployProxyCheck({ token, ...f })).resolves.toEqual({
+      inferenceCalls: 0,
+    });
+    expect(f.check).toHaveBeenCalledOnce();
+  }
+});
+
+const incompatibleBindings = [
+  ["wrong Images type", [{ name: "IMAGES", type: "plain_text" }]],
+  [
+    "duplicate Images binding",
+    [
+      { name: "IMAGES", type: "images" },
+      { name: "IMAGES", type: "images" },
+    ],
+  ],
+  [
+    "differently named Images resource",
+    [{ name: "OTHER_IMAGES", type: "images" }],
+  ],
+  ["unrecognized resource", [{ name: "DATABASE", type: "d1" }]],
+  ["duplicate AI resource", [{ name: "AI", type: "ai" }]],
+  [
+    "duplicate quota resource",
+    [
+      {
+        name: "QUOTA",
+        type: "durable_object_namespace",
+        namespace_id: namespace,
+      },
+    ],
+  ],
+];
+
+it.each(incompatibleBindings)(
+  "aborts before mutation for %s in existing settings",
+  async (_name, additions) => {
+    const f = fixture({
+      beforeBindings: (bindings) => [...bindings, ...additions],
+    });
+    await expect(deployProxyCheck({ token, ...f })).rejects.toThrow(/binding/i);
+    expect(f.cli).not.toHaveBeenCalled();
+    expect(f.check).not.toHaveBeenCalled();
+  },
+);
+
+it.each([["missing Images binding", []], ...incompatibleBindings])(
+  "does not probe after %s in deployed settings",
+  async (_name, additions) => {
+    const f = fixture({
+      afterBindings: (bindings) => [
+        ...bindings.filter((binding) => binding.name !== "IMAGES"),
+        ...additions,
+      ],
+    });
+    await expect(deployProxyCheck({ token, ...f })).rejects.toThrow(/binding/i);
+    expect(f.cli).toHaveBeenCalledTimes(3);
+    expect(f.check).not.toHaveBeenCalled();
+  },
+);
+
+it("uses only the scoped API token and excludes inherited application secrets from CLI environment", async () => {
+  for (const name of [
+    "CANARY_SECRET",
+    "IDENTITY_SECRET",
+    "CLOUDFLARE_API_KEY",
+    "CLOUDFLARE_EMAIL",
+  ])
+    vi.stubEnv(name, "private-inherited-value");
+  try {
+    const f = fixture();
+    await deployProxyCheck({ token, ...f });
+    for (const [, { env }] of f.cli.mock.calls) {
+      expect(env.CLOUDFLARE_API_TOKEN).toBe(token);
+      expect(env).not.toHaveProperty("CANARY_SECRET");
+      expect(env).not.toHaveProperty("IDENTITY_SECRET");
+      expect(env).not.toHaveProperty("CLOUDFLARE_API_KEY");
+      expect(env).not.toHaveProperty("CLOUDFLARE_EMAIL");
+    }
+  } finally {
+    vi.unstubAllEnvs();
+  }
 });

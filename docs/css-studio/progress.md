@@ -10,14 +10,19 @@ and passed two actual model requests. One private GPT fixture then passed in
 827 ms; its retained 4,000 reservation leaves 2,000 shared Neurons on October 21
 UTC. Real preview identity/cookie reuse/reload and the deliberate untrusted-origin
 Chromium check passed; the latter preserved all counters without inference.
-Public inference and image/refinement remain disabled. Production-origin proxy
-acceptance, broader model evaluation and public operational headroom remain open.
+Public inference and image/refinement remain disabled. The private production
+Chromium session/proxy check also passed without inference or quota changes;
+see [its retained proof](production-session-proof.md). Other engines' live proxy
+behavior, broader model evaluation and public operational headroom remain open.
 M5 fixes cover contrast, enlarged text/reflow and reduced motion; the follow-up at
 `cab3636` passed all 78 focused checks across Chromium, Firefox and WebKit.
 Klein metadata and an offline adapter/Images normalization pipeline are implemented
-with atomic monthly transformation accounting. Images Free status, binding and
-runtime decoding/CPU behavior remain unverified; the adapter is not selected by
-the Worker. See [the implementation and activation limits](image-adapter.md).
+with atomic monthly transformation accounting. Actual native local Images tests
+now pass generation, owned refinement, corrupt-raster rejection and the private
+metadata route. A separate free metadata-only live check is prepared; Images
+Free status and production decoding/CPU behavior remain unverified. The adapter
+is not selected by the Worker. See [the implementation](image-adapter.md) and
+[runtime evidence and activation limits](image-runtime-verification.md).
 Earlier increment
 sections below are chronological records; later entries supersede their status.
 The branch also incorporates owner-merged main `8c11250`, preserving the Page
@@ -28,6 +33,13 @@ run took about 19.5 minutes before the added keyboard preflight.
 See [model evaluation](model-evaluation.md), [proxy evidence](private-proxy-verification.md)
 and [M5 verification](verification-m5.md) for evidence and limits. Reservations
 are not measured provider usage; no model winner is established.
+
+The metadata increment passed 433 unit tests, six native Images/SQLite runtime
+cases and the production build (382 modules) locally. A subsequent focused
+four-case runner test passed after review tightened missing-allowance validation
+and removed comparisons between different browser identities. The frontend and
+dependencies are unchanged; the earlier three-engine and Page Builder evidence
+at `28ddcb1` remains the applicable browser baseline.
 
 ## Baseline and source priority
 

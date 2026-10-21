@@ -27,6 +27,27 @@ function uniqueBinding(bindings, name, type) {
     ? matching[0]
     : null;
 }
+function resourceBindingsCompatible(bindings, requireImages = false) {
+  const expected = new Map([
+    ["AI", "ai"],
+    ["QUOTA", "durable_object_namespace"],
+    ["IMAGES", "images"],
+  ]);
+  return (
+    bindings.every(
+      (binding) =>
+        binding &&
+        (expected.has(binding.name)
+          ? binding.type === expected.get(binding.name)
+          : ["secret_text", "plain_text", "json"].includes(binding.type)),
+    ) &&
+    [...expected].every(
+      ([name]) =>
+        bindings.filter((binding) => binding.name === name).length <= 1,
+    ) &&
+    (!requireImages || uniqueBinding(bindings, "IMAGES", "images"))
+  );
+}
 function quotaBinding(bindings) {
   const quota = uniqueBinding(bindings, "QUOTA", "durable_object_namespace");
   ensure(
@@ -138,6 +159,10 @@ export async function deployProxyCheck({
 
   const before = await settings();
   ensure(
+    resourceBindingsCompatible(before),
+    "Existing Worker resource bindings are incompatible; deployment was not started.",
+  );
+  ensure(
     uniqueBinding(before, "IDENTITY_SECRET", "secret_text"),
     "Existing identity secret is missing or incompatible; it will not be created or rotated.",
   );
@@ -162,6 +187,10 @@ export async function deployProxyCheck({
   await command(["deploy"]);
 
   const after = await settings();
+  ensure(
+    resourceBindingsCompatible(after, true),
+    "Deployed Worker resource bindings are invalid; the browser check was not started.",
+  );
   ensure(
     quotaBinding(after).namespace_id === namespace,
     "Quota namespace changed unexpectedly; the browser check was not started.",

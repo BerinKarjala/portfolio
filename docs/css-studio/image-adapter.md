@@ -1,8 +1,9 @@
 # Private image adapter implementation
 
-October 21, 2026. This is an offline implementation record. The Worker does not
-select the Klein adapter, no Images binding has been added, and no image
+October 21, 2026. The Worker does not select the Klein adapter. No remote image
 inference or transformation has been requested. Public inference remains off.
+The private metadata-only binding check and actual local decoding evidence are
+tracked in [Images runtime verification](image-runtime-verification.md).
 
 `server/css-studio/kleinProvider.js` implements the fixed native
 `@cf/black-forest-labs/flux-2-klein-4b` multipart transport. It requests one
@@ -46,11 +47,12 @@ parameter, so cancellation cannot prove that already submitted work stopped.
 It must not release its reserved allowance. The adapter makes at most one
 model invocation and never retries.
 
-Unit tests exercise the adapter and Images binding boundaries with explicit
-fixtures. They establish transport, validation, accounting and cancellation
-behavior, not actual provider decoding or image quality. Actual workerd tests
-exercise SQLite admission and persistence. The browser Fetch regression uses
-intercepted fixtures without a model or external image service.
+Unit tests exercise transport, validation, accounting and cancellation with
+explicit fixtures. Actual workerd tests exercise SQLite admission and persistence.
+Native local Images tests additionally exercise full decode/re-encode, generated
+receipts, refinement ordering and corrupt-raster rejection with fixture AI output.
+The browser Fetch regression uses intercepted fixtures. None establishes remote
+model quality, full Cloudflare production decoding or billed Worker CPU.
 
 Activation still requires evidence of Images Free account status and available
 headroom, preserving deployment of the binding, and a separately bounded private

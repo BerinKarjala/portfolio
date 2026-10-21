@@ -68,5 +68,6 @@ The private model workflow explicitly uses the narrower identity probe and logs
 `crossOriginRejected: false`. It requires session/cookie proof before its one
 fixed GPT call; it does not silently recover from a failed full probe. Public
 inference stays off. The later full probe now establishes the scoped Chromium
-preview check. Production-origin proxy verification, other browser engines'
-live cookie behavior and supporting-service headroom remain release work.
+preview check. The later [production-origin session proof](production-session-proof.md)
+passed in Chromium without inference. Other browser engines' live cookie behavior
+and supporting-service headroom remain release work.

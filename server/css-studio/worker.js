@@ -6,6 +6,7 @@ import {
   CLOUDFLARE_THEME_PLAN,
 } from "./cloudflareProvider.js";
 import { createGptProvider, GPT_THEME_PLAN } from "./gptProvider.js";
+import { IMAGE_INFO_PATH, handleImageInfoProbe } from "./imageInfoProbe.js";
 export const AUTHORITY_NAME = "css-studio-global-v1";
 export class QuotaAuthority {
   constructor(ctx) {
@@ -65,6 +66,13 @@ export default {
       request.headers.get("Origin") === env.CANARY_APP_ORIGIN
         ? env.CANARY_APP_ORIGIN
         : env.APP_ORIGIN;
+    if (new URL(request.url).pathname === IMAGE_INFO_PATH)
+      return handleImageInfoProbe(request, {
+        authorized: canary,
+        origin,
+        endpointOrigin: env.ENDPOINT_ORIGIN || env.APP_ORIGIN,
+        images: env.IMAGES,
+      });
     let selected = {};
     if (canary) {
       const configuredModel =

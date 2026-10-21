@@ -16,6 +16,9 @@ CANARY_MODEL = "llama"
 [ai]
 binding = "AI"
 
+[images]
+binding = "IMAGES"
+
 [[durable_objects.bindings]]
 name = "QUOTA"
 class_name = "QuotaAuthority"

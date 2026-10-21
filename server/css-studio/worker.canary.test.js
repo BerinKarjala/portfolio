@@ -1,5 +1,38 @@
 import { expect, it, vi } from "vitest";
 import worker from "./worker.js";
+
+it("permits only the private free image-info diagnostic without activating images or touching inference/accounting", async () => {
+  const { env, request, ai, calls } = fixture();
+  const info = vi.fn(async () => ({
+    width: 64,
+    height: 64,
+    format: "image/png",
+  }));
+  env.IMAGES = {
+    info,
+    input: vi.fn(() => {
+      throw Error("No transformation allowed");
+    }),
+  };
+  expect(
+    (await worker.fetch(request("image-info-probe", {}), env)).status,
+  ).toBe(404);
+  const response = await worker.fetch(
+    request("image-info-probe", {}, { "X-CSS-Studio-Canary": canary }),
+    env,
+  );
+  expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({
+    info: { width: 64, height: 64, format: "image/png" },
+    inferencePerformed: false,
+    transformationPerformed: false,
+    cpuMeasured: false,
+  });
+  expect(info).toHaveBeenCalledOnce();
+  expect(env.IMAGES.input).not.toHaveBeenCalled();
+  expect(ai.run).not.toHaveBeenCalled();
+  expect(calls).toHaveLength(0);
+});
 const origin = "https://berinkarjala.netlify.app";
 const backend = "https://css-studio-ai.berin-karjala.workers.dev";
 const canary = "cd".repeat(32);

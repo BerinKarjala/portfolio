@@ -12,9 +12,9 @@ on:
   workflow_dispatch:
     inputs:
       check:
-        description: "Private check (proxy makes no model calls)"
+        description: "Private check (proxy/image-info make no model calls)"
         type: choice
-        options: [proxy, theme]
+        options: [proxy, image-info, theme]
         default: proxy
 permissions:
   contents: read
@@ -32,14 +32,20 @@ jobs:
           node-version-file: ".nvmrc"
           cache: npm
       - run: npm ci
-      - run: npm test -- server/css-studio scripts/check-css-studio-canary.test.mjs scripts/deploy-css-studio-canary.test.mjs scripts/check-css-studio-proxy.test.mjs scripts/deploy-css-studio-proxy.test.mjs
+      - run: npm test -- server/css-studio scripts/check-css-studio-canary.test.mjs scripts/deploy-css-studio-canary.test.mjs scripts/check-css-studio-proxy.test.mjs scripts/deploy-css-studio-proxy.test.mjs scripts/check-css-studio-image-readiness.test.mjs scripts/probe-css-studio-image-info.test.mjs
       - run: npm run test:css-studio:server
       - name: Install Chromium for session-only verification
-        if: github.event_name == 'workflow_dispatch' && inputs.check == 'proxy'
+        if: github.event_name == 'workflow_dispatch' && (inputs.check == 'proxy' || inputs.check == 'image-info')
         run: npx --no-install playwright install --with-deps chromium
       - name: Verify private proxy identity and cross-site rejection without inference
         if: github.event_name == 'workflow_dispatch' && inputs.check == 'proxy'
         run: node scripts/deploy-css-studio-proxy.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WRANGLER_SEND_METRICS: "false"
+      - name: Verify free Images metadata without inference or transformations
+        if: github.event_name == 'workflow_dispatch' && inputs.check == 'image-info'
+        run: node scripts/probe-css-studio-image-info.mjs
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           WRANGLER_SEND_METRICS: "false"
@@ -55,5 +61,15 @@ jobs:
         with:
           name: css-studio-model-schema-contract
           path: artifacts/css-studio-canary/gpt-oss-schema-contract.json
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Retain safe account visibility and metadata-probe results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: css-studio-image-info
+          path: |
+            artifacts/css-studio-image-readiness/account.json
+            artifacts/css-studio-image-info/info.json
           if-no-files-found: ignore
           retention-days: 7

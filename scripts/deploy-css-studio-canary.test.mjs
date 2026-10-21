@@ -11,6 +11,8 @@ function fixture({
   changedNamespace = false,
   failDryRun = false,
   quotaEnvironment = "",
+  beforeBindings = (bindings) => bindings,
+  afterBindings = (bindings) => bindings,
 } = {}) {
   let reads = 0;
   const bindings = [
@@ -49,8 +51,8 @@ function fixture({
       result: {
         bindings:
           reads === 1
-            ? bindings
-            : [
+            ? beforeBindings(bindings)
+            : afterBindings([
                 ...bindings.filter(
                   (b) => b.name !== "QUOTA" && b.name !== "IDENTITY_SECRET",
                 ),
@@ -74,7 +76,8 @@ function fixture({
                   type: "plain_text",
                   text: "https://css-studio-ai.berin-karjala.workers.dev",
                 },
-              ],
+                { name: "IMAGES", type: "images" },
+              ]),
       },
     });
   });
@@ -207,4 +210,128 @@ it("stops before secret mutation when metadata cannot establish a field contract
   expect(f.cli).toHaveBeenCalledOnce();
   expect(f.check).not.toHaveBeenCalled();
   expect(f.writeSummary).not.toHaveBeenCalled();
+});
+
+it("accepts absent or correctly named existing Images and value bindings retained by keep_vars", async () => {
+  for (const images of [[], [{ name: "IMAGES", type: "images" }]]) {
+    const retained = [
+      { name: "OTHER_SECRET", type: "secret_text" },
+      { name: "OTHER_VARIABLE", type: "plain_text", text: "retained" },
+      { name: "OTHER_JSON", type: "json", json: { retained: true } },
+    ];
+    const f = fixture({
+      beforeBindings: (bindings) => [...bindings, ...images, ...retained],
+      afterBindings: (bindings) => [...bindings, ...retained],
+    });
+    await expect(
+      deployCanary({
+        token,
+        ...f,
+        now,
+        randomSecret: () => secret,
+        log: () => {},
+      }),
+    ).resolves.toEqual({ calls: 2 });
+    expect(f.check).toHaveBeenCalledOnce();
+  }
+});
+
+const incompatibleBindings = [
+  ["wrong Images type", [{ name: "IMAGES", type: "plain_text" }]],
+  [
+    "duplicate Images binding",
+    [
+      { name: "IMAGES", type: "images" },
+      { name: "IMAGES", type: "images" },
+    ],
+  ],
+  [
+    "differently named Images resource",
+    [{ name: "OTHER_IMAGES", type: "images" }],
+  ],
+  ["unrecognized resource", [{ name: "DATABASE", type: "d1" }]],
+  ["duplicate AI resource", [{ name: "AI", type: "ai" }]],
+  [
+    "duplicate quota resource",
+    [
+      {
+        name: "QUOTA",
+        type: "durable_object_namespace",
+        namespace_id: "01".repeat(16),
+      },
+    ],
+  ],
+];
+
+it.each(incompatibleBindings)(
+  "aborts before mutation for %s in existing settings",
+  async (_name, additions) => {
+    const f = fixture({
+      beforeBindings: (bindings) => [...bindings, ...additions],
+    });
+    await expect(
+      deployCanary({
+        token,
+        ...f,
+        now,
+        randomSecret: () => secret,
+        log: () => {},
+      }),
+    ).rejects.toThrow(/binding/i);
+    expect(f.cli).not.toHaveBeenCalled();
+    expect(f.writeSummary).not.toHaveBeenCalled();
+    expect(f.check).not.toHaveBeenCalled();
+  },
+);
+
+it.each([["missing Images binding", []], ...incompatibleBindings])(
+  "does not probe after %s in deployed settings",
+  async (_name, additions) => {
+    const f = fixture({
+      afterBindings: (bindings) => [
+        ...bindings.filter((binding) => binding.name !== "IMAGES"),
+        ...additions,
+      ],
+    });
+    await expect(
+      deployCanary({
+        token,
+        ...f,
+        now,
+        randomSecret: () => secret,
+        log: () => {},
+      }),
+    ).rejects.toThrow(/binding|namespace/i);
+    expect(f.cli).toHaveBeenCalledTimes(3);
+    expect(f.check).not.toHaveBeenCalled();
+  },
+);
+
+it("uses only the scoped API token and strips inherited global credentials and application secrets from CLI environment", async () => {
+  for (const name of [
+    "CANARY_SECRET",
+    "IDENTITY_SECRET",
+    "CLOUDFLARE_API_KEY",
+    "CLOUDFLARE_EMAIL",
+  ])
+    vi.stubEnv(name, "private-inherited-value");
+  try {
+    const f = fixture();
+    await deployCanary({
+      token,
+      ...f,
+      now,
+      randomSecret: () => secret,
+      log: () => {},
+    });
+    for (const [, { env }] of f.cli.mock.calls) {
+      expect(env.CLOUDFLARE_API_TOKEN).toBe(token);
+      expect(env).not.toHaveProperty("CANARY_SECRET");
+      expect(env).not.toHaveProperty("IDENTITY_SECRET");
+      expect(env).not.toHaveProperty("CLOUDFLARE_API_KEY");
+      expect(env).not.toHaveProperty("CLOUDFLARE_EMAIL");
+    }
+  } finally {
+    vi.unstubAllEnvs();
+  }
 });
