@@ -229,3 +229,41 @@ it("does not dispatch an expired reservation, and retains a charge on confirmed 
     expect.objectContaining({ outcome: "provider-exhausted" }),
   );
 });
+
+it("advertises only theme support when no inspected image provider is configured", async () => {
+  const { app, cookie } = await fixture();
+  const response = await app(
+    new Request(origin + "/api/css-studio/status", { headers: { cookie } }),
+  );
+  expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({
+    available: true,
+    operations: ["theme"],
+  });
+});
+
+it("exposes media operations only with an inspected image adapter and bounded image plan", async () => {
+  const policy = {
+    ...testPolicy,
+    imageNeurons: 1000,
+    imageWidth: 1024,
+    imageHeight: 1024,
+    imageSteps: 4,
+  };
+  for (const inspected of [false, true]) {
+    const provider = {
+      propose: vi.fn(),
+      image: {
+        propose: vi.fn(),
+        ...(inspected ? { inspectImage: vi.fn() } : {}),
+      },
+    };
+    const { app, cookie } = await fixture({ provider, policy });
+    const response = await app(
+      new Request(origin + "/api/css-studio/status", { headers: { cookie } }),
+    );
+    expect((await response.json()).operations).toEqual(
+      inspected ? ["theme", "image", "refine"] : ["theme"],
+    );
+  }
+});

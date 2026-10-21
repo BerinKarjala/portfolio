@@ -5,6 +5,7 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Link, Routes, Route } from "react-router-dom";
@@ -17,7 +18,10 @@ beforeEach(() => {
     removeEventListener() {},
   }));
 });
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 function Site() {
   return (
     <MemoryRouter>
@@ -296,4 +300,114 @@ it("keeps typed drafts usable after denied microphone permission and never sends
   view.unmount();
   expect(recognition.abort).toHaveBeenCalledOnce();
   delete window.SpeechRecognition;
+});
+
+it("connects the opted-in same-origin designer only on first launch and disables unavailable media operations", async () => {
+  const fetch = vi.fn(async () =>
+    Response.json({ available: true, operations: ["theme"] }),
+  );
+  vi.stubGlobal("fetch", fetch);
+  render(
+    <StudioProvider connectDesigner>
+      <MoonLauncher />
+    </StudioProvider>,
+  );
+  expect(fetch).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Theme Studio" }));
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+  fireEvent.click(screen.getByRole("button", { name: "Chat", exact: true }));
+  fireEvent.change(screen.getByLabelText("Message"), {
+    target: { value: "A quieter palette" },
+  });
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: "Send", exact: true }).disabled,
+    ).toBe(false),
+  );
+  expect(
+    screen.getByRole("option", { name: "Generate background" }).disabled,
+  ).toBe(true);
+  expect(
+    screen.getByRole("option", { name: "Refine selected background" }).disabled,
+  ).toBe(true);
+  fireEvent.click(screen.getByRole("button", { name: "Close tools" }));
+  fireEvent.click(screen.getByRole("button", { name: "Theme Studio" }));
+  expect(fetch).toHaveBeenCalledTimes(1);
+});
+
+it("retains manual styling and the draft when the live connection is unavailable without background retries", async () => {
+  const fetch = vi.fn(async () => {
+    throw Error("private upstream failure");
+  });
+  vi.stubGlobal("fetch", fetch);
+  render(
+    <StudioProvider connectDesigner>
+      <MoonLauncher />
+    </StudioProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Theme Studio" }));
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+  fireEvent.change(screen.getByLabelText("Accent color"), {
+    target: { value: "#123456" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Chat", exact: true }));
+  fireEvent.change(screen.getByLabelText("Message"), {
+    target: { value: "Keep my draft" },
+  });
+  expect(
+    screen.getByRole("button", { name: "Send", exact: true }).disabled,
+  ).toBe(true);
+  expect(screen.getByText(/AI design is currently unavailable/)).toBeTruthy();
+  expect(screen.queryByText(/private upstream failure/)).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Close tools" }));
+  fireEvent.click(screen.getByRole("button", { name: "Theme Studio" }));
+  expect(screen.getByLabelText("Message").value).toBe("Keep my draft");
+  expect(
+    document.documentElement.style.getPropertyValue("--studio-accent"),
+  ).toBe("#123456");
+  expect(
+    fetch.mock.calls.filter(([path]) =>
+      String(path).startsWith("/api/css-studio/"),
+    ),
+  ).toHaveLength(1);
+});
+
+it("keeps explicitly injected designers independent of live connection setup", () => {
+  const fetch = vi.fn();
+  vi.stubGlobal("fetch", fetch);
+  render(
+    <StudioProvider
+      connectDesigner
+      designer={{ available: true, propose: vi.fn() }}
+    >
+      <MoonLauncher />
+    </StudioProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Theme Studio" }));
+  expect(fetch).not.toHaveBeenCalled();
+});
+
+it("cancels an in-progress connection when Studio unmounts", async () => {
+  let signal;
+  const fetch = vi.fn((path, options) => {
+    signal = options.signal;
+    return new Promise((resolve, reject) => {
+      signal.addEventListener(
+        "abort",
+        () => reject(new DOMException("Canceled", "AbortError")),
+        { once: true },
+      );
+    });
+  });
+  vi.stubGlobal("fetch", fetch);
+  const view = render(
+    <StudioProvider connectDesigner>
+      <MoonLauncher />
+    </StudioProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Theme Studio" }));
+  expect(signal.aborted).toBe(false);
+  await act(async () => view.unmount());
+  expect(signal.aborted).toBe(true);
+  expect(fetch).toHaveBeenCalledTimes(1);
 });

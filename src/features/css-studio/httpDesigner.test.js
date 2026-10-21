@@ -22,9 +22,19 @@ it("does not open a session or submit a proposal when the same-origin server is 
   expect(fetch.mock.calls[0][0]).toBe("/api/css-studio/status");
 });
 it("opens a session only after readiness, validates image responses and reattaches proof/bytes without arbitrary URLs", async () => {
+  let sessionOpened = false;
   const fetch = vi.fn(async (path, options) => {
-    if (path.endsWith("/status")) return new Response("", { status: 401 });
-    if (path.endsWith("/session")) return Response.json({ available: true });
+    if (path.endsWith("/status"))
+      return sessionOpened
+        ? Response.json({
+            available: true,
+            operations: ["theme", "image", "refine"],
+          })
+        : new Response("", { status: 401 });
+    if (path.endsWith("/session")) {
+      sessionOpened = true;
+      return Response.json({ available: true });
+    }
     if (options.body instanceof FormData) {
       expect(options.body.get("receipt")).toBe(receipt);
       expect(options.body.get("image").size).toBe(image().size);
@@ -44,6 +54,10 @@ it("opens a session only after readiness, validates image responses and reattach
   });
   const designer = await connectHttpDesigner({ fetch });
   expect(designer.available).toBe(true);
+  expect(designer.operations).toEqual(["theme", "image", "refine"]);
+  expect(
+    fetch.mock.calls.slice(0, 3).map(([path]) => path.split("/").at(-1)),
+  ).toEqual(["status", "session", "status"]);
   const response = await designer.propose(request);
   expect(response.image.size).toBe(image().size);
   expect(response.receipt).toBe(receipt);
@@ -68,7 +82,10 @@ it("opens a session only after readiness, validates image responses and reattach
 it("does not silently retry submissions and maps expired proof to a safe actionable error", async () => {
   const fetch = vi.fn(async (path) =>
     path.endsWith("/status")
-      ? Response.json({ available: true })
+      ? Response.json({
+          available: true,
+          operations: ["theme", "image", "refine"],
+        })
       : Response.json(
           { code: "media-unavailable", error: "<script>private</script>" },
           { status: 409 },
@@ -79,4 +96,33 @@ it("does not silently retry submissions and maps expired proof to a safe actiona
     publicMessage: expect.stringMatching(/saved background.*verified/i),
   });
   expect(fetch).toHaveBeenCalledTimes(2);
+});
+
+it("uses authoritative theme-only capabilities and refuses unsupported operations before submission", async () => {
+  const fetch = vi.fn(async () =>
+    Response.json({ available: true, operations: ["theme"] }),
+  );
+  const designer = await connectHttpDesigner({ fetch });
+  expect(designer.available).toBe(true);
+  expect(designer.operations).toEqual(["theme"]);
+  await expect(designer.propose(request)).rejects.toMatchObject({
+    publicMessage: expect.stringMatching(/unavailable/i),
+  });
+  expect(fetch).toHaveBeenCalledTimes(1);
+});
+
+it("fails closed when availability has no valid operation contract", async () => {
+  for (const operations of [
+    undefined,
+    [],
+    ["theme", "unknown"],
+    ["image"],
+    ["theme", "theme"],
+  ]) {
+    const fetch = vi.fn(async () =>
+      Response.json({ available: true, operations }),
+    );
+    expect((await connectHttpDesigner({ fetch })).available).toBe(false);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  }
 });

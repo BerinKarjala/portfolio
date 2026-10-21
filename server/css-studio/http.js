@@ -9,8 +9,8 @@ import {
   validateOutput,
 } from "./protocol.js";
 import { LIMITS } from "./quota.js";
-export class ProviderLimitError extends Error {}
-class ProviderOutputError extends Error {}
+import { ProviderLimitError, ProviderOutputError } from "./providerErrors.js";
+export { ProviderLimitError } from "./providerErrors.js";
 const reply = (status, body, headers = {}) =>
   new Response(JSON.stringify(body), {
     status,
@@ -132,6 +132,9 @@ export function createApp({
         const snapshot = await ledger.snapshot(visitor);
         return reply(200, {
           available: snapshot.available,
+          operations: snapshot.available
+            ? ["theme", ...(imageReady() ? ["image", "refine"] : [])]
+            : [],
           day: snapshot.day,
           remaining: snapshot.remaining,
           sharedRemaining: snapshot.sharedRemaining,
@@ -191,6 +194,8 @@ export function createApp({
         : null;
       if (!ready())
         return reply(503, { error: "AI design is currently unavailable." });
+      if (typeof provider.validateRequest === "function")
+        provider.validateRequest(input);
       const reservation = await ledger.reserve({
         visitor,
         requestId: input.id,

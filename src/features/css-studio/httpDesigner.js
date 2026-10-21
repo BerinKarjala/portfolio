@@ -65,25 +65,45 @@ export async function connectHttpDesigner({
       cancel?.removeEventListener("abort", abort);
     }
   }
-  let ready = false;
+  async function status() {
+    return call("status", { signal }, async (response) => ({
+      needsSession: response.status === 401,
+      data: response.ok ? await readJson(response) : null,
+    }));
+  }
+  let state;
   try {
-    ready = await call("status", { signal }, async (response) => {
-      if (response.status === 401)
-        return call(
-          "session",
-          { body: "{}", signal },
-          async (session) =>
-            session.ok && (await readJson(session)).available === true,
-        );
-      return response.ok && (await readJson(response)).available === true;
-    });
+    let snapshot = await status();
+    if (snapshot.needsSession) {
+      const opened = await call(
+        "session",
+        { body: "{}", signal },
+        async (response) =>
+          response.ok && (await readJson(response)).available === true,
+      );
+      if (!opened) return unavailableDesigner;
+      snapshot = await status();
+    }
+    state = snapshot.data;
   } catch {
     return unavailableDesigner;
   }
-  if (!ready) return unavailableDesigner;
+  if (
+    state?.available !== true ||
+    !Array.isArray(state.operations) ||
+    !state.operations.includes("theme") ||
+    state.operations.some(
+      (operation) => !["theme", "image", "refine"].includes(operation),
+    ) ||
+    new Set(state.operations).size !== state.operations.length
+  )
+    return unavailableDesigner;
+  const operations = Object.freeze([...state.operations]);
   return {
     available: true,
+    operations,
     async propose(request, { signal, baseImage, baseReceipt } = {}) {
+      if (!operations.includes(request.operation)) throw failure(503);
       let body = JSON.stringify(request);
       if (new TextEncoder().encode(body).length > JSON_LIMIT)
         throw failure(413);

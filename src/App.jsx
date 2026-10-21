@@ -18,7 +18,7 @@ function App() {
   return (
     <HelmetProvider>
       <BrowserRouter>
-        <StudioProvider>
+        <StudioProvider connectDesigner>
           <NavBar />
           <Suspense
             fallback={

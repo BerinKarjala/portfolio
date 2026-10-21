@@ -1,6 +1,10 @@
 import { QuotaLedger } from "./quota.js";
 import { createApp } from "./http.js";
 import { readJson } from "./protocol.js";
+import {
+  createCloudflareProvider,
+  CLOUDFLARE_THEME_PLAN,
+} from "./cloudflareProvider.js";
 export const AUTHORITY_NAME = "css-studio-global-v1";
 export class QuotaAuthority {
   constructor(ctx) {
@@ -45,15 +49,26 @@ export function quotaClient(namespace) {
     snapshot: (value) => call("snapshot", value),
   };
 }
-// Intentionally no AI binding, provider adapter, model selection or enable environment flag.
-// Account eligibility, cost bounds and media ownership must be verified before adding a live plan.
+// Public requests remain unavailable. The private canary is for bounded evaluation
+// through the same identity, admission, durable accounting and validation path.
+// A generic enable flag cannot expose inference to visitors.
 export default {
   fetch(request, env) {
+    const canary =
+      typeof env.CANARY_SECRET === "string" &&
+      /^[0-9a-f]{64}$/.test(env.CANARY_SECRET) &&
+      request.headers.get("X-CSS-Studio-Canary") === env.CANARY_SECRET;
     return createApp({
       origin: env.APP_ORIGIN,
       endpointOrigin: env.ENDPOINT_ORIGIN || env.APP_ORIGIN,
       secret: env.IDENTITY_SECRET,
       ledger: env.QUOTA ? quotaClient(env.QUOTA) : undefined,
+      ...(canary
+        ? {
+            provider: createCloudflareProvider(env.AI),
+            policy: CLOUDFLARE_THEME_PLAN,
+          }
+        : {}),
     })(request);
   },
 };

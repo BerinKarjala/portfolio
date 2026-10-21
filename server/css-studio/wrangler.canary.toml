@@ -1,0 +1,23 @@
+# Private evaluation only. A secret header is required for all inference routes.
+name = "css-studio-ai"
+account_id = "d33da711f0acb00005de85f10c11ab0f"
+main = "worker.js"
+compatibility_date = "2026-07-01"
+workers_dev = true
+preview_urls = false
+keep_vars = true
+
+[vars]
+APP_ORIGIN = "https://berinkarjala.netlify.app"
+ENDPOINT_ORIGIN = "https://css-studio-ai.berin-karjala.workers.dev"
+
+[ai]
+binding = "AI"
+
+[[durable_objects.bindings]]
+name = "QUOTA"
+class_name = "QuotaAuthority"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["QuotaAuthority"]

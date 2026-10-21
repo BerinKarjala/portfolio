@@ -1,4 +1,4 @@
-import { DesignerError } from "./httpDesigner";
+import { connectHttpDesigner, DesignerError } from "./httpDesigner";
 import {
   lazy,
   Suspense,
@@ -43,9 +43,17 @@ const Examples = lazy(() => import("./Examples"));
 const StudioContext = createContext(null);
 export function StudioProvider({
   children,
-  designer = unavailableDesigner,
+  designer: suppliedDesigner,
+  connectDesigner = false,
   imageCache,
 }) {
+  const [connectedDesigner, setConnectedDesigner] =
+    useState(unavailableDesigner);
+  const designer = suppliedDesigner ?? connectedDesigner;
+  const operations = designer.operations ?? ["theme", "image", "refine"];
+  const supports = (operation) =>
+    designer.available && operations.includes(operation);
+  const connection = useRef(null);
   const [loaded] = useState(() => {
     try {
       return readPreferences(window.localStorage);
@@ -76,6 +84,16 @@ export function StudioProvider({
     : null;
   const [warning, setWarning] = useState(loaded.warning);
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open || !connectDesigner || suppliedDesigner || connection.current)
+      return;
+    const controller = new AbortController();
+    connection.current = controller;
+    void connectHttpDesigner({ signal: controller.signal }).then((remote) => {
+      if (!controller.signal.aborted) setConnectedDesigner(remote);
+    });
+  }, [open, connectDesigner, suppliedDesigner]);
+  useEffect(() => () => connection.current?.abort(), []);
   const [left, setLeft] = useState(true);
   const [right, setRight] = useState(false);
   const [narrow, setNarrow] = useState(
@@ -209,7 +227,7 @@ export function StudioProvider({
     }
   }
   async function send() {
-    if (!designer.available || pending) return;
+    if (!supports(operation) || pending) return;
     let request;
     try {
       request = makeRequest(preferences, draft, history, undefined, {
@@ -657,13 +675,19 @@ export function StudioProvider({
               <select
                 value={operation}
                 onChange={(e) => setOperation(e.target.value)}
-                disabled={pending}
+                disabled={pending || !designer.available}
               >
-                <option value="theme">Theme styling</option>
-                <option value="image">Generate background</option>
+                <option value="theme" disabled={!supports("theme")}>
+                  Theme styling
+                </option>
+                <option value="image" disabled={!supports("image")}>
+                  Generate background
+                </option>
                 <option
                   value="refine"
-                  disabled={!isGeneratedId(currentGeneratedId)}
+                  disabled={
+                    !supports("refine") || !isGeneratedId(currentGeneratedId)
+                  }
                 >
                   Refine selected background
                 </option>
@@ -682,7 +706,10 @@ export function StudioProvider({
             <Voice draft={draft} setDraft={setDraft} />
             <button
               disabled={
-                !designer.available || pending || savingPreview || !draft.trim()
+                !supports(operation) ||
+                pending ||
+                savingPreview ||
+                !draft.trim()
               }
               onClick={send}
             >
