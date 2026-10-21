@@ -1,0 +1,42 @@
+name: CSS Studio image model contract
+
+on:
+  push:
+    branches: [css-studio-image-contract]
+    paths:
+      - .github/workflows/css-studio-image-contract.yml
+      - scripts/check-css-studio-image-contract.mjs
+      - scripts/check-css-studio-image-contract.test.mjs
+      - src/shared/studioTransfer.js
+      - .nvmrc
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: css-studio-image-contract
+  cancel-in-progress: true
+
+jobs:
+  public-image-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Test metadata-only retrieval and redaction
+        run: node --test scripts/check-css-studio-image-contract.test.mjs
+      - name: Read public image schema and safe Worker binding metadata
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: node scripts/check-css-studio-image-contract.mjs
+      - name: Retain complete public image contract and readiness flags
+        uses: actions/upload-artifact@v4
+        with:
+          name: css-studio-image-model-contract
+          path: artifacts/css-studio-image-contract/flux-2-klein-4b-contract.json
+          if-no-files-found: error
+          retention-days: 7
