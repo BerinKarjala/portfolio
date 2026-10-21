@@ -382,3 +382,29 @@ Read-only metadata run 39559393158, source `62537f8` on the separate
 after seven guard tests. The snapshot is retained with the canary evidence. It
 still does not establish a total billable reasoning/output bound, so GPT remains
 disabled; this follow-up made no inference, deployment or quota changes.
+
+## Browser CI follow-up
+
+Draft [PR #245](https://github.com/BerinKarjala/portfolio/pull/245) now holds the
+feature and a Netlify deploy preview. Server CI passed at `843a2da`. Broader run
+39559699491 passed 212 browser checks but exposed five failures and two flaky
+Studio checks: a local-only screenshot path, WebKit's response-backed fixture
+Blob persistence, a delayed media-query drawer race, and a traversal exceeding
+the default 30-second scenario budget. The initial failure remains recorded;
+passing local Chromium checks did not establish cross-browser acceptance.
+
+Source `748a7d7` moves screenshots to each test's output directory, materializes
+network fixture bytes before direct database seeding, gives the complete
+appearance traversal a 90-second budget without changing its assertions, and
+reads the current media query when toggling phone drawers. The delayed-query
+regression failed before the product fix and passes after it. Product image
+storage is unchanged; a new focused CI matrix independently exercises its real
+IndexedDB/decoder paths in Chromium, Firefox and WebKit with zero retries. Its
+current results are retained in the PR checks, with separate artifacts per engine.
+
+Latest main `9e98f13` was merged into the feature before this follow-up. Local
+verification at `748a7d7`: 285 tests across 46 files, production build (381 modules),
+requirements/trace gates and build budgets pass. Four targeted Chromium cases
+cover generated-image restoration/history and the appearance traversal. The
+private Worker remains at its verified deployment source; no further inference,
+quota mutation or public activation was performed for these frontend fixes.
