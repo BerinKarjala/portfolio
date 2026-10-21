@@ -319,8 +319,6 @@ async function seedGeneratedImages(
       async function raster(path) {
         const response = await fetch(path);
         if (!response.ok) throw Error("Could not load the raster fixture");
-        // Materialize network bytes before IDB, as the bounded production transport does.
-        // WebKit cannot reliably persist a response-backed Blob directly.
         return new Blob([await response.arrayBuffer()], {
           type: response.headers.get("content-type") || "image/webp",
         });
@@ -354,17 +352,16 @@ async function seedGeneratedImages(
           const decoded = await createImageBitmap(media);
           const dimensions = { width: decoded.width, height: decoded.height };
           decoded.close();
+          const blobData = await media.arrayBuffer();
           const digest = [
-            ...new Uint8Array(
-              await crypto.subtle.digest("SHA-256", await media.arrayBuffer()),
-            ),
+            ...new Uint8Array(await crypto.subtle.digest("SHA-256", blobData)),
           ]
             .map((v) => v.toString(16).padStart(2, "0"))
             .join("");
           return {
             schemaVersion: 1,
             id: ids[index],
-            blob: media,
+            blobData,
             mime: media.type,
             bytes: media.size,
             ...dimensions,

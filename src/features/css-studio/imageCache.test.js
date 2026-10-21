@@ -1,6 +1,10 @@
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
-import { createImageCache, memoryImageBackend } from "./imageCache";
+import {
+  createImageCache,
+  imageMetadata,
+  memoryImageBackend,
+} from "./imageCache";
 const bytes = readFileSync(
   new URL(
     "../../../public/css-studio/images/spring/spring-01-woodland.webp",
@@ -161,4 +165,66 @@ it("preserves opaque refinement receipts across cache instances and rejects malf
     cache(backend).save({ blob: blob(), context, receipt: "invalid" }),
   ).rejects.toThrow();
   expect(await cache(backend).list()).toHaveLength(1);
+});
+
+it("restores legacy Blob-only records without exposing image bytes in metadata", async () => {
+  const backend = memoryImageBackend();
+  const saved = await cache(backend).save({ blob: blob(), context });
+  await backend.transact(() => ({
+    puts: [{ ...saved, blob: blob() }],
+  }));
+  const images = cache(backend);
+  const restored = await images.get(saved.id);
+  expect(new Uint8Array(await restored.blob.arrayBuffer())).toEqual(
+    new Uint8Array(bytes),
+  );
+  expect(restored.sha256).toBe(saved.sha256);
+  expect(await images.list()).toEqual([imageMetadata(restored)]);
+  expect(
+    imageMetadata({ ...restored, blobData: bytes.buffer }),
+  ).not.toHaveProperty("blobData");
+});
+
+it("does not resurrect an image evicted while its bytes are being validated", async () => {
+  const backend = memoryImageBackend();
+  const saved = await cache(backend).save({ blob: blob(), context });
+  let release, started;
+  const waiting = new Promise((resolve) => (started = resolve));
+  const paused = new Promise((resolve) => (release = resolve));
+  const images = cache(backend, {
+    inspect: async () => {
+      started();
+      await paused;
+      return { width: 1600, height: 1067 };
+    },
+  });
+  const reading = images.get(saved.id);
+  await waiting;
+  await backend.transact(() => ({ deletes: [saved.id] }));
+  release();
+  expect((await reading).sha256).toBe(saved.sha256);
+  expect(await images.list()).toEqual([]);
+});
+
+it("does not delete a changed record when an earlier validation fails", async () => {
+  const backend = memoryImageBackend();
+  const saved = await cache(backend).save({ blob: blob(), context });
+  let release, started;
+  const waiting = new Promise((resolve) => (started = resolve));
+  const paused = new Promise((resolve) => (release = resolve));
+  const images = cache(backend, {
+    inspect: async () => {
+      started();
+      await paused;
+      throw Error("Invalid earlier image");
+    },
+  });
+  const reading = images.get(saved.id);
+  await waiting;
+  await backend.transact(() => ({
+    puts: [{ ...saved, context: { ...context, id: "winter" } }],
+  }));
+  release();
+  expect(await reading).toBeNull();
+  expect((await cache(backend).get(saved.id)).context.id).toBe("winter");
 });

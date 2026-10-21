@@ -29,14 +29,37 @@ test("actual IndexedDB image bytes survive reload and protect selected images du
       { blob, context },
       { pinnedIds: () => [first.id] },
     );
+    const raw = await new Promise((resolve, reject) => {
+      const request = indexedDB.open("css-studio-images", 1);
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result;
+        const read = db
+          .transaction("images")
+          .objectStore("images")
+          .get(first.id);
+        read.onsuccess = () => resolve(read.result);
+        read.onerror = () => reject(read.error);
+        read.transaction.oncomplete = () => db.close();
+      };
+    });
     return {
       first: first.id,
       second: second.id,
       third: third.id,
       sha256: first.sha256,
       bytes: first.bytes,
+      persistent: cache.status().persistent,
+      portable:
+        raw?.blobData instanceof ArrayBuffer && !Object.hasOwn(raw, "blob"),
+      metadataOnly: (await cache.list()).every(
+        (row) => !Object.hasOwn(row, "blob") && !Object.hasOwn(row, "blobData"),
+      ),
     };
   });
+  expect(saved.persistent).toBe(true);
+  expect(saved.portable).toBe(true);
+  expect(saved.metadataOnly).toBe(true);
   await page.reload();
   const restored = await page.evaluate(async ({ first, second }) => {
     const { createImageCache } =
@@ -112,6 +135,72 @@ test("browser decoders validate supported raster formats and corrupt stored byte
   expect(result.count).toBe(2);
 });
 
+test("malformed portable records are pruned without losing valid persistent images", async ({
+  page,
+}) => {
+  const result = await page.evaluate(async () => {
+    const { createImageCache } =
+      await import("/src/features/css-studio/imageCache.js");
+    const cache = createImageCache();
+    const blob = await (
+      await fetch("/css-studio/images/spring/spring-01-woodland.webp")
+    ).blob();
+    const saved = await cache.save({
+      blob,
+      context: {
+        family: "seasons",
+        id: "spring",
+        mode: "light",
+        contrast: false,
+      },
+    });
+    const { blob: image, ...metadata } = saved;
+    const malformed = [
+      { blobData: new ArrayBuffer(1) },
+      {
+        blobData: new ArrayBuffer(4 * 1024 * 1024 + 1),
+        bytes: 4 * 1024 * 1024 + 1,
+      },
+      { blobData: await image.arrayBuffer(), mime: "image/svg+xml" },
+    ].map((fields) => ({
+      ...metadata,
+      ...fields,
+      id: `generated-${crypto.randomUUID()}`,
+    }));
+    await new Promise((resolve, reject) => {
+      const request = indexedDB.open("css-studio-images", 1);
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result;
+        const tx = db.transaction("images", "readwrite");
+        for (const row of malformed) tx.objectStore("images").put(row);
+        tx.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+        tx.onabort = () => reject(tx.error);
+      };
+    });
+    const rows = await cache.list();
+    const fresh = createImageCache();
+    return {
+      ids: rows.map((row) => row.id),
+      expected: saved.id,
+      freshIds: (await fresh.list()).map((row) => row.id),
+      persistent: cache.status().persistent && fresh.status().persistent,
+      warning: cache.status().warning,
+      metadataOnly: rows.every(
+        (row) => !Object.hasOwn(row, "blob") && !Object.hasOwn(row, "blobData"),
+      ),
+    };
+  });
+  expect(result.ids).toEqual([result.expected]);
+  expect(result.freshIds).toEqual([result.expected]);
+  expect(result.persistent).toBe(true);
+  expect(result.warning).toMatch(/damaged|unavailable/);
+  expect(result.metadataOnly).toBe(true);
+});
+
 test("denied browser storage retains bounded visit-only bytes without localStorage image data", async ({
   page,
 }) => {
@@ -183,12 +272,13 @@ test("independent cache clients serialize their read-modify-write transactions",
       a.save({ blob, context }, { pinnedIds: [first.id] }),
       b.save({ blob, context }, { pinnedIds: [first.id] }),
     ]);
-    const ids = (await a.list()).map((row) => row.id);
+    const ids = (await createImageCache().list()).map((row) => row.id);
     return {
+      persistent: a.status().persistent && b.status().persistent,
       count: ids.length,
       first: ids.includes(first.id),
       later: ids.filter((id) => id === second.id || id === third.id).length,
     };
   });
-  expect(result).toEqual({ count: 2, first: true, later: 1 });
+  expect(result).toEqual({ persistent: true, count: 2, first: true, later: 1 });
 });

@@ -1,6 +1,6 @@
-import { isMediaReceipt } from "../../shared/studioTransfer.js";
+import { isMediaReceipt, MEDIA_LIMIT } from "../../shared/studioTransfer.js";
 import { SEASONS, HOLIDAYS } from "./theme";
-import { isGeneratedId, imageBlobAllowed } from "./imageIds";
+import { isGeneratedId, imageBlobAllowed, IMAGE_TYPES } from "./imageIds";
 import { inspectImage, validateImage } from "./imageMedia";
 export const IMAGE_DB = "css-studio-images";
 export const IMAGE_STORE = "images";
@@ -9,6 +9,39 @@ export const IMAGE_LIMITS = Object.freeze({
   maxBytes: 96 * 1024 * 1024,
 });
 export class CacheLimitError extends Error {}
+// Keep portable storage bytes outside public records and prepare them before a
+// transaction starts; IndexedDB planners must stay synchronous and atomic.
+const blobBytes = new WeakMap();
+async function ownedBlob(blob) {
+  if (blobBytes.has(blob)) return blob;
+  const bytes = await blob.arrayBuffer();
+  if (bytes.byteLength !== blob.size || bytes.byteLength > MEDIA_LIMIT)
+    throw Error("Invalid image size");
+  const owned = new Blob([bytes], { type: blob.type });
+  blobBytes.set(owned, bytes);
+  return owned;
+}
+function storedRecord(record) {
+  const bytes = record?.blob && blobBytes.get(record.blob);
+  if (!bytes) return record;
+  const { blob, blobData, ...metadata } = record;
+  return { ...metadata, blobData: bytes };
+}
+function hydratedRecord(record) {
+  if (!record || !Object.hasOwn(record, "blobData")) return record;
+  const { blobData, blob, ...metadata } = record;
+  if (
+    !(blobData instanceof ArrayBuffer) ||
+    blobData.byteLength !== metadata.bytes ||
+    blobData.byteLength < 1 ||
+    blobData.byteLength > MEDIA_LIMIT ||
+    !Object.hasOwn(IMAGE_TYPES, metadata.mime)
+  )
+    return metadata;
+  const restored = new Blob([blobData], { type: metadata.mime });
+  blobBytes.set(restored, blobData);
+  return { ...metadata, blob: restored };
+}
 function contextValid(c) {
   return (
     c &&
@@ -40,8 +73,28 @@ function metadataValid(r) {
     (r.receipt === undefined || isMediaReceipt(r.receipt))
   );
 }
+function sameImage(a, b) {
+  return (
+    a &&
+    b &&
+    [
+      "id",
+      "sha256",
+      "mime",
+      "bytes",
+      "width",
+      "height",
+      "createdAt",
+      "parentId",
+      "receipt",
+    ].every((key) => a[key] === b[key]) &&
+    ["family", "id", "mode", "contrast"].every(
+      (key) => a.context?.[key] === b.context?.[key],
+    )
+  );
+}
 export function imageMetadata(record) {
-  const { blob, ...metadata } = record;
+  const { blob, blobData, ...metadata } = record;
   return metadata;
 }
 function applyPlan(rows, plan) {
@@ -119,11 +172,13 @@ export function indexedImageBackend(factory) {
         const read = store.getAll();
         read.onsuccess = () => {
           try {
-            const plan = operation(read.result);
-            records = applyPlan(read.result, plan);
+            const rows = read.result.map(hydratedRecord);
+            const plan = operation(rows);
+            records = applyPlan(rows, plan);
             result = plan.result;
             for (const id of plan.deletes || []) store.delete(id);
-            for (const record of plan.puts || []) store.put(record);
+            for (const record of plan.puts || [])
+              store.put(storedRecord(record));
           } catch (error) {
             operationError = error;
             tx.abort();
@@ -192,6 +247,7 @@ export function createImageCache(
         (receipt !== undefined && !isMediaReceipt(receipt))
       )
         throw Error("Unsupported generated image");
+      blob = await ownedBlob(blob);
       const { sha256, ...dimensions } = await validateImage(blob, inspect);
       const record = {
         schemaVersion: 1,
@@ -264,27 +320,44 @@ export function createImageCache(
         const found = valid.find((r) => r.id === id);
         return {
           deletes: rows.filter((r) => !metadataValid(r)).map((r) => r.id),
-          puts: found ? [{ ...found, lastUsedAt: now() }] : [],
           result: found || null,
         };
       });
       if (!record) return null;
       try {
-        const { sha256, ...dimensions } = await validateImage(
-          record.blob,
-          inspect,
-        );
+        const blob = await ownedBlob(record.blob);
+        const { sha256, ...dimensions } = await validateImage(blob, inspect);
         if (
           sha256 !== record.sha256 ||
           dimensions.width !== record.width ||
           dimensions.height !== record.height
         )
           throw Error("Damaged image");
-        return record;
+        // A legacy Blob row needs its bytes prepared before its timestamp touch.
+        // Re-read inside the write transaction so a concurrent eviction or
+        // changed record cannot be overwritten by this earlier snapshot.
+        await run((rows) => {
+          const current = validRows(rows).find((row) => row.id === id);
+          return {
+            puts: sameImage(current, record)
+              ? [{ ...current, blob, lastUsedAt: now() }]
+              : [],
+            result: null,
+          };
+        });
+        return { ...record, blob };
       } catch {
         warning =
           "A saved generated image is damaged or unavailable. A curated fallback remains available.";
-        await run(() => ({ deletes: [id], result: null }));
+        await run((rows) => ({
+          deletes: sameImage(
+            rows.find((row) => row.id === id),
+            record,
+          )
+            ? [id]
+            : [],
+          result: null,
+        }));
         return null;
       }
     },
