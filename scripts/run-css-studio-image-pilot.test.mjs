@@ -248,6 +248,54 @@ it("checks public availability even if the private post-status fails and reports
     expect(f.write.mock.calls[0][0].image).toBeUndefined();
   }
 });
+it("reads a halted ledger in status-only mode without proposal, trace or inference browser proof", async () => {
+  const f = await fixture(),
+    original = f.fetch.getMockImplementation();
+  f.fetch.mockImplementation(async (url, options) => {
+    const response = await original(url, options);
+    if (
+      url.endsWith("status") &&
+      new Headers(options.headers).has("X-CSS-Studio-Canary")
+    )
+      return Response.json(
+        {
+          ...(await response.json()),
+          available: false,
+          operations: [],
+          sharedRemaining: 1500,
+          imageTransformsRemaining: 4999,
+        },
+        { headers: { "Cache-Control": "no-store" } },
+      );
+    return response;
+  });
+  const record = await runPrivateImagePilot({ secret, ...f, statusOnly: true });
+  expect(record).toMatchObject({
+    mode: "status-only",
+    proposalRequests: 0,
+    available: false,
+    sharedRemaining: 1500,
+    imageTransformsRemaining: 4999,
+    publicInferenceEnabled: false,
+  });
+  expect(f.trace).not.toHaveBeenCalled();
+  expect(f.fetch.mock.calls.some(([url]) => url.endsWith("propose"))).toBe(
+    false,
+  );
+  const proxy = vi.fn(),
+    pilot = vi.fn(async () => record);
+  await deployImagePilot({
+    token: "test-token",
+    statusOnly: true,
+    deploy: async ({ check }) => check({ secret }),
+    proxy,
+    pilot,
+  });
+  expect(proxy).not.toHaveBeenCalled();
+  expect(pilot).toHaveBeenCalledWith(
+    expect.objectContaining({ statusOnly: true }),
+  );
+});
 it("requires browser proof and rejects callback reentry before a second proposal", async () => {
   const pilot = vi.fn();
   await expect(

@@ -26,8 +26,13 @@ production decoding/CPU behavior remain unverified. The later plan review reuses
 the owner's complete subscription screenshot and Cloudflare's default-Free rule;
 the 0/5,000 Zones counter alone cannot establish plan or binding headroom.
 The Worker now selects images only behind the existing secret and an exact
-private image header. One quota-accounted pilot is prepared, with native base64
-decoding, bounded JPEG inspection and optional request-correlated CPU telemetry.
+private image header. The single quota-accounted pilot returned HTTP 504 without
+verified image completion. It retained 500 Neurons and one transformation, leaving
+1,500 shared Neurons and 4,999 monthly application reservations. Public inference
+stayed off. A verified telemetry shutdown fix and an inference-free private quota
+inspection are implemented; the failure is not reported as a successful image
+generation or a CPU measurement. Native base64 decoding and bounded JPEG
+inspection passed local/runtime tests.
 See [the private pilot](private-image-pilot.md), [the implementation](image-adapter.md) and
 [runtime evidence and activation limits](image-runtime-verification.md).
 Earlier increment

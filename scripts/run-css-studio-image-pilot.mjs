@@ -33,7 +33,10 @@ async function writeArtifact({ record, image }) {
   await mkdir(DIRECTORY, { recursive: true });
   if (image) await writeFile(new URL("background.png", DIRECTORY), image);
   await writeFile(
-    new URL("result.json", DIRECTORY),
+    new URL(
+      record.mode === "status-only" ? "status.json" : "result.json",
+      DIRECTORY,
+    ),
     JSON.stringify(record, null, 2) + "\n",
   );
 }
@@ -66,6 +69,7 @@ function snapshot(value) {
 export async function runPrivateImagePilot({
   secret,
   traceToken,
+  statusOnly = false,
   fetch = globalThis.fetch,
   now = Date.now,
   makeId = randomUUID,
@@ -144,6 +148,28 @@ export async function runPrivateImagePilot({
   );
   cookie = cookies[0].split(";")[0];
   const before = await status();
+  if (statusOnly === true) {
+    await publicOff();
+    const record = {
+      mode: "status-only",
+      observedAt: new Date(now()).toISOString(),
+      proposalRequests: 0,
+      available: before.available,
+      day: before.day,
+      sharedRemaining: before.sharedRemaining,
+      imageTransformsRemaining: before.imageTransformsRemaining,
+      remainingPrompts: before.remaining.prompts,
+      remainingImages: before.remaining.images,
+      publicInferenceEnabled: false,
+      cpuMeasured: false,
+    };
+    await write({ record });
+    log(JSON.stringify(record));
+    log(
+      "PASS: Private image quota inspected without a proposal or model call.",
+    );
+    return record;
+  }
   ensure(
     before.available &&
       before.day === day &&
@@ -316,12 +342,15 @@ export async function deployImagePilot({
   deploy = deployProxyCheck,
   proxy = runProxyCheck,
   pilot = runPrivateImagePilot,
+  statusOnly = false,
   ...options
 } = {}) {
   return deploy({
     token,
     ...options,
     check: async (context) => {
+      if (statusOnly === true)
+        return pilot({ ...context, traceToken: token, statusOnly: true });
       const before = await proxy(context);
       ensure(
         before?.session === true &&
@@ -337,7 +366,12 @@ if (
   import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
   try {
-    await deployImagePilot();
+    const args = process.argv.slice(2);
+    ensure(
+      args.length === 0 || (args.length === 1 && args[0] === "--status-only"),
+      "Unknown private pilot mode; no deployment or proposal was started.",
+    );
+    await deployImagePilot({ statusOnly: args[0] === "--status-only" });
   } catch (error) {
     console.error(
       error instanceof ImagePilotError

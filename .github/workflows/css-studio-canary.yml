@@ -14,7 +14,7 @@ on:
       check:
         description: "Private check (image makes one 500-Neuron/one-transform request)"
         type: choice
-        options: [proxy, image-info, image, theme]
+        options: [proxy, image-info, image-status, image, theme]
         default: proxy
 permissions:
   contents: read
@@ -63,6 +63,12 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           WRANGLER_SEND_METRICS: "false"
+      - name: Inspect private image quota without inference
+        if: github.event_name == 'workflow_dispatch' && inputs.check == 'image-status'
+        run: node scripts/run-css-studio-image-pilot.mjs --status-only
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WRANGLER_SEND_METRICS: "false"
       - name: Retain public model-schema contract only
         if: always()
         uses: actions/upload-artifact@v4
@@ -78,6 +84,7 @@ jobs:
           name: css-studio-image-pilot
           path: |
             artifacts/css-studio-image-pilot/result.json
+            artifacts/css-studio-image-pilot/status.json
             artifacts/css-studio-image-pilot/background.png
           if-no-files-found: ignore
           retention-days: 7
