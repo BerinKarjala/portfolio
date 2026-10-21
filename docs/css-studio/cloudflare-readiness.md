@@ -1,5 +1,35 @@
 # Cloudflare readiness observations
 
+## Account setup verified October 21, 2026
+
+The user confirmed the account ID and Worker URL as text and supplied a dashboard
+screenshot showing Workers Free active without a payment method. The user created
+the starter Worker at `https://css-studio-ai.berin-karjala.workers.dev` and its AI
+binding. This is the dashboard starter, not the CSS Studio server implementation.
+
+[GitHub Actions run 39552385317](https://github.com/BerinKarjala/portfolio/actions/runs/39552385317)
+passed at workflow source `7e8a487`. The read-only check verified the repository
+secret's token status and validity dates, read the Worker's settings and confirmed
+the `AI` binding, and read Workers AI model metadata without inference. The helper
+workflow is on `css-studio-token-check`, proposed in draft PR #241. It rejects
+redirects, bounds response sizes and duration, and prints no credentials or raw
+responses. Twenty simulated success/failure scenarios also passed locally.
+
+A future TTL start date caused the earlier authorization failures; the user
+corrected it. Token permission edits preserve its value; rolling replaces it and
+requires updating the GitHub secret. The credential is held by GitHub Actions,
+not by the managed development environment.
+
+This verifies read access, not deployment/write permission, live model execution,
+Neuron accounting, Durable Object account eligibility or a zero-cost operational
+budget. No CSS Studio code, proxy or quota authority has been deployed, and no
+model was executed. The app and production Worker source remain unavailable by
+default. Fixed model/cost plans, actual raster decoding, supporting-service limits,
+quota provisioning and the same-origin proxy still need verification before live
+activation.
+
+## Documentation baseline from October 20, 2026
+
 Observed October 20, 2026. Official documentation source was read from Cloudflare's
 public cloudflare-docs repository `production` branch through raw.githubusercontent.com.
 The published pages below are the corresponding official references. This is a

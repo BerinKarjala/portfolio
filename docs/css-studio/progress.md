@@ -316,3 +316,14 @@ provider. See [owned-media.md](owned-media.md) for the new contract and limits.
 Chromium regression checks also pass: 17 production Studio tests (including
 responsive layouts from phone through 4K) and four actual browser image-storage
 and raster-decoder checks. No external inference was performed.
+
+## Cloudflare credential readiness, October 21, 2026
+
+The user created the Cloudflare starter Worker and `AI` binding, confirmed its
+account ID/URL as text, and provided Workers Free account evidence. Read-only
+GitHub Actions run 39552385317 passes token validity dates, Worker settings/binding
+and AI catalogue access. Earlier failures were caused by the token's future TTL
+start date, which the user corrected. The helper remains in a separate branch and
+draft PR #241; no feature merge or CSS Studio deployment occurred. Twenty local
+simulated verification paths pass. See cloudflare-readiness.md for exact evidence
+and the remaining live-provider, cost, decoder, durable quota and proxy gates.
