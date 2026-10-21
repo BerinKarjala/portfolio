@@ -54,6 +54,27 @@ function requireCheck(condition, message) {
   if (!condition) throw new ProxyCheckError(message);
 }
 
+// Only these bounded scalars may leave the session response. Bodies, cookie
+// values and native browser messages can contain private credentials.
+function sessionDiagnostics(issued) {
+  const status =
+    Number.isInteger(issued.status) &&
+    issued.status >= 100 &&
+    issued.status <= 599
+      ? issued.status
+      : "unknown";
+  const available =
+    issued.value?.available === true
+      ? "true"
+      : issued.value?.available === false
+        ? "false"
+        : "missing";
+  const cookieCount = Array.isArray(issued.cookies)
+    ? issued.cookies.length
+    : "unknown";
+  return `httpStatus=${status}; available=${available}; setCookieCount=${cookieCount}`;
+}
+
 // No credentials are needed to classify requests. No forwarded host is trusted.
 export function classifyProxyRequest({
   url,
@@ -437,7 +458,7 @@ async function inspectProxy(
       issued.status === 200 &&
         issued.value?.available === true &&
         issued.cookies.length === 1,
-      "Private proxy session could not be opened.",
+      `Private proxy session could not be opened. [${sessionDiagnostics(issued)}]`,
     );
     stage = "cookie-attributes";
     const header = issued.cookies[0];

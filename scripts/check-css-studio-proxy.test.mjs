@@ -100,6 +100,7 @@ function fixture({
   launchFailure,
   navigationFailure,
   evaluationFailure,
+  sessionResponse,
 } = {}) {
   const logs = [],
     publicRequests = [],
@@ -257,6 +258,7 @@ function fixture({
                     : cookieHeader,
                 ]
               : [],
+          ...(sessions === 1 ? sessionResponse : {}),
         };
       }
       return routed(
@@ -383,6 +385,60 @@ test("verifies browser cookie round-trip and cross-origin rejection without prop
       assert.ok(r.url.startsWith(PROXY_PREVIEW + "/api/css-studio/"));
   assert.ok(!f.logs.join("\n").includes(secret));
   assert.ok(!f.logs.join("\n").includes(cookieValue));
+});
+
+test("reports only the failed session HTTP status, available flag and cookie count", async () => {
+  for (const [sessionResponse, expected] of [
+    [
+      { status: 403, value: { error: secret + cookieValue }, cookies: [] },
+      "httpStatus=403; available=missing; setCookieCount=0",
+    ],
+    [
+      {
+        status: 503,
+        value: { available: false, private: secret },
+        cookies: [],
+      },
+      "httpStatus=503; available=false; setCookieCount=0",
+    ],
+    [
+      { status: 200, value: { available: true }, cookies: [] },
+      "httpStatus=200; available=true; setCookieCount=0",
+    ],
+    [
+      {
+        status: 200,
+        value: { available: true },
+        cookies: [cookieHeader, secret],
+      },
+      "httpStatus=200; available=true; setCookieCount=2",
+    ],
+    [
+      { status: 200, value: { available: secret }, cookies: [cookieHeader] },
+      "httpStatus=200; available=missing; setCookieCount=1",
+    ],
+    [
+      { status: secret, value: { available: true }, cookies: [cookieHeader] },
+      "httpStatus=unknown; available=true; setCookieCount=1",
+    ],
+  ]) {
+    const f = fixture({ sessionResponse });
+    await assert.rejects(runProxyCheck(f.options), (error) => {
+      assert.ok(error instanceof ProxyCheckError);
+      assert.ok(error.message.includes(expected), error.message);
+      assert.ok(error.message.includes("stage=open-session"));
+      assert.ok(!error.message.includes(secret));
+      assert.ok(!error.message.includes(cookieValue));
+      return true;
+    });
+    assert.ok(f.isClosed());
+    assert.equal(
+      f.browserRequests.filter((request) => request.method === "POST").length,
+      1,
+    );
+    assert.ok(!f.logs.join("\n").includes(secret));
+    assert.ok(!f.logs.join("\n").includes(cookieValue));
+  }
 });
 
 test("accepts an observed cookie-free 403 when the browser blocks its opaque response", async () => {
