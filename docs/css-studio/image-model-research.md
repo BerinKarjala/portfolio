@@ -1,9 +1,10 @@
 # Image model research — 2026-10-21
 
-This is a documentation review, not an image pilot. No image inference, account
-mutation, binding change, paid upgrade, or new API key was used. Live image and
-refinement gates remain closed. Account access, response decoding, runtime cost,
-and output quality still require separate verification.
+This review includes documentation and a completed metadata-only account check,
+not an image pilot. No image inference, account mutation, binding change, paid
+upgrade, or new API key was used. Live image and refinement gates remain closed.
+Runtime inference access, response decoding, runtime cost, and output quality
+still require separate verification.
 
 ## Candidate and current availability
 
@@ -23,7 +24,7 @@ and the remaining mention in the rate-limit table do not establish availability.
 
 | Model | Verified documentation | Remaining cost/capability limit |
 | --- | --- | --- |
-| `@cf/black-forest-labs/flux-2-klein-4b` | Dimensions, reference inputs, fixed four steps, explicit Neuron rates | Account metadata/access and actual raster output remain untested |
+| `@cf/black-forest-labs/flux-2-klein-4b` | Dimensions, reference inputs, fixed four steps, explicit Neuron rates; account metadata read succeeded | Runtime inference access and actual raster output remain untested |
 | `@cf/stabilityai/stable-diffusion-xl-base-1.0` | Width/height 256–2048, `image`/`image_b64`, `strength`, `num_steps` at most 20 | Model page displays `$0.00/step`; current pricing lacks a Neuron formula |
 | `@cf/bytedance/stable-diffusion-xl-lightning` | Similar generic image fields and dimensions | Same pricing ambiguity; generic fields alone do not validate editing behavior |
 | `@cf/runwayml/stable-diffusion-v1-5-inpainting` | Base-image/mask fields and dimensions | Same pricing ambiguity; mask workflow would need validation |
@@ -33,6 +34,31 @@ Sources for the older schemas: [SDXL Base](https://developers.cloudflare.com/wor
 [SDXL Lightning](https://developers.cloudflare.com/workers-ai/models/stable-diffusion-xl-lightning/),
 [SD1.5 Inpainting](https://developers.cloudflare.com/workers-ai/models/stable-diffusion-v1-5-inpainting/).
 The rounded `$0.00` display is not evidence that a request consumes zero Neurons.
+
+## Observed account metadata
+
+The [metadata-only workflow run](https://github.com/BerinKarjala/portfolio/actions/runs/39570908098)
+succeeded from [source commit `def91ad`](https://github.com/BerinKarjala/portfolio/commit/def91ad044c7c43b97278ce7fa328e34e152c53b)
+on `css-studio-image-contract`. Seven helper tests passed, followed by two fixed
+GETs: the Klein schema endpoint and the existing Worker's settings endpoint.
+The [retained artifact](flux-2-klein-schema-contract-2026-10-21.json) was observed
+at `2026-10-21T08:39:32.361Z`.
+
+The complete returned input schema requires `multipart`, with `body` typed as
+an object and `contentType` as a string. It does not describe the form's inner
+fields, image dimensions, reference limits, file sizes, MIME types, or steps.
+The output schema declares an `image` string described as base64, without a
+required-field list, MIME selector, byte ceiling, or raster-dimension guarantee.
+The nested limits below therefore remain supported by the published launch
+contract, not by a more specific account schema.
+
+Safe Worker flags show `AI` and `QUOTA` present with their expected binding types.
+`IMAGES` is absent, and no binding with type `images` exists under another name.
+The artifact explicitly retains `liveImageReady: false`,
+`inferencePerformed: false`, and `bindingChangesPerformed: false`. Schema
+retrieval demonstrates metadata permission; it does not demonstrate runtime
+inference eligibility, quota headroom, Images Free enrollment, or decoder
+operation. The helper does not read billing or model-run endpoints.
 
 ## Klein request contract
 
@@ -83,7 +109,8 @@ The current [Workers AI pricing page](https://developers.cloudflare.com/workers-
 and **26.05 per output 512×512 tile**. Unlike FLUX.2 Dev, these Klein rates have
 no per-step multiplier. Klein 4B is absent from the published paid-only list.
 Workers Free stops at its 10,000-Neuron daily allowance; the Studio's shared
-8,000 ceiling remains stricter. Actual model access in this account is untested.
+8,000 ceiling remains stricter. The metadata read succeeded, but runtime model
+access in this account is untested.
 
 For a 512×512 result and one 256×256 reference, the dimensions fit one output tile
 and one input tile. The corresponding published-rate calculation is 31.42
@@ -125,7 +152,8 @@ decode and re-encode. `.info()` is free, but metadata inspection alone is not
 the full decoding check. `.output()` requires an explicit format; `anim:false`
 requests a still image. A completed PNG transformation provides a stronger
 server-controlled normalization boundary than a header-only raster inspector.
-Binding availability and error behavior in this account still need verification.
+The observed Worker has no Images binding; decoder execution and account error
+behavior remain untested. No binding was added by the metadata check.
 
 The [limits and formats page](https://developers.cloudflare.com/images/get-started/limits/)
 lists PNG and JPEG inputs and PNG output. The binding's input ceiling is 20 MB.
@@ -163,18 +191,18 @@ an alternative only after its own resource limits are verified.
 
 ## Next evidence before an image pilot
 
-1. Use the metadata-only
+1. The metadata-only
    [model schema endpoint](https://developers.cloudflare.com/api/resources/ai/subresources/models/subresources/schema/methods/get/):
-   `GET /accounts/{account_id}/ai/models/schema?model=@cf/black-forest-labs/flux-2-klein-4b`.
-   Retain the complete public `input` and `output` definitions. The currently
-   reviewed model page exposes multipart as an opaque object, so nested numeric
-   limits above come from the launch contract rather than a retained account
-   schema. The existing canary deployment helper is not a read-only runner: it
-   performs secret/deployment writes after its schema read. Do not run it merely
-   to inspect image metadata.
+   `GET /accounts/{account_id}/ai/models/schema?model=@cf/black-forest-labs/flux-2-klein-4b`
+   has now been read, with complete public definitions retained above. The
+   dedicated helper at the linked source commit performs only the two fixed
+   metadata GETs. Future refreshes must use that isolated helper. The canary
+   deployment helper performs secret/deployment writes after its schema read
+   and must not be used merely to inspect image metadata.
 2. Read-only account status must establish Images Free, available monthly
    headroom, Worker/AI Free status, and compatible existing bindings. This review
-   did not read account billing or provision Images.
+   established the current binding flags only: `AI`/`QUOTA` available, no Images
+   binding. It did not read account billing or provision Images.
 3. Build offline fixtures for multipart serialization, one-image extraction,
    PNG normalization, owned-reference linkage, abort/failure accounting, and
    exhausted daily/monthly ledgers. Do not call AI in local-mode tests: the

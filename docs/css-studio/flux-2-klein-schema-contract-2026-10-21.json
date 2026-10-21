@@ -1,0 +1,61 @@
+{
+  "model": "@cf/black-forest-labs/flux-2-klein-4b",
+  "observedAt": "2026-10-21T08:39:32.361Z",
+  "schema": {
+    "input": {
+      "type": "object",
+      "properties": {
+        "multipart": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object"
+            },
+            "contentType": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "required": [
+        "multipart"
+      ]
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "Generated image as Base64 string."
+        }
+      }
+    }
+  },
+  "worker": {
+    "name": "css-studio-ai",
+    "bindings": {
+      "AI": {
+        "name": "AI",
+        "expectedType": "ai",
+        "present": true,
+        "available": true
+      },
+      "QUOTA": {
+        "name": "QUOTA",
+        "expectedType": "durable_object_namespace",
+        "present": true,
+        "available": true
+      },
+      "IMAGES": {
+        "name": "IMAGES",
+        "expectedType": "images",
+        "present": false,
+        "available": false
+      }
+    },
+    "anyImagesBinding": false
+  },
+  "liveImageReady": false,
+  "inferencePerformed": false,
+  "bindingChangesPerformed": false
+}

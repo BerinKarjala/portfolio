@@ -6,11 +6,19 @@ Updated: October 21, 2026 (America/New_York). Branch: `css-studio`.
 
 The manual Studio, supplied asset catalog, generated-image client workflows and
 durable server boundary are implemented. The private Llama text canary is deployed
-and passed two actual model requests with conservative quota accounting. Public
-inference and image/refinement remain disabled. Netlify proxy acceptance, broader
-model evaluation and public operational headroom remain open. Earlier increment
+and passed two actual model requests. One private GPT fixture then passed in
+827 ms; its retained 4,000 reservation leaves 2,000 shared Neurons on October 21
+UTC. Real preview identity/cookie reuse/reload passed. Public inference and
+image/refinement remain disabled. Live cross-site/production proxy acceptance,
+broader model evaluation and public operational headroom remain open. M5 fixes
+cover contrast, enlarged text/reflow and reduced motion; 21 local Chromium checks
+pass, with the strengthened three-engine follow-up pending in this record.
+Klein image metadata is verified; Images decoding is not bound or activated.
+Earlier increment
 sections below are chronological records; later entries supersede their status.
-See [private-text-canary.md](private-text-canary.md) for live evidence and limits.
+See [model evaluation](model-evaluation.md), [proxy evidence](private-proxy-verification.md)
+and [M5 verification](verification-m5.md) for evidence and limits. Reservations
+are not measured provider usage; no model winner is established.
 
 ## Baseline and source priority
 

@@ -1,8 +1,36 @@
-# Private text-model evaluation preflight
+# Private text-model evaluation
 
 October 21, 2026. This records the reviewed GPT-OSS cost bound and one-fixture
-evaluation plan. It contains no new GPT inference or live proxy result. Public
+evaluation plan and observed private integration result. Public
 inference and image/refinement remain unavailable; no model winner is selected.
+
+## Observed GPT and proxy identity result
+
+[Run 39575443574](https://github.com/BerinKarjala/portfolio/actions/runs/39575443574)
+passed from `f6b9633a0a0a4a364475cd42d1a928693bf93efe` on October 21 UTC:
+77 server/runner tests, three actual workerd checks, deployment preserving the
+existing identity secret and SQLite namespace, and real Chromium preview cookie
+issuance/reuse/reload all passed. The preview remained publicly unavailable.
+
+The runner then made exactly one direct private GPT Winter request. It returned
+validated tokens in **827 ms**, retained its full **4,000-Neuron** reservation,
+decremented its fresh session to nine prompts and left **2,000 shared Neurons**.
+No retry, image call, paid upgrade or accounting reset occurred. These are
+application-ledger reservations, not measured provider usage.
+
+The [safe artifact](gpt-winter-evaluation-2026-10-21.json) retains the fixed
+fixture's tokens and metrics only. Raw text/background contrast was 16.52:1.
+The returned palette exactly matches the system prompt's example; this verifies
+transport/schema compatibility, not independent design quality. The one-fixture
+latency observation does not establish a model winner.
+
+**Cross-site acceptance remains unverified.** Earlier full probes stopped at the
+foreign browser fetch before observing the request or an upstream rejection.
+They made no GPT calls. The successful private evaluation explicitly runs
+`runProxyIdentityCheck`, reports `crossOriginRejected: false`, and requires
+verified identity/cookies before inference. The separate full `runProxyCheck`
+still fails closed when it cannot prove the foreign rejection. This is not public
+activation approval; see [proxy evidence](private-proxy-verification.md).
 
 ## Observed baseline
 
@@ -83,8 +111,8 @@ model-reported usage to refund the reservation. Unsupported completed output
 retains the charge; timeout, interrupted/oversized transport or uncertain
 settlement retains it and closes admission for reviewed reconciliation.
 
-The prepared evaluation workflow first verifies the real preview's private
-session/status proxy and cookie behavior without inference. Only after that
+The private evaluation workflow first verifies the real preview's private
+session/status identity and cookie behavior without inference. Only after that
 preflight may it submit **at most one** fixed GPT Winter/dark/high-contrast
 fixture, identical to the earlier Llama Winter prompt. It opens a fresh anonymous
 session using the existing signing secret and `css-studio-global-v1` SQLite authority, with no namespace
@@ -97,10 +125,9 @@ be retained.
 
 The planned summary reports latency, schema/value validity, raw returned
 text/background contrast where both tokens exist, and the retained reservation.
-A single GPT fixture would add one integration observation; it would not complete
-the representative seasonal/holiday comparison or establish a winner. No new
-GPT call, latency, quota remainder or successful live proxy check is claimed in
-this preflight record.
+A single GPT fixture adds one integration observation; it does not complete
+the representative seasonal/holiday comparison or establish a winner. The
+observed result above supersedes the original preflight's pending status.
 
 Public activation still requires reviewed evaluation and actual proxy/operational
 evidence, plus Free supporting-service headroom. The 248-photo/cultural review,

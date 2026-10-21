@@ -7,10 +7,10 @@ endpoints only after Studio opens and retains manual tools on failure. Private
 evaluation requires a server-only credential; an environment enable flag cannot
 expose inference to visitors.
 
-The GPT-OSS adapter and its whole-context cost proof are preflight work. No new
-GPT execution or live proxy result is recorded here. See
-[model-evaluation.md](model-evaluation.md) for the exact private scope and
-[private-text-canary.md](private-text-canary.md) for the two observed Llama calls.
+Two private Llama calls and one GPT call passed. Real preview identity/cookie
+issuance, reuse and reload also passed; live cross-site acceptance remains open.
+See [model-evaluation.md](model-evaluation.md) and
+[proxy evidence](private-proxy-verification.md) for source-specific scope.
 
 ## Entry point and identity
 
@@ -28,7 +28,7 @@ a different, fixed Worker backend origin for the same-origin frontend proxy.
 The frontend calls relative `/api/css-studio/*` URLs; the proxy must preserve
 Origin, Cookie, Sec-Fetch-Site and Set-Cookie, and must not cache API responses.
 The Netlify rewrite precedes the SPA fallback. Actual preview proxy/cookie
-verification is planned separately; production proxy acceptance is not claimed.
+identity verification passed; live cross-site and production acceptance remain open.
 Direct cross-origin
 browser access is not offered; there are no CORS response headers. Forwarded-host
 headers are not trusted to choose an origin or upstream.
@@ -134,15 +134,14 @@ Miniflare 4.20260730.0 is pinned as a development-only dependency; existing lock
 package records/versions are unchanged. Native binaries are local test tooling,
 not browser bundles.
 
-The observed October 21 canary accepted the Free-account bindings and two Llama
-requests, retained 2,000 Neurons and reported 6,000 shared Neurons remaining. It
-does not establish measured billing, a model winner, public-traffic supporting
-headroom or new GPT/proxy results. The prepared evaluator verifies private proxy
-session/cookie behavior before admitting at most one fixed GPT Winter fixture
-through the same authority; it does not reset counters or retry inference.
+The observed October 21 canaries retained 2,000 Neurons for two Llama requests
+and 4,000 for one GPT request, leaving 2,000 shared Neurons. The private evaluator
+verified real preview identity/cookies first and reports cross-site acceptance
+as unverified. It did not reset counters or retry inference. These results do
+not establish measured billing, a model winner or public operational headroom.
 
 Public activation remains blocked on reviewed comparative results, actual
-same-origin proxy evidence, supporting-service headroom and operational review.
+cross-site and production proxy evidence, supporting-service headroom and operational review.
 Image/refinement additionally needs an approved editing contract, conservative
 costs, complete raster validation and Free Worker feasibility. Schnell's limits
 do not rule out every newer image model; current image research has made no live
