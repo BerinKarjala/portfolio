@@ -1,5 +1,6 @@
 import { test } from "vitest";
 import assert from "node:assert/strict";
+import { runInNewContext } from "node:vm";
 import {
   classifyProxyRequest,
   runProxyCheck,
@@ -88,6 +89,10 @@ function fixture({
   cookieDomain = false,
   transportFailure = false,
   crossCookie = false,
+  crossStatus = 403,
+  crossFetchRejects = false,
+  crossResponseCookie = false,
+  crossNoResponse = false,
   launchFailure,
   navigationFailure,
   evaluationFailure,
@@ -136,7 +141,15 @@ function fixture({
       headerValues: async (name) =>
         name === "set-cookie" ? result.cookies || [] : [],
     };
-    if (waiting?.predicate(response)) {
+    if (result.noResponse && waiting) {
+      const reject = waiting.reject;
+      waiting = null;
+      reject(
+        Object.assign(Error("Private fixture timeout"), {
+          name: "TimeoutError",
+        }),
+      );
+    } else if (waiting?.predicate(response)) {
       const resolve = waiting.resolve;
       waiting = null;
       resolve(response);
@@ -163,22 +176,39 @@ function fixture({
       return { request: () => req, status: () => 200 };
     },
     waitForResponse: (predicate) =>
-      new Promise((resolve) => {
-        waiting = { predicate, resolve };
+      new Promise((resolve, reject) => {
+        waiting = { predicate, resolve, reject };
       }),
     evaluate: async (_fn, args) => {
       if (evaluationFailure) throw evaluationFailure;
       if (args?.kind === "document-cookie") return "";
       if (args?.kind === "cross-origin") {
-        await routed(
-          request(PROXY_PREVIEW + "/api/css-studio/session", "POST", {
-            origin: pageUrl.replace(/\/$/, ""),
-            "sec-fetch-site": "cross-site",
-            ...(crossCookie ? { cookie: cookieValue } : {}),
-          }),
-          { status: 403 },
-        );
-        return null;
+        const browserFetch = async (target, options) => {
+          assert.equal(target, PROXY_PREVIEW + "/api/css-studio/session");
+          assert.equal(options.mode, "no-cors");
+          assert.equal(options.credentials, "include");
+          await routed(
+            request(target, options.method, {
+              origin: pageUrl.replace(/\/$/, ""),
+              "sec-fetch-site": "cross-site",
+              ...(crossCookie ? { cookie: cookieValue } : {}),
+            }),
+            {
+              status: crossStatus,
+              cookies: crossResponseCookie ? [cookieHeader] : [],
+              noResponse: crossNoResponse,
+            },
+          );
+          if (crossFetchRejects)
+            throw new TypeError("Failed to fetch " + secret + cookieValue);
+          return {};
+        };
+        const browserFunction = runInNewContext("(" + _fn.toString() + ")", {
+          fetch: browserFetch,
+          AbortSignal,
+          TypeError,
+        });
+        return browserFunction(args);
       }
       const method = args.method,
         route = args.path;
@@ -324,6 +354,29 @@ test("verifies browser cookie round-trip and cross-origin rejection without prop
       assert.ok(r.url.startsWith(PROXY_PREVIEW + "/api/css-studio/"));
   assert.ok(!f.logs.join("\n").includes(secret));
   assert.ok(!f.logs.join("\n").includes(cookieValue));
+});
+
+test("accepts an observed cookie-free 403 when the browser blocks its opaque response", async () => {
+  const f = fixture({ crossFetchRejects: true });
+  const result = await runProxyCheck(f.options);
+  assert.equal(result.crossOriginRejected, true);
+  assert.equal(result.sharedRemaining, 6000);
+  assert.equal(f.publicRequests.length, 4);
+  assert.ok(!f.logs.join("\n").includes(secret));
+  assert.ok(!f.logs.join("\n").includes(cookieValue));
+});
+
+test("a blocked browser fetch cannot hide a successful session, changed cookie or missing rejection response", async () => {
+  for (const extra of [
+    { crossStatus: 200 },
+    { crossStatus: 401 },
+    { crossResponseCookie: true },
+    { crossNoResponse: true },
+  ]) {
+    const f = fixture({ crossFetchRejects: true, ...extra });
+    await assert.rejects(runProxyCheck(f.options), ProxyCheckError);
+    assert.ok(f.isClosed());
+  }
 });
 
 test("fails closed on changed counters, redirects or domain cookies and closes the browser", async () => {

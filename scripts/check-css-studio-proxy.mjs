@@ -467,7 +467,7 @@ export async function runProxyCheck({
       timeout: 15000,
     });
     stage = "cross-origin-request";
-    const [cross] = await Promise.all([
+    const [cross, foreignOutcome] = await Promise.all([
       page.waitForResponse(
         (response) =>
           response.url() === PROXY_PREVIEW + API + "session" &&
@@ -476,15 +476,24 @@ export async function runProxyCheck({
       ),
       page.evaluate(
         async ({ kind, target }) => {
-          if (kind === "cross-origin")
-            await fetch(target, {
-              method: "POST",
-              mode: "no-cors",
-              credentials: "include",
-              redirect: "error",
-              signal: AbortSignal.timeout(15000),
-              body: "{}",
-            });
+          if (kind === "cross-origin") {
+            try {
+              await fetch(target, {
+                method: "POST",
+                mode: "no-cors",
+                credentials: "include",
+                redirect: "error",
+                signal: AbortSignal.timeout(15000),
+                body: "{}",
+              });
+              return "opaque-response";
+            } catch (error) {
+              // Chromium can block the opaque JSON rejection itself. This is
+              // acceptable only alongside the observed, cookie-free 403 below.
+              if (error instanceof TypeError) return "blocked-response";
+              throw error;
+            }
+          }
         },
         { kind: "cross-origin", target: PROXY_PREVIEW + API + "session" },
       ),
@@ -492,6 +501,7 @@ export async function runProxyCheck({
     requireCheck(
       !blocked &&
         crossRequestSafe &&
+        ["opaque-response", "blocked-response"].includes(foreignOutcome) &&
         cross.status() === 403 &&
         (await cross.headerValues("set-cookie")).length === 0,
       "Cross-origin session protection did not hold.",
