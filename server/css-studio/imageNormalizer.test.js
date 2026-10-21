@@ -137,10 +137,16 @@ it("requires the binding and normalizes one bounded raster to only the two permi
     expect(normalized).toMatchObject({ width: size, height: size });
     expect(normalized.image).toBeInstanceOf(Blob);
     expect(normalized.image.type).toBe("image/png");
-    expect(new Uint8Array(await normalized.image.arrayBuffer())).toEqual(
-      new Uint8Array(png(size)),
-    );
-    expect(calls.bytes).toEqual(new Uint8Array(await source.arrayBuffer()));
+    // Native comparison checks length and every byte without walking large
+    // fixtures as JavaScript object properties on constrained CI runners.
+    expect(
+      Buffer.from(await normalized.image.arrayBuffer()).equals(png(size)),
+      "The normalized PNG must preserve the exact returned bytes",
+    ).toBe(true);
+    expect(
+      Buffer.from(calls.bytes).equals(Buffer.from(await source.arrayBuffer())),
+      "Images must receive the exact checked input bytes",
+    ).toBe(true);
     expect(calls.input).toBe(1);
     expect(calls.transforms).toEqual([
       { width: size, height: size, fit: "cover" },

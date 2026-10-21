@@ -4,7 +4,13 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   test: {
-    exclude: ['**/node_modules/**', '**/.git/**', 'e2e/**'],
+    exclude: [
+      '**/node_modules/**',
+      '**/.git/**',
+      'e2e/**',
+      // This metadata helper uses node:test in its standalone workflow.
+      'scripts/check-css-studio-image-contract.test.mjs',
+    ],
   },
   server: {
     port: 3000,

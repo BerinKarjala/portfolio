@@ -20,6 +20,11 @@ runtime decoding/CPU behavior remain unverified; the adapter is not selected by
 the Worker. See [the implementation and activation limits](image-adapter.md).
 Earlier increment
 sections below are chronological records; later entries supersede their status.
+The branch also incorporates owner-merged main `8c11250`, preserving the Page
+Builder keyboard sensor fix and the metadata-only image-contract helper. The
+helper's seven native Node tests run separately from Vitest. The expanded browser
+workflow keeps zero retries and has a 25-minute job limit; its previous complete
+run took about 19.5 minutes before the added keyboard preflight.
 See [model evaluation](model-evaluation.md), [proxy evidence](private-proxy-verification.md)
 and [M5 verification](verification-m5.md) for evidence and limits. Reservations
 are not measured provider usage; no model winner is established.

@@ -4,7 +4,6 @@ import {
   DragOverlay,
   MouseSensor,
   TouchSensor,
-  KeyboardSensor,
   useSensor,
   useSensors,
   pointerWithin,
@@ -35,6 +34,7 @@ import CanvasStyles from "./CanvasStyles";
 import { reactStyles } from "../domain/styles";
 import ExternalPaste from "./ExternalPaste";
 import ElementWizard from "./ElementWizard";
+import ReadyKeyboardSensor from "../sensors/ReadyKeyboardSensor";
 
 function keyboardCoordinates(event, { context, currentCoordinates }) {
   if (!["ArrowDown", "ArrowRight", "ArrowUp", "ArrowLeft"].includes(event.code))
@@ -191,7 +191,7 @@ export default function CanvasEditor({ workspace, setWorkspace, scrollRef }) {
     useSensor(TouchSensor, {
       activationConstraint: { delay: 250, tolerance: 8 },
     }),
-    useSensor(KeyboardSensor, { coordinateGetter: keyboardCoordinates }),
+    useSensor(ReadyKeyboardSensor, { coordinateGetter: keyboardCoordinates }),
   );
   const update = (patch) => setWorkspace((ws) => ({ ...ws, ...patch }));
   useEffect(() => {
