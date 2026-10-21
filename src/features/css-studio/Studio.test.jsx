@@ -411,3 +411,32 @@ it("cancels an in-progress connection when Studio unmounts", async () => {
   expect(signal.aborted).toBe(true);
   expect(fetch).toHaveBeenCalledTimes(1);
 });
+
+it("uses the current viewport for panel toggles before a media change event arrives", () => {
+  const media = {
+    matches: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  };
+  window.matchMedia = vi.fn(() => media);
+  render(<Site />);
+  fireEvent.click(
+    screen.getByRole("button", { name: "Theme Studio", exact: true }),
+  );
+  // A resize can update the query before WebKit delivers its change event.
+  media.matches = true;
+  fireEvent.click(screen.getByRole("button", { name: "Chat", exact: true }));
+  expect(
+    screen.queryByRole("combobox", { name: "Season", exact: true }),
+  ).toBeNull();
+  expect(
+    screen.getByRole("textbox", { name: "Message", exact: true }),
+  ).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Styles", exact: true }));
+  expect(
+    screen.getByRole("combobox", { name: "Season", exact: true }),
+  ).toBeTruthy();
+  expect(
+    screen.queryByRole("textbox", { name: "Message", exact: true }),
+  ).toBeNull();
+});

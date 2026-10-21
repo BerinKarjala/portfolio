@@ -190,12 +190,15 @@ export function StudioProvider({
     )?.focus();
   }
   function toggle(side) {
+    // Match the current layout even before a delayed media-change event arrives.
+    const currentNarrow =
+      window.matchMedia?.("(max-width: 900px)").matches ?? narrow;
     if (side === "left") {
       setLeft(!left);
-      if (narrow) setRight(false);
+      if (currentNarrow) setRight(false);
     } else {
       setRight(!right);
-      if (narrow) setLeft(false);
+      if (currentNarrow) setLeft(false);
     }
   }
   function choose(changes) {

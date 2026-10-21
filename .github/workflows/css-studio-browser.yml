@@ -1,0 +1,81 @@
+name: CSS Studio browser checks
+
+on:
+  pull_request:
+    paths:
+      - "src/features/css-studio/**"
+      - "src/shared/**"
+      - "src/components/**"
+      - "src/App.jsx"
+      - "src/index*"
+      - "src/preloadBackground.js"
+      - "public/css-studio/**"
+      - "e2e/css-studio*"
+      - "e2e/playwright.images.config.js"
+      - "playwright.config.js"
+      - "package*.json"
+      - ".nvmrc"
+      - "*config*"
+      - "index.html"
+      - ".github/workflows/css-studio-browser.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: css-studio-browser-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    name: CSS Studio / ${{ matrix.browser }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: npm
+      - run: npm ci
+      - name: CSS Studio unit tests
+        run: npm test -- src/features/css-studio
+      - name: Build application
+        id: build
+        run: npm run build
+      - name: Install browser and system dependencies
+        id: browsers
+        run: npx --no-install playwright install --with-deps ${{ matrix.browser }}
+      - name: CSS Studio browser regression without retries
+        run: npm run test:e2e -- e2e/css-studio.spec.js --project=${{ matrix.browser }} --workers=2 --retries=0 --output=test-results-css-studio --reporter=list,html
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-css-studio
+      - name: Image storage browser regression without retries
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.browsers.outcome == 'success' }}
+        run: npm run test:e2e -- --config=e2e/playwright.images.config.js --project=${{ matrix.browser }} --workers=2 --retries=0 --output=test-results-css-studio-images --reporter=list,html
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-css-studio-images
+      - name: Retain CSS Studio HTML report and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: css-studio-${{ matrix.browser }}-browser-evidence
+          path: |
+            playwright-report-css-studio/
+            test-results-css-studio/
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Retain image storage HTML report and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: css-studio-${{ matrix.browser }}-image-storage-evidence
+          path: |
+            playwright-report-css-studio-images/
+            test-results-css-studio-images/
+          if-no-files-found: ignore
+          retention-days: 14
