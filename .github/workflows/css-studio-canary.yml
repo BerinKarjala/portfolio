@@ -10,6 +10,12 @@ on:
       - ".nvmrc"
       - ".github/workflows/css-studio-canary.yml"
   workflow_dispatch:
+    inputs:
+      check:
+        description: "Private check (proxy makes no model calls)"
+        type: choice
+        options: [proxy, theme]
+        default: proxy
 permissions:
   contents: read
 concurrency:
@@ -26,9 +32,19 @@ jobs:
           node-version-file: ".nvmrc"
           cache: npm
       - run: npm ci
-      - run: npm test -- server/css-studio scripts/check-css-studio-canary.test.mjs scripts/deploy-css-studio-canary.test.mjs
+      - run: npm test -- server/css-studio scripts/check-css-studio-canary.test.mjs scripts/deploy-css-studio-canary.test.mjs scripts/check-css-studio-proxy.test.mjs scripts/deploy-css-studio-proxy.test.mjs
       - run: npm run test:css-studio:server
+      - name: Install Chromium for session-only verification
+        if: github.event_name == 'workflow_dispatch' && inputs.check == 'proxy'
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Verify private proxy identity and cross-site rejection without inference
+        if: github.event_name == 'workflow_dispatch' && inputs.check == 'proxy'
+        run: node scripts/deploy-css-studio-proxy.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WRANGLER_SEND_METRICS: "false"
       - name: Deploy and verify at most two private quota-accounted fixtures
+        if: github.event_name != 'workflow_dispatch' || inputs.check == 'theme'
         run: node scripts/deploy-css-studio-canary.mjs
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
