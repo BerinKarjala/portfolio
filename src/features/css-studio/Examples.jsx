@@ -16,17 +16,22 @@ export default function Examples({
 }) {
   const [template, setTemplate] = useState("blank");
   const [inlineImage, setInlineImage] = useState(null);
+  const [imageError, setImageError] = useState(false);
   const selected = selectedBackground(preferences, failed, generatedImages);
   const selectedGenerated =
     selected?.kind === "generated" ? generatedImages[selected.id] : null;
   useEffect(() => {
     setInlineImage(null);
+    setImageError(false);
     if (!selectedGenerated) return;
     const reader = new FileReader();
     let active = true;
     reader.onload = () => {
       if (active)
         setInlineImage({ ...selectedGenerated, displayUrl: reader.result });
+    };
+    reader.onerror = () => {
+      if (active) setImageError(true);
     };
     reader.readAsDataURL(selectedGenerated.blob);
     return () => {
@@ -121,8 +126,10 @@ export default function Examples({
         Real Page Builder starters, with your active theme. External navigation
         and submissions are blocked.
       </p>
-      {compiled.errors.length ? (
+      {compiled.errors.length || imageError ? (
         <p role="alert">This example could not be previewed.</p>
+      ) : selectedGenerated && inlineImage?.id !== selectedGenerated.id ? (
+        <p role="status">Preparing the selected background…</p>
       ) : (
         <iframe
           title="Themed Page Builder example"
