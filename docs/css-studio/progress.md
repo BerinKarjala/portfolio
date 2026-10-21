@@ -376,3 +376,9 @@ inlining before mounting the frame and reports reader failure explicitly. Its ne
 regression failed before the fix and passes after it; the previously failing
 browser case passes eight repetitions, and all 17 Studio Chromium checks pass.
 The production build also passes again. No inference was repeated for this fix.
+
+Read-only metadata run 39559393158, source `62537f8` on the separate
+`css-studio-model-contract` branch, then retrieved the complete GPT-OSS schema
+after seven guard tests. The snapshot is retained with the canary evidence. It
+still does not establish a total billable reasoning/output bound, so GPT remains
+disabled; this follow-up made no inference, deployment or quota changes.

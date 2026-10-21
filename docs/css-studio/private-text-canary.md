@@ -26,11 +26,17 @@ verified as Secure, HttpOnly, SameSite=Strict, Path=/, with no Domain attribute.
 This establishes a direct Worker integration; Netlify's real proxy remains a
 separate acceptance gate. No proposal contents or credentials were logged.
 
-The read-only [GPT-OSS schema projection](gpt-oss-schema-contract-2026-10-21.json)
-contains chat `messages`/`max_tokens` and Responses `input`/`reasoning` alternatives,
-but does not expose an explicit Responses total-output cap. GPT-OSS inference
-therefore remains blocked on a documented total reasoning/output bound. No GPT
-or image inference was performed, and no comparative model winner is claimed.
+The initial GPT-OSS projection was followed by the complete public input/output
+schema in [metadata-only run 39559393158](https://github.com/BerinKarjala/portfolio/actions/runs/39559393158),
+source `62537f8` on `css-studio-model-contract`. Its seven guard tests and one
+fixed GET passed without inference, deployment or quota changes. The complete
+[schema snapshot](gpt-oss-schema-contract-2026-10-21.json) contains chat
+`messages`/`max_tokens` and Responses `input`/`reasoning` alternatives. Responses
+does not declare `max_output_tokens`, states that reasoning cannot be disabled,
+and returns only a generic output-object contract. The schema does not establish
+whether chat `max_tokens` caps all billable reasoning as well as visible output.
+GPT-OSS inference therefore remains blocked on that documented total bound. No
+GPT or image inference was performed, and no model winner is claimed.
 
 ## Fixed bounds and remaining gates
 
@@ -74,12 +80,13 @@ to all requests. Evaluation refuses to start close to UTC midnight or without
 allowance for both fixtures. Ambiguous response/transport failures retain the
 reservation and close new admission pending reviewed reconciliation.
 
-The workflow also reads a public GPT-OSS model-schema contract without running
-that model. Current generic model documentation and generated binding types
-expose different request shapes, so its exact output/total-reasoning cap must be
-verified before comparative inference. Llama is a canary candidate, not a declared
-benchmark winner. Fixed fixtures, schema/value validity and latency provide local
-integration evidence; broader comparison and production acceptance remain open.
+The deployment workflow also reads a public GPT-OSS model-schema projection
+without running that model; the separate metadata-only workflow preserves the
+full result. Generic model documentation, the observed schema and generated
+binding types leave the total reasoning/output cap unresolved. That cap must be
+verified before comparative inference. Llama remains a canary candidate. Fixed
+fixtures, schema/value validity and latency provide integration evidence; broader
+comparison and production acceptance remain open.
 
 Image/refinement stays unavailable. The published FLUX.1 Schnell schema offers
 prompt and step controls without a saved-image input or fixed width/height, so
