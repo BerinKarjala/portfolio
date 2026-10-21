@@ -8,7 +8,45 @@ const FOREIGN_ORIGIN = "https://css-studio-cross-origin.invalid";
 const COOKIE_NAME = "__Host-css-studio";
 const API = "/api/css-studio/";
 const PROBE_HEADER = "x-css-studio-proxy-probe";
-export class ProxyCheckError extends Error {}
+export class ProxyCheckError extends Error {
+  constructor(message, category) {
+    super(message);
+    this.category = category;
+  }
+}
+
+// Native Playwright messages can contain private URLs, headers and cookies.
+// Match known conditions internally and return only these fixed categories.
+function nativeCategory(error) {
+  const message = typeof error?.message === "string" ? error.message : "";
+  for (const [needle, category] of [
+    ["net::ERR_CERT_", "network-tls"],
+    ["net::ERR_SSL_", "network-tls"],
+    ["net::ERR_NAME_NOT_RESOLVED", "network-dns"],
+    ["net::ERR_CONNECTION_REFUSED", "network-refused"],
+    ["net::ERR_CONNECTION_RESET", "network-reset"],
+    ["net::ERR_TIMED_OUT", "network-timeout"],
+    ["net::ERR_BLOCKED_", "network-blocked"],
+    ["net::ERR_TOO_MANY_REDIRECTS", "network-redirect"],
+    ["net::ERR_ABORTED", "network-aborted"],
+    ["net::ERR_FAILED", "network-failed"],
+    ["Executable doesn't exist", "browser-executable"],
+    ["Host system is missing dependencies", "browser-dependencies"],
+    ["error while loading shared libraries", "browser-dependencies"],
+    ["Target page, context or browser has been closed", "browser-closed"],
+    ["Execution context was destroyed", "execution-context"],
+    ["Failed to fetch", "fetch-failed"],
+    ["NetworkError when attempting to fetch resource", "fetch-failed"],
+  ]) {
+    if (message.includes(needle)) return category;
+  }
+  if (error?.name === "TimeoutError") return "timeout";
+  if (error?.name === "AbortError") return "aborted";
+  if (error?.name === "TypeError" || message.includes("TypeError:"))
+    return "type-error";
+  if (error?.name === "RangeError") return "range-error";
+  return "native-error";
+}
 
 function requireCheck(condition, message) {
   if (!condition) throw new ProxyCheckError(message);
@@ -101,7 +139,8 @@ export async function runProxyCheck({
     typeof secret === "string" && /^[0-9a-f]{64}$/.test(secret),
     "Private proxy credential is missing or invalid.",
   );
-  let browser;
+  let browser,
+    stage = "preflight";
   try {
     const started = now(),
       day = new Date(started).toISOString().slice(0, 10);
@@ -129,16 +168,23 @@ export async function runProxyCheck({
         value = await readJson(response, 4096);
       } catch (error) {
         if (error instanceof ProxyCheckError) throw error;
-        throw new ProxyCheckError("Public proxy status verification failed.");
+        throw new ProxyCheckError(
+          "Public proxy status verification failed.",
+          nativeCategory(error),
+        );
       }
       requireCheck(
         value?.available === false,
         "Public inference must remain unavailable.",
       );
     }
+    stage = "public-preview-before";
     await publicStatus(PROXY_PREVIEW);
+    stage = "public-worker-before";
     await publicStatus(PROXY_BACKEND);
+    stage = "load-playwright";
     const browserType = chromium || (await import("@playwright/test")).chromium;
+    stage = "browser-launch";
     browser = await browserType.launch({
       env: Object.fromEntries(
         Object.entries(process.env).filter(
@@ -153,10 +199,12 @@ export async function runProxyCheck({
         ),
       ),
     });
+    stage = "browser-context";
     const context = await browser.newContext({ serviceWorkers: "block" });
     let phase = "loading",
       blocked = false,
       crossRequestSafe = false;
+    stage = "request-guard";
     context.on("response", (response) => {
       if ([301, 302, 303, 307, 308].includes(response.status())) blocked = true;
     });
@@ -220,7 +268,9 @@ export async function runProxyCheck({
         }
       }
     });
+    stage = "open-page";
     const page = await context.newPage();
+    stage = "navigate-preview";
     const navigation = await page.goto(PROXY_PREVIEW + "/", {
       waitUntil: "domcontentloaded",
       timeout: 30000,
@@ -311,10 +361,12 @@ export async function runProxyCheck({
       );
       return { ...result, cookies: await response.headerValues("set-cookie") };
     }
+    stage = "anonymous-status";
     requireCheck(
       (await call("status")).status === 401,
       "A fresh browser unexpectedly has a private identity.",
     );
+    stage = "open-session";
     const issued = await call("session", "POST");
     requireCheck(
       issued.status === 200 &&
@@ -322,6 +374,7 @@ export async function runProxyCheck({
         issued.cookies.length === 1,
       "Private proxy session could not be opened.",
     );
+    stage = "cookie-attributes";
     const header = issued.cookies[0];
     requireCheck(
       header.length <= 1024 &&
@@ -361,17 +414,20 @@ export async function runProxyCheck({
       );
       return cookie.value;
     }
+    stage = "issued-cookie";
     const cookie = await identity();
     requireCheck(
       header.split(";")[0] === COOKIE_NAME + "=" + cookie,
       "The browser did not retain the issued private identity.",
     );
+    stage = "authenticated-status";
     const initial = await call("status");
     requireCheck(
       initial.status === 200,
       "Private proxy identity did not authenticate.",
     );
     const before = validateSnapshot(initial.value, day);
+    stage = "reuse-session";
     const reused = await call("session", "POST");
     requireCheck(
       reused.status === 200 &&
@@ -380,6 +436,7 @@ export async function runProxyCheck({
         (await identity()) === cookie,
       "Private proxy session identity was unexpectedly replaced.",
     );
+    stage = "reload-preview";
     const reloaded = await page.reload({
       waitUntil: "domcontentloaded",
       timeout: 30000,
@@ -391,10 +448,12 @@ export async function runProxyCheck({
         !reloaded?.request().redirectedFrom(),
       "An unexpected or redirected browser request was blocked.",
     );
+    stage = "reload-cookie";
     requireCheck(
       (await identity()) === cookie,
       "Private proxy identity did not survive reload.",
     );
+    stage = "reload-status";
     const after = await call("status");
     requireCheck(
       after.status === 200 &&
@@ -402,10 +461,12 @@ export async function runProxyCheck({
       "Proxy verification changed the allowance counters.",
     );
     phase = "cross-origin";
+    stage = "foreign-navigation";
     await page.goto(FOREIGN_ORIGIN + "/", {
       waitUntil: "domcontentloaded",
       timeout: 15000,
     });
+    stage = "cross-origin-request";
     const [cross] = await Promise.all([
       page.waitForResponse(
         (response) =>
@@ -436,6 +497,7 @@ export async function runProxyCheck({
       "Cross-origin session protection did not hold.",
     );
     phase = "private";
+    stage = "return-preview";
     const returned = await page.goto(PROXY_PREVIEW + "/", {
       waitUntil: "domcontentloaded",
       timeout: 30000,
@@ -447,10 +509,12 @@ export async function runProxyCheck({
         !returned?.request().redirectedFrom(),
       "An unexpected or redirected browser request was blocked.",
     );
+    stage = "return-cookie";
     requireCheck(
       (await identity()) === cookie,
       "Private proxy identity changed after foreign navigation.",
     );
+    stage = "final-status";
     const final = await call("status");
     requireCheck(
       final.status === 200 &&
@@ -461,8 +525,11 @@ export async function runProxyCheck({
       new Date(now()).toISOString().slice(0, 10) === day,
       "UTC day changed during proxy verification.",
     );
+    stage = "public-preview-after";
     await publicStatus(PROXY_PREVIEW);
+    stage = "public-worker-after";
     await publicStatus(PROXY_BACKEND);
+    stage = "complete";
     log(
       JSON.stringify({
         fixture: "browser-proxy-identity",
@@ -486,11 +553,17 @@ export async function runProxyCheck({
       sharedRemaining: before.sharedRemaining,
     };
   } catch (error) {
-    throw error instanceof ProxyCheckError
-      ? error
-      : new ProxyCheckError(
-          "Private browser proxy verification failed; details withheld.",
-        );
+    const category =
+      error instanceof ProxyCheckError
+        ? error.category || "validation"
+        : nativeCategory(error);
+    const message =
+      error instanceof ProxyCheckError
+        ? error.message
+        : "Private browser proxy verification failed; details withheld.";
+    throw new ProxyCheckError(
+      `${message} [stage=${stage}; category=${category}]`,
+    );
   } finally {
     try {
       await browser?.close();

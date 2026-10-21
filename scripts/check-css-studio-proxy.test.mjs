@@ -88,6 +88,9 @@ function fixture({
   cookieDomain = false,
   transportFailure = false,
   crossCookie = false,
+  launchFailure,
+  navigationFailure,
+  evaluationFailure,
 } = {}) {
   const logs = [],
     publicRequests = [],
@@ -143,6 +146,7 @@ function fixture({
   const page = {
     url: () => pageUrl,
     goto: async (url) => {
+      if (navigationFailure) throw navigationFailure;
       pageUrl = url;
       const req = request(
         url,
@@ -163,6 +167,7 @@ function fixture({
         waiting = { predicate, resolve };
       }),
     evaluate: async (_fn, args) => {
+      if (evaluationFailure) throw evaluationFailure;
       if (args?.kind === "document-cookie") return "";
       if (args?.kind === "cross-origin") {
         await routed(
@@ -249,6 +254,7 @@ function fixture({
   };
   const chromium = {
     launch: async (options) => {
+      if (launchFailure) throw launchFailure;
       for (const name of [
         "CLOUDFLARE_API_TOKEN",
         "CLOUDFLARE_API_KEY",
@@ -349,4 +355,57 @@ test("redacts transport errors and rejects missing credentials before requests",
   const missing = fixture();
   await assert.rejects(runProxyCheck({ ...missing.options, secret: "" }));
   assert.equal(missing.publicRequests.length, 0);
+});
+
+test("reports only fixed stages and native categories without exposing browser diagnostics", async () => {
+  for (const [option, error, stage, category] of [
+    [
+      "launchFailure",
+      Error(
+        "browserType.launch: Executable doesn't exist at /private/" + secret,
+      ),
+      "browser-launch",
+      "browser-executable",
+    ],
+    [
+      "navigationFailure",
+      Error(
+        "page.goto: net::ERR_CERT_AUTHORITY_INVALID at https://" +
+          secret +
+          ".invalid/" +
+          cookieValue,
+      ),
+      "navigate-preview",
+      "network-tls",
+    ],
+    [
+      "evaluationFailure",
+      Error(
+        "page.evaluate: TypeError: Failed to fetch " + cookieValue + secret,
+      ),
+      "anonymous-status",
+      "fetch-failed",
+    ],
+    [
+      "navigationFailure",
+      Object.assign(Error("private timeout " + secret), {
+        name: "TimeoutError",
+      }),
+      "navigate-preview",
+      "timeout",
+    ],
+  ]) {
+    const f = fixture({ [option]: error });
+    await assert.rejects(runProxyCheck(f.options), (failure) => {
+      assert.ok(failure instanceof ProxyCheckError);
+      assert.ok(failure.message.includes("stage=" + stage));
+      assert.ok(failure.message.includes("category=" + category));
+      assert.ok(!failure.message.includes(secret));
+      assert.ok(!failure.message.includes(cookieValue));
+      assert.ok(!failure.message.includes("https://"));
+      assert.ok(!failure.message.includes("/private/"));
+      return true;
+    });
+    assert.ok(!f.logs.join("\n").includes(secret));
+  }
 });
