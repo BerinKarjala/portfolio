@@ -204,7 +204,8 @@ export async function runProxyCheck({
     let phase = "loading",
       blocked = false,
       crossRequestSafe = false,
-      crossReply;
+      crossReply,
+      routeFailure = "none";
     stage = "request-guard";
     context.on("response", (response) => {
       if ([301, 302, 303, 307, 308].includes(response.status())) blocked = true;
@@ -260,7 +261,8 @@ export async function runProxyCheck({
             cache: "no-store",
             signal: AbortSignal.timeout(15000),
             headers: {
-              ...headers,
+              Origin: headers.origin,
+              "Sec-Fetch-Site": headers["sec-fetch-site"],
               "X-CSS-Studio-Canary": secret,
               "X-CSS-Studio": "1",
               "content-type": "application/json",
@@ -281,6 +283,14 @@ export async function runProxyCheck({
             return;
           }
           const bytes = await readBytes(upstream, 4096);
+          try {
+            crossReply.backendRejected =
+              JSON.parse(
+                new TextDecoder("utf-8", { fatal: true }).decode(bytes),
+              )?.error === "Use the same-origin Studio endpoint.";
+          } catch {
+            crossReply.backendRejected = false;
+          }
           const responseHeaders = new Headers(upstream.headers);
           responseHeaders.delete("content-encoding");
           responseHeaders.delete("content-length");
@@ -292,8 +302,9 @@ export async function runProxyCheck({
           return;
         }
         await route.continue();
-      } catch {
+      } catch (error) {
         blocked = true;
+        routeFailure = nativeCategory(error);
         try {
           await route.abort("blockedbyclient");
         } catch {
@@ -528,8 +539,9 @@ export async function runProxyCheck({
         crossRequestSafe &&
         ["opaque-response", "blocked-response"].includes(foreignOutcome) &&
         crossReply?.status === 403 &&
-        crossReply.hasCookie === false,
-      "Cross-origin session protection did not hold.",
+        crossReply.hasCookie === false &&
+        crossReply.backendRejected === true,
+      `Cross-origin session protection did not hold. [safeRequest=${crossRequestSafe}; blocked=${blocked}; upstreamStatus=${crossReply?.status ?? "none"}; cookie=${crossReply?.hasCookie ?? "unknown"}; backendRejected=${crossReply?.backendRejected ?? "unknown"}; routeCategory=${routeFailure}]`,
     );
     phase = "private";
     stage = "return-preview";

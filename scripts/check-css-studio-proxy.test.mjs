@@ -93,6 +93,7 @@ function fixture({
   crossFetchRejects = false,
   crossResponseCookie = false,
   crossNoResponse = false,
+  crossBackendError = false,
   launchFailure,
   navigationFailure,
   evaluationFailure,
@@ -314,20 +315,27 @@ function fixture({
           assert.equal(options.method, "POST");
           assert.equal(options.redirect, "error");
           assert.equal(
-            options.headers.origin,
+            options.headers.Origin,
             "https://css-studio-cross-origin.invalid",
           );
-          assert.equal(options.headers["sec-fetch-site"], "cross-site");
+          assert.equal(options.headers["Sec-Fetch-Site"], "cross-site");
           assert.ok(!options.headers.cookie);
           if (crossNoResponse) throw Error(secret + cookieValue);
-          return new Response("{}", {
-            status: crossStatus,
-            headers: {
-              "content-type": "application/json",
-              "cache-control": "no-store",
-              ...(crossResponseCookie ? { "set-cookie": cookieHeader } : {}),
+          return Response.json(
+            {
+              error: crossBackendError
+                ? "Unrelated rejection"
+                : "Use the same-origin Studio endpoint.",
             },
-          });
+            {
+              status: crossStatus,
+              headers: {
+                "content-type": "application/json",
+                "cache-control": "no-store",
+                ...(crossResponseCookie ? { "set-cookie": cookieHeader } : {}),
+              },
+            },
+          );
         }
         return Response.json(
           { available: false },
@@ -354,7 +362,7 @@ test("verifies browser cookie round-trip and cross-origin rejection without prop
   );
   const cross = f.publicRequests.find(
     (request) =>
-      request.options.headers.origin ===
+      request.options.headers.Origin ===
       "https://css-studio-cross-origin.invalid",
   );
   assert.equal(cross.options.headers["X-CSS-Studio"], "1");
@@ -383,6 +391,7 @@ test("a blocked browser fetch cannot hide a successful session, changed cookie o
     { crossStatus: 401 },
     { crossResponseCookie: true },
     { crossNoResponse: true },
+    { crossBackendError: true },
   ]) {
     const f = fixture({ crossFetchRejects: true, ...extra });
     await assert.rejects(runProxyCheck(f.options), ProxyCheckError);
