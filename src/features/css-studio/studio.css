@@ -5,6 +5,7 @@
 }
 .studio-canvas {
   min-width: 0;
+  overflow-wrap: anywhere;
   grid-column: 1;
   grid-row: 1;
 }

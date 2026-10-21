@@ -16,7 +16,19 @@ async function tabTo(page, target) {
   for (let step = 0; step < 90; step++) {
     if (await target.evaluate((element) => element === document.activeElement))
       return;
-    await page.keyboard.press("Tab");
+    // New nonmodal tools can precede the current focus in DOM order. Navigate
+    // backward to them instead of depending on browser-chrome Tab wrapping.
+    const backwards = await target.evaluate((element) => {
+      const active = document.activeElement;
+      return (
+        active !== document.body &&
+        Boolean(
+          active.compareDocumentPosition(element) &
+          Node.DOCUMENT_POSITION_PRECEDING,
+        )
+      );
+    });
+    await page.keyboard.press(backwards ? "Shift+Tab" : "Tab");
   }
   throw Error("The requested control was not reachable with Tab");
 }
@@ -310,9 +322,23 @@ test("enlarged text stays usable and reduced motion is honored in the themed can
       ),
     )
     .toBeGreaterThanOrEqual(normalFont * 1.9);
-  expect(
-    await page.evaluate(() => document.documentElement.scrollWidth),
-  ).toBeLessThanOrEqual(321);
+  for (const [font, family] of [
+    ["system", /system-ui/],
+    ["serif", /Georgia/],
+    ["mono", /monospace/],
+  ]) {
+    await page
+      .getByRole("combobox", { name: "Font", exact: true })
+      .selectOption(font);
+    await expect(page.locator(".studio-canvas")).toHaveCSS(
+      "font-family",
+      family,
+    );
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+      `${font} at 200% text`,
+    ).toBeLessThanOrEqual(321);
+  }
   await page
     .getByRole("button", { name: "Preview Page Builder examples" })
     .click();
