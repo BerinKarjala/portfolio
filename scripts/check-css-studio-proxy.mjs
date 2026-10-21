@@ -4,7 +4,7 @@ import { readJson, readBytes } from "../src/shared/studioTransfer.js";
 export const PROXY_PREVIEW =
   "https://deploy-preview-245--berinkarjala.netlify.app";
 export const PROXY_BACKEND = "https://css-studio-ai.berin-karjala.workers.dev";
-const FOREIGN_ORIGIN = "https://css-studio-cross-origin.invalid";
+const FOREIGN_ORIGIN = "https://berinkarjala.netlify.app";
 const COOKIE_NAME = "__Host-css-studio";
 const API = "/api/css-studio/";
 const PROBE_HEADER = "x-css-studio-proxy-probe";
@@ -74,7 +74,7 @@ export function classifyProxyRequest({
     method === "GET" &&
     phase === "cross-origin"
   )
-    return "fixture";
+    return "foreign-page";
   if (!target.pathname.startsWith("/api/css-studio")) return "resource";
   if (target.origin !== PROXY_PREVIEW || target.search || target.hash)
     return "deny";
@@ -231,12 +231,8 @@ export async function runProxyCheck({
           await route.abort("blockedbyclient");
           return;
         }
-        if (classification === "fixture") {
-          await route.fulfill({
-            status: 200,
-            contentType: "text/html",
-            body: "<!doctype html><title>Foreign origin fixture</title><main>Foreign origin fixture</main>",
-          });
+        if (classification === "foreign-page") {
+          await route.continue();
           return;
         }
         if (classification === "private") {
@@ -506,10 +502,16 @@ export async function runProxyCheck({
     );
     phase = "cross-origin";
     stage = "foreign-navigation";
-    await page.goto(FOREIGN_ORIGIN + "/", {
+    const foreignPage = await page.goto(FOREIGN_ORIGIN + "/", {
       waitUntil: "domcontentloaded",
       timeout: 15000,
     });
+    requireCheck(
+      !blocked &&
+        page.url() === FOREIGN_ORIGIN + "/" &&
+        foreignPage?.status() === 200,
+      "The separate real browser origin could not be loaded without redirects.",
+    );
     stage = "cross-origin-request";
     const foreignOutcome = await page.evaluate(
       async ({ kind, target }) => {

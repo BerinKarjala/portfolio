@@ -316,7 +316,7 @@ function fixture({
           assert.equal(options.redirect, "error");
           assert.equal(
             options.headers.Origin,
-            "https://css-studio-cross-origin.invalid",
+            "https://berinkarjala.netlify.app",
           );
           assert.equal(options.headers["Sec-Fetch-Site"], "cross-site");
           assert.ok(!options.headers.cookie);
@@ -362,8 +362,7 @@ test("verifies browser cookie round-trip and cross-origin rejection without prop
   );
   const cross = f.publicRequests.find(
     (request) =>
-      request.options.headers.Origin ===
-      "https://css-studio-cross-origin.invalid",
+      request.options.headers.Origin === "https://berinkarjala.netlify.app",
   );
   assert.equal(cross.options.headers["X-CSS-Studio"], "1");
   assert.equal(cross.options.headers["content-type"], "application/json");
