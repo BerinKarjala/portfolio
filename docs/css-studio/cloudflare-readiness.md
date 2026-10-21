@@ -5,7 +5,8 @@
 The user confirmed the account ID and Worker URL as text and supplied a dashboard
 screenshot showing Workers Free active without a payment method. The user created
 the starter Worker at `https://css-studio-ai.berin-karjala.workers.dev` and its AI
-binding. This is the dashboard starter, not the CSS Studio server implementation.
+binding. The dashboard starter was subsequently replaced by the private
+implementation described below.
 
 [GitHub Actions run 39552385317](https://github.com/BerinKarjala/portfolio/actions/runs/39552385317)
 passed at workflow source `7e8a487`. The read-only check verified the repository
@@ -20,13 +21,17 @@ corrected it. Token permission edits preserve its value; rolling replaces it and
 requires updating the GitHub secret. The credential is held by GitHub Actions,
 not by the managed development environment.
 
-This verifies read access, not deployment/write permission, live model execution,
-Neuron accounting, Durable Object account eligibility or a zero-cost operational
-budget. No CSS Studio code, proxy or quota authority has been deployed, and no
-model was executed. The app and production Worker source remain unavailable by
-default. Fixed model/cost plans, actual raster decoding, supporting-service limits,
-quota provisioning and the same-origin proxy still need verification before live
-activation.
+That read-only run established access, without proving deployment or inference.
+The subsequent [private canary run 39558243040](https://github.com/BerinKarjala/portfolio/actions/runs/39558243040)
+passed from source `0813a3d`: the CSS Studio Worker, initial identity secret and
+SQLite quota namespace were provisioned, and two Llama theme requests returned
+valid tokens. The durable application ledger retained 2,000 Neurons and reported
+6,000 remaining for October 21 UTC. Public requests stayed unavailable. This
+confirms that the account accepted these bindings and execution; it does not
+measure billed usage, prove supporting-service headroom under public traffic,
+establish a model-comparison winner or complete Netlify proxy acceptance. See
+[the canary evidence and bounds](private-text-canary.md). Image/refinement,
+comparative evaluation and public activation remain blocked on their listed gates.
 
 ## Documentation baseline from October 20, 2026
 
@@ -52,9 +57,10 @@ Source paths examined in the official repository:
 - `src/content/partials/durable-objects/do-plans-note.mdx`
 - `src/content/partials/durable-objects/durable-objects-pricing.mdx`
 
-The Llama 3.3 70B Instruct FP8 Fast / gpt-oss-20b comparison and FLUX.1 Schnell route
-remain candidates from the handoff, not approved runtime choices. No winner or
-safe real-model reservation value has been established. Test-provider costs in
-this repository do not authorize live calls. Recheck these references and actual
+The documentation observations above are historical; the private canary now has
+a reviewed Llama bound of 1,000 Neurons per call and actual execution evidence.
+The Llama/GPT-OSS comparison remains incomplete. The observed GPT-OSS schema does
+not resolve its total reasoning/output cap; FLUX.1 Schnell does not establish the
+required refinement/fixed-geometry contract. Recheck the references and actual
 account facts at activation; do not enable Workers Paid, buy credits, create a
 paid fallback or assume unrelated account usage cannot exhaust the free allocation.

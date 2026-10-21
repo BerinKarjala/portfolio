@@ -1,0 +1,306 @@
+{
+  "model": "@cf/openai/gpt-oss-20b",
+  "observedAt": "2026-10-21T06:53:44.667Z",
+  "fields": [
+    {
+      "path": ".input.oneOf.0.oneOf.0",
+      "name": "prompt",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.0",
+      "name": "lora",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.0",
+      "name": "response_format",
+      "type": "object"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.0",
+      "name": "raw",
+      "type": "boolean"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.0",
+      "name": "stream",
+      "type": "boolean"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.0",
+      "name": "max_tokens",
+      "type": "integer",
+      "description": "The maximum number of tokens to generate in the response."
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.0",
+      "name": "temperature",
+      "type": "number",
+      "maximum": 5,
+      "minimum": 0
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.0",
+      "name": "top_p",
+      "type": "number",
+      "maximum": 1,
+      "minimum": 0.001
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.0",
+      "name": "top_k",
+      "type": "integer",
+      "maximum": 50,
+      "minimum": 1
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.0",
+      "name": "seed",
+      "type": "integer",
+      "maximum": 9999999999,
+      "minimum": 1
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.0",
+      "name": "repetition_penalty",
+      "type": "number",
+      "maximum": 2,
+      "minimum": 0
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.0",
+      "name": "frequency_penalty",
+      "type": "number",
+      "maximum": 2,
+      "minimum": -2
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.0",
+      "name": "presence_penalty",
+      "type": "number",
+      "maximum": 2,
+      "minimum": -2
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.0.properties.response_format",
+      "name": "type",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.0.properties.response_format",
+      "name": "json_schema"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1",
+      "name": "messages",
+      "type": "array"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1",
+      "name": "functions",
+      "type": "array"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1",
+      "name": "tools",
+      "type": "array"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1",
+      "name": "response_format",
+      "type": "object"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1",
+      "name": "raw",
+      "type": "boolean"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1",
+      "name": "stream",
+      "type": "boolean"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1",
+      "name": "max_tokens",
+      "type": "integer",
+      "description": "The maximum number of tokens to generate in the response."
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1",
+      "name": "temperature",
+      "type": "number",
+      "maximum": 5,
+      "minimum": 0
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1",
+      "name": "top_p",
+      "type": "number",
+      "maximum": 1,
+      "minimum": 0.001
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1",
+      "name": "top_k",
+      "type": "integer",
+      "maximum": 50,
+      "minimum": 1
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1",
+      "name": "seed",
+      "type": "integer",
+      "maximum": 9999999999,
+      "minimum": 1
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1",
+      "name": "repetition_penalty",
+      "type": "number",
+      "maximum": 2,
+      "minimum": 0
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1",
+      "name": "frequency_penalty",
+      "type": "number",
+      "maximum": 2,
+      "minimum": -2
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1",
+      "name": "presence_penalty",
+      "type": "number",
+      "maximum": 2,
+      "minimum": -2
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.messages.items",
+      "name": "role",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.messages.items",
+      "name": "content"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.functions.items",
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.functions.items",
+      "name": "code",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.tools.items.oneOf.0",
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.tools.items.oneOf.0",
+      "name": "description",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.tools.items.oneOf.0",
+      "name": "parameters",
+      "type": "object"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.tools.items.oneOf.0.properties.parameters",
+      "name": "type",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.tools.items.oneOf.0.properties.parameters",
+      "name": "required",
+      "type": "array"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.tools.items.oneOf.0.properties.parameters",
+      "name": "properties",
+      "type": "object"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.tools.items.oneOf.1",
+      "name": "type",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.tools.items.oneOf.1",
+      "name": "function",
+      "type": "object"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.tools.items.oneOf.1.properties.function",
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.tools.items.oneOf.1.properties.function",
+      "name": "description",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.tools.items.oneOf.1.properties.function",
+      "name": "parameters",
+      "type": "object"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.response_format",
+      "name": "type",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.0.oneOf.1.properties.response_format",
+      "name": "json_schema"
+    },
+    {
+      "path": ".input.oneOf.1",
+      "name": "input"
+    },
+    {
+      "path": ".input.oneOf.1",
+      "name": "reasoning",
+      "type": "object"
+    },
+    {
+      "path": ".input.oneOf.1.properties.reasoning",
+      "name": "effort",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.1.properties.reasoning",
+      "name": "summary",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.2",
+      "name": "requests",
+      "type": "array"
+    },
+    {
+      "path": ".input.oneOf.2.properties.requests.items",
+      "name": "input"
+    },
+    {
+      "path": ".input.oneOf.2.properties.requests.items",
+      "name": "reasoning",
+      "type": "object"
+    },
+    {
+      "path": ".input.oneOf.2.properties.requests.items.properties.reasoning",
+      "name": "effort",
+      "type": "string"
+    },
+    {
+      "path": ".input.oneOf.2.properties.requests.items.properties.reasoning",
+      "name": "summary",
+      "type": "string"
+    }
+  ]
+}

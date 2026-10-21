@@ -1,7 +1,38 @@
 # Private text-provider canary
 
-October 21, 2026. This increment prepares a private Cloudflare evaluation endpoint.
+October 21, 2026. This increment deploys a private Cloudflare evaluation endpoint.
 It does not enable public inference or claim the v2.2 release is complete.
+
+## Observed deployment
+
+[GitHub Actions run 39558243040](https://github.com/BerinKarjala/portfolio/actions/runs/39558243040)
+passed from source `0813a3d7719544f9a94d4d615300c9823770ab0c` on the
+`css-studio-canary` branch. It installed the locked dependencies, passed 49
+server/deployment tests and three actual workerd checks, provisioned the initial
+identity secret, and deployed the Worker with SQLite quota and AI bindings.
+No Workers Paid upgrade or payment configuration was performed.
+
+The two fixed fixtures passed safe-token validation on October 21 UTC:
+
+| Fixture | End-to-end latency | Prompt allowance after | Shared allowance after |
+| --- | ---: | ---: | ---: |
+| Winter, dark, high contrast | 2,228 ms | 9 | 7,000 Neurons |
+| Diwali, light | 2,320 ms | 8 | 6,000 Neurons |
+
+Each retained its full 1,000-Neuron reservation. These are application-ledger
+charges, not measured Cloudflare usage or a semantic quality benchmark. Public
+status remained unavailable before and after. The private session cookie was
+verified as Secure, HttpOnly, SameSite=Strict, Path=/, with no Domain attribute.
+This establishes a direct Worker integration; Netlify's real proxy remains a
+separate acceptance gate. No proposal contents or credentials were logged.
+
+The read-only [GPT-OSS schema projection](gpt-oss-schema-contract-2026-10-21.json)
+contains chat `messages`/`max_tokens` and Responses `input`/`reasoning` alternatives,
+but does not expose an explicit Responses total-output cap. GPT-OSS inference
+therefore remains blocked on a documented total reasoning/output bound. No GPT
+or image inference was performed, and no comparative model winner is claimed.
+
+## Fixed bounds and remaining gates
 
 The fixed text model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. Its reviewed
 pricing is 26,668 input and 204,805 output Neurons per million tokens. Using its

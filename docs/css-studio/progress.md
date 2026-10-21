@@ -1,6 +1,16 @@
 # CSS Studio development progress
 
-Date: October 20, 2026 (America/New_York). Branch: `css-studio`.
+Updated: October 21, 2026 (America/New_York). Branch: `css-studio`.
+
+## Current position
+
+The manual Studio, supplied asset catalog, generated-image client workflows and
+durable server boundary are implemented. The private Llama text canary is deployed
+and passed two actual model requests with conservative quota accounting. Public
+inference and image/refinement remain disabled. Netlify proxy acceptance, broader
+model evaluation and public operational headroom remain open. Earlier increment
+sections below are chronological records; later entries supersede their status.
+See [private-text-canary.md](private-text-canary.md) for live evidence and limits.
 
 ## Baseline and source priority
 
@@ -327,3 +337,37 @@ start date, which the user corrected. The helper remains in a separate branch an
 draft PR #241; no feature merge or CSS Studio deployment occurred. Twenty local
 simulated verification paths pass. See cloudflare-readiness.md for exact evidence
 and the remaining live-provider, cost, decoder, durable quota and proxy gates.
+
+## Private text canary, October 21, 2026
+
+Source `faca280` adds the fixed Llama provider and an opt-in private route through
+the existing signed identity and durable accounting. The complete provider
+payload is capped at 8 KiB before admission, output at 512 generated tokens and
+64 KiB transport, and each admitted request retains 1,000 Neurons without usage
+refunds. Incomplete/oversized/interrupted provider responses keep the reservation
+and halt new work. A real SQLite test verifies that uncertain execution cannot
+reopen admission. The cost plan expires October 28 UTC. No flag enables public
+inference, and no image provider or paid fallback is configured.
+
+The feature merged latest main `459c951` (Page Builder guided element setup) at
+`0813a3d`, with no merge into main. From that source, GitHub Actions run
+39558243040 passed 49 server/deployment tests and three workerd checks, deployed
+the user's existing Worker, provisioned its initial identity secret and SQLite
+quota binding, and completed the two fixed private theme fixtures. Validated
+responses took 2,228/2,320 ms, with browser prompt allowance 9/8 and shared
+allowance 7,000/6,000. Both retained the full reservation; public status stayed
+unavailable. The GPT-OSS metadata projection was retrieved without inference but
+does not resolve a total reasoning/output bound, so GPT remains disabled.
+
+Studio now discovers the server's operations only when opened, using fixed
+same-origin endpoints and signed-session cookies. Unsupported image operations
+are disabled locally; manual controls and draft text remain usable on failure.
+The Netlify redirect is prepared before the SPA fallback. The real production
+proxy is still unverified and no frontend release was published.
+
+Local checks at `0813a3d`: 283 tests in 45 files, production build (381 modules),
+three actual workerd checks, Chromium cookie/proxy simulation, four image-storage
+browser checks, all 130 Page Builder decisions/options and 16 mapped gates, and
+build budgets pass. The complete Studio Chromium run passed 16 of 17 checks;
+the generated-image example restoration failure is under investigation. The
+private backend deployment is independent of that unpublished frontend path.

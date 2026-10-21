@@ -14,6 +14,7 @@ This is a working client-workflow increment, not the completed v2.2 release.
 - [M3 client workflow verification](verification-m3.md)
 - [Server boundary and accounting contract](server-boundary.md)
 - [Cloudflare readiness observations](cloudflare-readiness.md)
+- [Private text canary and remaining activation gates](private-text-canary.md)
 - [M4 server verification](verification-m4-server.md)
 - [Owned-media transport and activation limits](owned-media.md)
 - [Live AI prerequisites](live-ai-setup.md)
@@ -23,8 +24,9 @@ The supplied 248-photo catalog, thumbnails, credits and standalone browser are
 integrated under public/css-studio/. Live inference remains disabled. The bounded
 IndexedDB cache now supports Studio image proposals, explicit Apply, restoration,
 history/comparison and downloads. These paths use injected responses in tests; the
-public app has no image generator enabled. A default-disabled Worker boundary with signed identity and a transactional
-SQLite quota authority is implemented and locally tested. Deployment, owned-media
-handling, real provider cost/usage validation and account eligibility remain
-outstanding. Do not enable a provider by
-replacing the disabled browser adapter with a privileged API call.
+public app has no image generator enabled. The Worker includes signed identity,
+a transactional SQLite quota authority and a private, bounded Cloudflare text
+canary. The browser discovers supported operations through fixed same-origin
+endpoints when Studio opens, retaining manual controls when AI is unavailable.
+Public inference remains disabled. See the canary and readiness records for live
+deployment evidence and outstanding provider, image and proxy acceptance gates.
