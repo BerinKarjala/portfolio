@@ -1,0 +1,41 @@
+name: CSS Studio GPT model contract
+
+on:
+  push:
+    branches: [css-studio-model-contract]
+    paths:
+      - .github/workflows/css-studio-model-contract.yml
+      - scripts/fetch-css-studio-model-contract.mjs
+      - scripts/fetch-css-studio-model-contract.test.mjs
+      - src/shared/studioTransfer.js
+      - .nvmrc
+
+permissions:
+  contents: read
+
+concurrency:
+  group: css-studio-model-contract
+  cancel-in-progress: true
+
+jobs:
+  public-model-schema:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Test metadata retrieval guards
+        run: node --test scripts/fetch-css-studio-model-contract.test.mjs
+      - name: Read complete public GPT model schema
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: node scripts/fetch-css-studio-model-contract.mjs
+      - name: Upload complete public model schema
+        uses: actions/upload-artifact@v4
+        with:
+          name: css-studio-gpt-model-schema
+          path: artifacts/css-studio-model-contract/gpt-oss-20b-schema.json
+          if-no-files-found: error
+          retention-days: 7
