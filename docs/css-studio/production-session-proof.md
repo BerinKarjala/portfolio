@@ -1,4 +1,13 @@
-# Optional private production session proof
+# Private production session proof
+
+Passed October 21, 2026 in [run 39627226949](https://github.com/BerinKarjala/portfolio/actions/runs/39627226949)
+from source `a79c818ce53f600b6626e1785899d5c566ac03f2`, based on feature
+commit `28ddcb1`. Its 113 local-boundary tests and three actual workerd tests
+passed before deployment. The inference step was skipped. Real Chromium verified
+identity/cookie reuse, reload and untrusted-Origin rejection while ten prompts,
+three image slots and 2,000 shared Neurons stayed unchanged. Identity and quota
+namespace were preserved; public inference stayed unavailable before/after.
+See the [safe retained result](production-session-result-2026-10-21.json).
 
 This isolated `css-studio-production-check` branch starts at `28ddcb1` and pins
 the existing proxy helper to `https://berinkarjala.netlify.app`. The export name
