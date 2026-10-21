@@ -90,6 +90,8 @@ function fixture({
   cookieDomain = false,
   transportFailure = false,
   crossCookie = false,
+  crossOrigin = "https://example.com",
+  crossSiteHeader = "cross-site",
   crossStatus = 403,
   crossFetchRejects = false,
   crossResponseCookie = false,
@@ -185,17 +187,23 @@ function fixture({
           // browser dispatches any request or Playwright can intercept it.
           if (options.redirect !== "follow")
             throw new TypeError("Failed to fetch " + secret + cookieValue);
-          await routed(
-            request(target, options.method, {
-              origin: pageUrl.replace(/\/$/, ""),
-              "sec-fetch-site": "cross-site",
-              ...(crossCookie ? { cookie: cookieValue } : {}),
-            }),
-            {
-              status: crossStatus,
-              cookies: crossResponseCookie ? [cookieHeader] : [],
-            },
-          );
+          try {
+            await routed(
+              request(target, options.method, {
+                origin: crossOrigin,
+                ...(crossSiteHeader === null
+                  ? {}
+                  : { "sec-fetch-site": crossSiteHeader }),
+                ...(crossCookie ? { cookie: cookieValue } : {}),
+              }),
+              {
+                status: crossStatus,
+                cookies: crossResponseCookie ? [cookieHeader] : [],
+              },
+            );
+          } catch {
+            throw new TypeError("Failed to fetch " + secret + cookieValue);
+          }
           if (crossFetchRejects)
             throw new TypeError("Failed to fetch " + secret + cookieValue);
           return {};
@@ -319,11 +327,10 @@ function fixture({
         if (url === PROXY_PREVIEW + "/api/css-studio/session") {
           assert.equal(options.method, "POST");
           assert.equal(options.redirect, "error");
-          assert.equal(
-            options.headers.Origin,
-            "https://berinkarjala.netlify.app",
-          );
-          assert.equal(options.headers["Sec-Fetch-Site"], "cross-site");
+          assert.equal(options.headers.Origin, "https://example.com");
+          if (crossSiteHeader === null)
+            assert.ok(!Object.hasOwn(options.headers, "Sec-Fetch-Site"));
+          else assert.equal(options.headers["Sec-Fetch-Site"], "cross-site");
           assert.ok(!options.headers.cookie);
           if (crossNoResponse) throw Error(secret + cookieValue);
           return Response.json(
@@ -366,8 +373,7 @@ test("verifies browser cookie round-trip and cross-origin rejection without prop
     ),
   );
   const cross = f.publicRequests.find(
-    (request) =>
-      request.options.headers.Origin === "https://berinkarjala.netlify.app",
+    (request) => request.options.headers.Origin === "https://example.com",
   );
   assert.equal(cross.options.headers["X-CSS-Studio"], "1");
   assert.equal(cross.options.headers["content-type"], "application/json");
@@ -387,6 +393,54 @@ test("accepts an observed cookie-free 403 when the browser blocks its opaque res
   assert.equal(f.publicRequests.length, 5);
   assert.ok(!f.logs.join("\n").includes(secret));
   assert.ok(!f.logs.join("\n").includes(cookieValue));
+});
+
+test("accepts absent interception metadata without inventing a forwarded header", async () => {
+  const f = fixture({ crossSiteHeader: null });
+  const proof = await runProxyCheck(f.options);
+  assert.equal(proof.crossOriginRejected, true);
+  assert.equal(proof.fetchMetadataObserved, false);
+  assert.equal(proof.interceptedFetchSite, "absent");
+  const forwarded = f.publicRequests.find(
+    (request) => request.options.method === "POST",
+  );
+  assert.ok(forwarded);
+  assert.ok(!Object.hasOwn(forwarded.options.headers, "Sec-Fetch-Site"));
+  const evidence = JSON.parse(f.logs.find((line) => line.startsWith("{")));
+  assert.equal(evidence.fetchMetadataObserved, false);
+  assert.equal(evidence.interceptedFetchSite, "absent");
+});
+
+test("rejects wrong Origin, cookies and incompatible fetch metadata with safe diagnostics", async () => {
+  for (const [extra, field] of [
+    // The old production source is itself an allowed APP_ORIGIN. With absent
+    // metadata it cannot serve as proof of untrusted-Origin rejection.
+    [
+      {
+        crossOrigin: "https://berinkarjala.netlify.app",
+        crossSiteHeader: null,
+      },
+      "originMatch=false",
+    ],
+    [{ crossOrigin: "https://unapproved.invalid" }, "originMatch=false"],
+    [{ crossCookie: true }, "cookiePresent=true"],
+    [{ crossSiteHeader: "same-site" }, "fetchSite=same-site"],
+    [{ crossSiteHeader: "same-origin" }, "fetchSite=same-origin"],
+    [{ crossSiteHeader: secret }, "fetchSite=other"],
+  ]) {
+    const f = fixture(extra);
+    await assert.rejects(runProxyCheck(f.options), (error) => {
+      assert.ok(error instanceof ProxyCheckError);
+      assert.ok(error.message.includes(field));
+      assert.ok(!error.message.includes(secret));
+      assert.ok(!error.message.includes(cookieValue));
+      assert.ok(!error.message.includes("https://unapproved.invalid"));
+      return true;
+    });
+    assert.ok(
+      f.publicRequests.every((request) => request.options.method === "GET"),
+    );
+  }
 });
 
 test("private model preflight verifies identity and reload without claiming cross-site acceptance", async () => {

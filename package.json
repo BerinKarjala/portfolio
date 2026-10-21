@@ -48,7 +48,7 @@
     "check:page-builder": "node scripts/check-page-builder-requirements.mjs",
     "check:page-builder:build": "node scripts/check-page-builder-build.mjs",
     "test:css-studio:server": "node --test server/css-studio/runtime/quota.runtime.mjs",
-    "test:css-studio:server:browser": "node --test server/css-studio/runtime/http.browser.mjs"
+    "test:css-studio:server:browser": "node --test server/css-studio/runtime/http.browser.mjs server/css-studio/runtime/proxy-fetch.browser.mjs"
   },
   "eslintConfig": {
     "extends": [

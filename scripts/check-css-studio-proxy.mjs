@@ -4,7 +4,9 @@ import { readJson, readBytes } from "../src/shared/studioTransfer.js";
 export const PROXY_PREVIEW =
   "https://deploy-preview-245--berinkarjala.netlify.app";
 export const PROXY_BACKEND = "https://css-studio-ai.berin-karjala.workers.dev";
-const FOREIGN_ORIGIN = "https://berinkarjala.netlify.app";
+// Production is an approved APP_ORIGIN and cannot prove untrusted-Origin
+// rejection when Fetch Metadata is absent at browser interception.
+const FOREIGN_ORIGIN = "https://example.com";
 const COOKIE_NAME = "__Host-css-studio";
 const API = "/api/css-studio/";
 const PROBE_HEADER = "x-css-studio-proxy-probe";
@@ -213,6 +215,9 @@ async function inspectProxy(
     let phase = "loading",
       blocked = false,
       crossRequestSafe = false,
+      crossOriginMatch = false,
+      crossCookiePresent = false,
+      crossFetchSite = "unobserved",
       crossReply,
       routeFailure = "none";
     stage = "request-guard";
@@ -251,10 +256,21 @@ async function inspectProxy(
           return;
         }
         if (classification === "cross-origin-check") {
+          crossOriginMatch = headers.origin === FOREIGN_ORIGIN;
+          crossCookiePresent = Boolean(headers.cookie);
+          const metadata = headers["sec-fetch-site"];
+          crossFetchSite =
+            metadata === undefined
+              ? "absent"
+              : ["cross-site", "same-site", "same-origin", "none"].includes(
+                    metadata,
+                  )
+                ? metadata
+                : "other";
           crossRequestSafe =
-            !headers.cookie &&
-            headers.origin === FOREIGN_ORIGIN &&
-            headers["sec-fetch-site"] === "cross-site";
+            !crossCookiePresent &&
+            crossOriginMatch &&
+            ["absent", "cross-site"].includes(crossFetchSite);
           if (!crossRequestSafe) {
             blocked = true;
             await route.abort("blockedbyclient");
@@ -267,7 +283,7 @@ async function inspectProxy(
             signal: AbortSignal.timeout(15000),
             headers: {
               Origin: headers.origin,
-              "Sec-Fetch-Site": headers["sec-fetch-site"],
+              ...(metadata === undefined ? {} : { "Sec-Fetch-Site": metadata }),
               "X-CSS-Studio-Canary": secret,
               "X-CSS-Studio": "1",
               "content-type": "application/json",
@@ -556,7 +572,7 @@ async function inspectProxy(
           crossReply?.status === 403 &&
           crossReply.hasCookie === false &&
           crossReply.backendRejected === true,
-        `Cross-origin session protection did not hold. [safeRequest=${crossRequestSafe}; blocked=${blocked}; upstreamStatus=${crossReply?.status ?? "none"}; cookie=${crossReply?.hasCookie ?? "unknown"}; backendRejected=${crossReply?.backendRejected ?? "unknown"}; routeCategory=${routeFailure}]`,
+        `Cross-origin session protection did not hold. [safeRequest=${crossRequestSafe}; originMatch=${crossOriginMatch}; cookiePresent=${crossCookiePresent}; fetchSite=${crossFetchSite}; blocked=${blocked}; upstreamStatus=${crossReply?.status ?? "none"}; cookie=${crossReply?.hasCookie ?? "unknown"}; backendRejected=${crossReply?.backendRejected ?? "unknown"}; routeCategory=${routeFailure}]`,
       );
       phase = "private";
       stage = "return-preview";
@@ -598,6 +614,12 @@ async function inspectProxy(
         fixture: "browser-proxy-identity",
         cookieRetained: true,
         crossOriginRejected: includeCrossOrigin,
+        ...(includeCrossOrigin
+          ? {
+              fetchMetadataObserved: crossFetchSite !== "absent",
+              interceptedFetchSite: crossFetchSite,
+            }
+          : {}),
         remainingPrompts: before.prompts,
         remainingImages: before.images,
         sharedRemaining: before.sharedRemaining,
@@ -613,6 +635,12 @@ async function inspectProxy(
       session: true,
       cookie: true,
       crossOriginRejected: includeCrossOrigin,
+      ...(includeCrossOrigin
+        ? {
+            fetchMetadataObserved: crossFetchSite !== "absent",
+            interceptedFetchSite: crossFetchSite,
+          }
+        : {}),
       remainingPrompts: before.prompts,
       remainingImages: before.images,
       sharedRemaining: before.sharedRemaining,
