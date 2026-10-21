@@ -88,13 +88,16 @@ test("keyboard sensor drops a palette component and Layers provides keyboard nav
   page,
 }) => {
   await boot(page);
-  await page.getByRole("button", { name: "Drag Heading", exact: true }).focus();
+  const handle = page.getByRole("button", { name: "Drag Heading", exact: true });
+  await handle.focus();
+  await expect(handle).toBeFocused();
   await page.keyboard.press("Space");
   await page.keyboard.press("ArrowDown");
   await expect(page.locator('[data-drop-id="root-end"]')).toHaveAttribute(
     "data-over",
     "true",
   );
+  await expect(handle).toBeFocused();
   await page.keyboard.press("Space");
   await expect(page.getByTestId("canvas-heading")).toBeVisible();
   await add(page, "Paragraph");
@@ -118,6 +121,48 @@ test("keyboard sensor drops a palette component and Layers provides keyboard nav
       .first(),
   ).toHaveAttribute("data-type", "paragraph");
 });
+
+for (const finish of ["Space", "Enter", "Escape"]) {
+  test(`keyboard drag handles ${finish} before deferred timers run`, async ({
+    page,
+  }) => {
+    await boot(page);
+    // Hold the upstream sensor's deferred registration without delaying input.
+    // React can render the active drag/closest target while that timer is held.
+    await page.clock.install({ time: new Date("2026-10-21T12:00:00Z") });
+    await page.clock.pauseAt(new Date("2026-10-21T12:00:01Z"));
+    const handle = page.getByRole("button", { name: "Drag Heading", exact: true });
+    await handle.focus();
+    try {
+      await page.keyboard.press("Space");
+      await expect(handle).toBeFocused();
+      await expect(handle).toHaveAttribute("aria-pressed", "true");
+      // With only one target, closestCenter marks it over even before arrows.
+      await expect(page.locator('[data-drop-id="root-end"]')).toHaveAttribute(
+        "data-over",
+        "true",
+      );
+      await page.keyboard.press("ArrowDown");
+      await expect(handle).toBeFocused();
+      await page.keyboard.press(finish);
+      await expect(handle).not.toHaveAttribute("aria-pressed");
+      if (finish === "Escape")
+        await expect(page.getByTestId("canvas-heading")).toHaveCount(0);
+      else await expect(page.getByTestId("canvas-heading")).toBeVisible();
+    } finally {
+      await page.clock.resume();
+    }
+    // A finished gesture must not leave a listener that consumes the next pickup.
+    await handle.focus();
+    await page.keyboard.press("Space");
+    await expect(handle).toHaveAttribute("aria-pressed", "true");
+    await page.keyboard.press("Escape");
+    await expect(handle).not.toHaveAttribute("aria-pressed");
+    await expect(page.getByTestId("canvas-heading")).toHaveCount(
+      finish === "Escape" ? 0 : 1,
+    );
+  });
+}
 
 test("free-form drag and resize use scaled nested content boxes and each gesture is one undo action", async ({
   page,
