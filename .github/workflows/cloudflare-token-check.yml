@@ -54,6 +54,8 @@ jobs:
               throw new CheckError("Cloudflare returned an unexpected response. Try again later.");
             }
             if (!response.ok || data?.success !== true) {
+              const ipRestriction = Array.isArray(data?.errors) && data.errors.some((item) => item?.code === 9109 && typeof item.message === "string" && /\bcannot use\b.*\btoken\b.*\b(?:location|ip)\b/i.test(item.message));
+              if (ipRestriction) throw new CheckError("Cloudflare blocked the token from GitHub's network. Review Client IP address filtering on this token; token verification does not enforce that restriction.");
               const codes = Array.isArray(data?.errors)
                 ? data.errors.map((item) => item?.code).filter(Number.isSafeInteger).slice(0, 3)
                 : [];
