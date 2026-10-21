@@ -54,11 +54,10 @@ jobs:
               throw new CheckError("Cloudflare returned an unexpected response. Try again later.");
             }
             if (!response.ok || data?.success !== true) {
-              const ipRestriction = Array.isArray(data?.errors) && data.errors.some((item) => item?.code === 9109 && typeof item.message === "string" && /\bcannot use\b.*\btoken\b.*\b(?:location|ip)\b/i.test(item.message));
+              const errors = Array.isArray(data?.errors) ? data.errors.flatMap((item) => [item, ...(Array.isArray(item?.error_chain) ? item.error_chain : [])]) : [];
+              const ipRestriction = errors.some((item) => item?.code === 9109 && typeof item.message === "string" && /\bcannot use\b.*\btoken\b.*\b(?:location|ip)\b/i.test(item.message));
               if (ipRestriction) throw new CheckError("Cloudflare blocked the token from GitHub's network. Review Client IP address filtering on this token; token verification does not enforce that restriction.");
-              const codes = Array.isArray(data?.errors)
-                ? data.errors.map((item) => item?.code).filter(Number.isSafeInteger).slice(0, 3)
-                : [];
+              const codes = [...new Set(errors.map((item) => item?.code).filter(Number.isSafeInteger))].slice(0, 3);
               throw new CheckError(failure + " (HTTP " + response.status + (codes.length ? "; Cloudflare code " + codes.join(", ") : "") + ").");
             }
             return data.result;
@@ -68,17 +67,26 @@ jobs:
             if (/\s/.test(token)) throw new CheckError("The saved value contains spaces within it. Update the GitHub secret with only the token value, without a command or Authorization header.");
             const identity = await read("/user/tokens/verify", "Cloudflare rejected the token. Check its value, expiry and activation time.");
             if (identity?.status !== "active") throw new CheckError("The Cloudflare token is not active. Check its expiry and activation time.");
+            if (identity.not_before && (!Number.isFinite(Date.parse(identity.not_before)) || Date.parse(identity.not_before) > Date.now())) throw new CheckError("The token is not yet valid. Review its TTL start date in Cloudflare.");
+            if (identity.expires_on && (!Number.isFinite(Date.parse(identity.expires_on)) || Date.parse(identity.expires_on) <= Date.now())) throw new CheckError("The token has expired. Review its TTL end date in Cloudflare.");
             console.log("PASS: Cloudflare accepts the saved token.");
-            const workers = await read("/accounts/d33da711f0acb00005de85f10c11ab0f/workers/scripts", "Cloudflare accepted the token, but Worker access failed. Check the account ID, token scope and Workers Scripts permission.");
-            if (!Array.isArray(workers) || !workers.some((item) => item?.id === "css-studio-ai")) {
-              throw new CheckError("Worker access succeeded, but css-studio-ai was not found. Confirm the exact Worker name and URL.");
+            const probes = await Promise.allSettled([
+              (async () => {
+                const settings = await read("/accounts/d33da711f0acb00005de85f10c11ab0f/workers/scripts/css-studio-ai/settings", "The token is valid, but reading css-studio-ai failed. Check token scope and Workers Scripts permission.");
+                if (!Array.isArray(settings?.bindings) || !settings.bindings.some((binding) => binding.type === "ai" && binding.name === "AI")) throw new CheckError("Worker access succeeded, but the Workers AI binding named AI is missing.");
+                console.log("PASS: CSS Studio Worker access and AI binding verified.");
+              })(),
+              (async () => {
+                await read("/accounts/d33da711f0acb00005de85f10c11ab0f/ai/models/search?per_page=1", "The token is valid, but reading the Workers AI model catalogue failed. Check token scope and Workers AI Read permission.");
+                console.log("PASS: Workers AI catalogue access verified without inference.");
+              })(),
+            ]);
+            for (const result of probes) {
+              if (result.status === "rejected") {
+                console.error("::error::" + (result.reason instanceof CheckError ? result.reason.message : "The check could not complete. Check Cloudflare availability and retry."));
+                process.exitCode = 1;
+              }
             }
-            console.log("PASS: Access to the account's Workers verified.");
-            const settings = await read("/accounts/d33da711f0acb00005de85f10c11ab0f/workers/scripts/css-studio-ai/settings", "The token is valid, but access to css-studio-ai failed. Check the account, Worker name and Workers Scripts permission.");
-            if (!Array.isArray(settings?.bindings) || !settings.bindings.some((binding) => binding.type === "ai" && binding.name === "AI")) {
-              throw new CheckError("Worker access succeeded, but the Workers AI binding named AI is missing.");
-            }
-            console.log("PASS: CSS Studio Worker access and AI binding verified.");
             console.log("No deployment or AI inference was performed. This check does not establish write permissions or budget readiness.");
           } catch (error) {
             console.error("::error::" + (error instanceof CheckError ? error.message : "The check could not complete. Check Cloudflare availability and retry."));
