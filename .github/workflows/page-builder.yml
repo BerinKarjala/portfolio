@@ -38,6 +38,8 @@ jobs:
       - run: npm run check:page-builder:build
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run test:e2e -- e2e/page-builder-canvas.spec.js --grep "mouse palette" --workers=1 --retries=0
+      - name: Wizard browser regression without retries
+        run: npm run test:e2e -- e2e/page-builder-wizard.spec.js --workers=2 --retries=0
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: always()

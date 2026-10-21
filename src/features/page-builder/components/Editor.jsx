@@ -33,7 +33,7 @@ export default function Editor() {
   };
 
   useEffect(() => {
-    headingRef.current?.focus();
+    if (!document.querySelector(".pb-element-wizard-dialog[open]")) headingRef.current?.focus();
   }, [project.projectId, readOnly]);
 
   useEffect(() => {

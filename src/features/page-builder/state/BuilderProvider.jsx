@@ -19,6 +19,7 @@ import {
 import { builderReducer, initialState } from "./builderReducer";
 import { resetToOrigin } from "../domain/reset";
 import { localInstanceCommand } from "../domain/masters";
+import { applyCommand } from "../domain/structure";
 
 const BuilderContext = createContext(null);
 export function useBuilder() {
@@ -405,6 +406,36 @@ export default function BuilderProvider({ children }) {
     (ids, toggle = false) => dispatch({ type: "SELECT", ids, toggle }),
     [],
   );
+  const configureElement = useCallback(
+    (command) => {
+      const editor = stateRef.current.editor;
+      if (!editor || editor.readOnly)
+        return { error: "This project is read-only." };
+      try {
+        if (!repository.owns(editor.project.projectId, token))
+          throw new StorageConflictError(
+            "Another tab owns this project. Download unsaved JSON before taking over.",
+          );
+      } catch (error) {
+        dispatch({ type: "READ_ONLY", message: error.message });
+        return { error: error.message };
+      }
+      try {
+        if (command.type !== "CONFIGURE_ELEMENT" || editor.masterEdit)
+          throw new Error(
+            "Exit master editing before configuring a local copy.",
+          );
+        // A synchronous result lets the dialog advance only after the complete
+        // candidate passes. The reducer independently rechecks the same boundary.
+        const result = applyCommand(editor.project, command);
+        dispatch({ type: "COMMAND", command });
+        return result;
+      } catch (error) {
+        return { error: error.message };
+      }
+    },
+    [repository, token],
+  );
   return (
     <BuilderContext.Provider
       value={{
@@ -428,6 +459,7 @@ export default function BuilderProvider({ children }) {
         resetTemplate,
         editMetadata,
         sendCommand,
+        configureElement,
         select,
       }}
     >

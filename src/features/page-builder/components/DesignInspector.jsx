@@ -66,7 +66,7 @@ function readColors() {
     return { saved: [], recent: [] };
   }
 }
-export function ColorField({ label, value, onCommit }) {
+export function ColorField({ label, value, onCommit, draft = false }) {
   const { report } = useBuilder();
   const [colors, setColors] = useState(readColors);
   useEffect(() => {
@@ -96,6 +96,10 @@ export function ColorField({ label, value, onCommit }) {
     }
   }
   function commit(color) {
+    if (draft) {
+      onCommit(color);
+      return;
+    }
     try {
       const next = colorToHex(color);
       onCommit(next);
@@ -249,121 +253,143 @@ function FocalField({ label, value, onCommit }) {
     </div>
   );
 }
-export function StyleFields({ values, change, remove, groups = CATEGORIES }) {
+export function StyleFields({
+  values,
+  change,
+  remove,
+  groups = CATEGORIES,
+  fields,
+  expanded = false,
+  draft = false,
+}) {
   const [linked, setLinked] = useState({ padding: false, margin: false });
-  return groups.map((category) => (
-    <details
-      className="pb-style-group"
-      key={category}
-      open={groups.length === 1}
-    >
-      <summary>{category}</summary>
-      {category === "Layout" &&
-        ["padding", "margin"].map((kind) => (
-          <label key={kind} className="pb-checkbox">
-            <input
-              type="checkbox"
-              checked={linked[kind]}
-              onChange={(event) =>
-                setLinked({ ...linked, [kind]: event.target.checked })
-              }
-            />
-            Link {kind} sides
-          </label>
-        ))}
-      {STYLE_GROUPS[category].map((key) => {
-        const value = values[key];
-        const label = title(key);
-        const commit = (v) => {
-          if (
-            (key.startsWith("margin") || key.startsWith("padding")) &&
-            linked[key.startsWith("margin") ? "margin" : "padding"]
-          ) {
-            const kind = key.startsWith("margin") ? "margin" : "padding";
-            change(
-              Object.fromEntries(
-                ["Top", "Right", "Bottom", "Left"].map((side) => [
-                  kind + side,
-                  v,
-                ]),
-              ),
+  return groups
+    .filter(
+      (category) =>
+        !fields || STYLE_GROUPS[category].some((key) => fields.includes(key)),
+    )
+    .map((category) => (
+      <details
+        className="pb-style-group"
+        key={category}
+        open={expanded || groups.length === 1}
+      >
+        <summary>{category}</summary>
+        {category === "Layout" &&
+          ["padding", "margin"]
+            .filter((kind) => !fields || fields.includes(kind + "Top"))
+            .map((kind) => (
+              <label key={kind} className="pb-checkbox">
+                <input
+                  type="checkbox"
+                  checked={linked[kind]}
+                  onChange={(event) =>
+                    setLinked({ ...linked, [kind]: event.target.checked })
+                  }
+                />
+                Link {kind} sides
+              </label>
+            ))}
+        {STYLE_GROUPS[category]
+          .filter((key) => !fields || fields.includes(key))
+          .map((key) => {
+            const value = values[key];
+            const label = title(key);
+            const commit = (v) => {
+              if (
+                (key.startsWith("margin") || key.startsWith("padding")) &&
+                linked[key.startsWith("margin") ? "margin" : "padding"]
+              ) {
+                const kind = key.startsWith("margin") ? "margin" : "padding";
+                change(
+                  Object.fromEntries(
+                    ["Top", "Right", "Bottom", "Left"].map((side) => [
+                      kind + side,
+                      v,
+                    ]),
+                  ),
+                );
+              } else change({ [key]: v });
+            };
+            let control;
+            if (["color", "backgroundColor", "borderColor"].includes(key))
+              control = (
+                <ColorField
+                  label={label}
+                  value={value}
+                  onCommit={commit}
+                  draft={draft}
+                />
+              );
+            else if (ENUMS[key])
+              control = (
+                <label>
+                  {label}
+                  <select
+                    aria-label={label}
+                    value={value ?? ""}
+                    onChange={(event) =>
+                      commit(
+                        key === "fontWeight"
+                          ? Number(event.target.value)
+                          : event.target.value,
+                      )
+                    }
+                  >
+                    <option value="" disabled>
+                      Inherit / Mixed
+                    </option>
+                    {ENUMS[key].map((v) => (
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              );
+            else if (["boxShadow", "textShadow"].includes(key) && !draft)
+              control = (
+                <ShadowField label={label} value={value} onCommit={commit} />
+              );
+            else if (["objectPosition", "backgroundPosition"].includes(key))
+              control = (
+                <FocalField label={label} value={value} onCommit={commit} />
+              );
+            else
+              control = (
+                <CommitField
+                  label={label}
+                  value={value}
+                  type={NUMBERS.includes(key) ? "number" : "text"}
+                  step="0.1"
+                  placeholder={
+                    key === "backgroundImage" ? "https://…" : "Inherit / Mixed"
+                  }
+                  onCommit={commit}
+                />
+              );
+            return (
+              <div key={key} className="pb-style-control">
+                {control}
+                {remove && Object.hasOwn(values, key) && (
+                  <button
+                    type="button"
+                    aria-label={`Reset ${label.toLowerCase()} override`}
+                    onClick={() => remove(key)}
+                  >
+                    ↺
+                  </button>
+                )}
+                {key.startsWith("margin") && String(value).startsWith("-") && (
+                  <small className="pb-warning">
+                    Negative margins can overlap nearby content.
+                  </small>
+                )}
+              </div>
             );
-          } else change({ [key]: v });
-        };
-        let control;
-        if (["color", "backgroundColor", "borderColor"].includes(key))
-          control = (
-            <ColorField label={label} value={value} onCommit={commit} />
-          );
-        else if (ENUMS[key])
-          control = (
-            <label>
-              {label}
-              <select
-                aria-label={label}
-                value={value ?? ""}
-                onChange={(event) =>
-                  commit(
-                    key === "fontWeight"
-                      ? Number(event.target.value)
-                      : event.target.value,
-                  )
-                }
-              >
-                <option value="" disabled>
-                  Inherit / Mixed
-                </option>
-                {ENUMS[key].map((v) => (
-                  <option key={v} value={v}>
-                    {v}
-                  </option>
-                ))}
-              </select>
-            </label>
-          );
-        else if (["boxShadow", "textShadow"].includes(key))
-          control = (
-            <ShadowField label={label} value={value} onCommit={commit} />
-          );
-        else if (["objectPosition", "backgroundPosition"].includes(key))
-          control = (
-            <FocalField label={label} value={value} onCommit={commit} />
-          );
-        else
-          control = (
-            <CommitField
-              label={label}
-              value={value}
-              type={NUMBERS.includes(key) ? "number" : "text"}
-              step="0.1"
-              placeholder={
-                key === "backgroundImage" ? "https://…" : "Inherit / Mixed"
-              }
-              onCommit={commit}
-            />
-          );
-        return (
-          <div key={key} className="pb-style-control">
-            {control}
-            {remove && Object.hasOwn(values, key) && (
-              <button
-                type="button"
-                aria-label={`Reset ${label.toLowerCase()} override`}
-                onClick={() => remove(key)}
-              >
-                ↺
-              </button>
-            )}
-            {key.startsWith("margin") && String(value).startsWith("-") && (
-              <small className="pb-warning">
-                Negative margins can overlap nearby content.
-              </small>
-            )}
-          </div>
-        );
-      })}
-    </details>
-  ));
+          })}
+      </details>
+    ));
 }
 function Presets({ nodes }) {
   const { state, sendCommand } = useBuilder();
