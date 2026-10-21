@@ -1,0 +1,75 @@
+name: Check Cloudflare access
+
+on:
+  push:
+    branches: [css-studio-token-check]
+    paths: [.github/workflows/cloudflare-token-check.yml]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  verify:
+    name: Verify token and Worker binding
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Check Cloudflare credentials without deploying
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          class CheckError extends Error {}
+          const token = process.env.CLOUDFLARE_API_TOKEN;
+          async function read(path, failure) {
+            const response = await fetch("https://api.cloudflare.com/client/v4" + path, {
+              method: "GET",
+              headers: { Authorization: "Bearer " + token },
+              redirect: "error",
+              signal: AbortSignal.timeout(10000),
+            });
+            if (!response.ok) throw new CheckError(failure);
+            const reader = response.body.getReader();
+            const parts = [];
+            let size = 0;
+            try {
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                size += value.byteLength;
+                if (size > 65536) {
+                  await reader.cancel();
+                  throw new CheckError("Cloudflare returned an unexpectedly large response.");
+                }
+                parts.push(value);
+              }
+            } finally {
+              reader.releaseLock();
+            }
+            let data;
+            try {
+              data = JSON.parse(await new Blob(parts).text());
+            } catch {
+              throw new CheckError("Cloudflare returned an unexpected response. Try again later.");
+            }
+            if (data?.success !== true) throw new CheckError(failure);
+            return data.result;
+          }
+          try {
+            if (!token) throw new CheckError("GitHub secret CLOUDFLARE_API_TOKEN is missing or empty.");
+            if (/\s/.test(token)) throw new CheckError("The saved token contains whitespace. Update the GitHub secret with the original token.");
+            const identity = await read("/user/tokens/verify", "Cloudflare rejected the token. Check its value, expiry and activation time.");
+            if (identity?.status !== "active") throw new CheckError("The Cloudflare token is not active. Check its expiry and activation time.");
+            console.log("PASS: Cloudflare accepts the saved token.");
+            const settings = await read("/accounts/d33da711f0acb00005de85f10c11ab0f/workers/scripts/css-studio-ai/settings", "The token is valid, but access to css-studio-ai failed. Check the account, Worker name and Workers Scripts permission.");
+            if (!Array.isArray(settings?.bindings) || !settings.bindings.some((binding) => binding.type === "ai" && binding.name === "AI")) {
+              throw new CheckError("Worker access succeeded, but the Workers AI binding named AI is missing.");
+            }
+            console.log("PASS: CSS Studio Worker access and AI binding verified.");
+            console.log("No deployment or AI inference was performed. This check does not establish write permissions or budget readiness.");
+          } catch (error) {
+            console.error("::error::" + (error instanceof CheckError ? error.message : "The check could not complete. Check Cloudflare availability and retry."));
+            process.exitCode = 1;
+          }
+          NODE
