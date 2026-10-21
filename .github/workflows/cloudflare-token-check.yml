@@ -29,7 +29,6 @@ jobs:
               redirect: "error",
               signal: AbortSignal.timeout(10000),
             });
-            if (!response.ok) throw new CheckError(failure);
             const reader = response.body.getReader();
             const parts = [];
             let size = 0;
@@ -51,9 +50,15 @@ jobs:
             try {
               data = JSON.parse(await new Blob(parts).text());
             } catch {
+              if (!response.ok) throw new CheckError(failure + " (HTTP " + response.status + ").");
               throw new CheckError("Cloudflare returned an unexpected response. Try again later.");
             }
-            if (data?.success !== true) throw new CheckError(failure);
+            if (!response.ok || data?.success !== true) {
+              const codes = Array.isArray(data?.errors)
+                ? data.errors.map((item) => item?.code).filter(Number.isSafeInteger).slice(0, 3)
+                : [];
+              throw new CheckError(failure + " (HTTP " + response.status + (codes.length ? "; Cloudflare code " + codes.join(", ") : "") + ").");
+            }
             return data.result;
           }
           try {
