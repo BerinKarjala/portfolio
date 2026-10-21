@@ -1,5 +1,5 @@
 import { pathToFileURL } from "node:url";
-import { readJson } from "../src/shared/studioTransfer.js";
+import { readJson, readBytes } from "../src/shared/studioTransfer.js";
 
 export const PROXY_PREVIEW =
   "https://deploy-preview-245--berinkarjala.netlify.app";
@@ -203,7 +203,8 @@ export async function runProxyCheck({
     const context = await browser.newContext({ serviceWorkers: "block" });
     let phase = "loading",
       blocked = false,
-      crossRequestSafe = false;
+      crossRequestSafe = false,
+      crossReply;
     stage = "request-guard";
     context.on("response", (response) => {
       if ([301, 302, 303, 307, 308].includes(response.status())) blocked = true;
@@ -248,13 +249,45 @@ export async function runProxyCheck({
             !headers.cookie &&
             headers.origin === FOREIGN_ORIGIN &&
             headers["sec-fetch-site"] === "cross-site";
-          await route.continue({
+          if (!crossRequestSafe) {
+            blocked = true;
+            await route.abort("blockedbyclient");
+            return;
+          }
+          const upstream = await fetch(PROXY_PREVIEW + API + "session", {
+            method: "POST",
+            redirect: "error",
+            cache: "no-store",
+            signal: AbortSignal.timeout(15000),
             headers: {
               ...headers,
               "X-CSS-Studio-Canary": secret,
               "X-CSS-Studio": "1",
               "content-type": "application/json",
             },
+            body: "{}",
+          });
+          // Chromium may hide an opaque JSON rejection from response events.
+          // Inspect this exact intercepted request's upstream response before
+          // delivering it, without relying on page access to forbidden data.
+          crossReply = {
+            status: upstream.status,
+            hasCookie: upstream.headers.has("set-cookie"),
+          };
+          if (crossReply.status !== 403 || crossReply.hasCookie) {
+            blocked = true;
+            await upstream.body?.cancel();
+            await route.abort("blockedbyclient");
+            return;
+          }
+          const bytes = await readBytes(upstream, 4096);
+          const responseHeaders = new Headers(upstream.headers);
+          responseHeaders.delete("content-encoding");
+          responseHeaders.delete("content-length");
+          await route.fulfill({
+            status: upstream.status,
+            headers: Object.fromEntries(responseHeaders),
+            body: Buffer.from(bytes),
           });
           return;
         }
@@ -467,43 +500,35 @@ export async function runProxyCheck({
       timeout: 15000,
     });
     stage = "cross-origin-request";
-    const [cross, foreignOutcome] = await Promise.all([
-      page.waitForResponse(
-        (response) =>
-          response.url() === PROXY_PREVIEW + API + "session" &&
-          response.request().method() === "POST",
-        { timeout: 15000 },
-      ),
-      page.evaluate(
-        async ({ kind, target }) => {
-          if (kind === "cross-origin") {
-            try {
-              await fetch(target, {
-                method: "POST",
-                mode: "no-cors",
-                credentials: "include",
-                redirect: "error",
-                signal: AbortSignal.timeout(15000),
-                body: "{}",
-              });
-              return "opaque-response";
-            } catch (error) {
-              // Chromium can block the opaque JSON rejection itself. This is
-              // acceptable only alongside the observed, cookie-free 403 below.
-              if (error instanceof TypeError) return "blocked-response";
-              throw error;
-            }
+    const foreignOutcome = await page.evaluate(
+      async ({ kind, target }) => {
+        if (kind === "cross-origin") {
+          try {
+            await fetch(target, {
+              method: "POST",
+              mode: "no-cors",
+              credentials: "include",
+              redirect: "error",
+              signal: AbortSignal.timeout(15000),
+              body: "{}",
+            });
+            return "opaque-response";
+          } catch (error) {
+            // Chromium can block the opaque JSON rejection itself. This is
+            // acceptable only alongside the observed, cookie-free 403 below.
+            if (error instanceof TypeError) return "blocked-response";
+            throw error;
           }
-        },
-        { kind: "cross-origin", target: PROXY_PREVIEW + API + "session" },
-      ),
-    ]);
+        }
+      },
+      { kind: "cross-origin", target: PROXY_PREVIEW + API + "session" },
+    );
     requireCheck(
       !blocked &&
         crossRequestSafe &&
         ["opaque-response", "blocked-response"].includes(foreignOutcome) &&
-        cross.status() === 403 &&
-        (await cross.headerValues("set-cookie")).length === 0,
+        crossReply?.status === 403 &&
+        crossReply.hasCookie === false,
       "Cross-origin session protection did not hold.",
     );
     phase = "private";

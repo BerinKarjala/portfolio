@@ -141,15 +141,7 @@ function fixture({
       headerValues: async (name) =>
         name === "set-cookie" ? result.cookies || [] : [],
     };
-    if (result.noResponse && waiting) {
-      const reject = waiting.reject;
-      waiting = null;
-      reject(
-        Object.assign(Error("Private fixture timeout"), {
-          name: "TimeoutError",
-        }),
-      );
-    } else if (waiting?.predicate(response)) {
+    if (waiting?.predicate(response)) {
       const resolve = waiting.resolve;
       waiting = null;
       resolve(response);
@@ -176,8 +168,8 @@ function fixture({
       return { request: () => req, status: () => 200 };
     },
     waitForResponse: (predicate) =>
-      new Promise((resolve, reject) => {
-        waiting = { predicate, resolve, reject };
+      new Promise((resolve) => {
+        waiting = { predicate, resolve };
       }),
     evaluate: async (_fn, args) => {
       if (evaluationFailure) throw evaluationFailure;
@@ -196,7 +188,6 @@ function fixture({
             {
               status: crossStatus,
               cookies: crossResponseCookie ? [cookieHeader] : [],
-              noResponse: crossNoResponse,
             },
           );
           if (crossFetchRejects)
@@ -319,6 +310,25 @@ function fixture({
       fetch: async (url, options) => {
         publicRequests.push({ url, options });
         if (transportFailure) throw Error(secret + cookieValue);
+        if (url === PROXY_PREVIEW + "/api/css-studio/session") {
+          assert.equal(options.method, "POST");
+          assert.equal(options.redirect, "error");
+          assert.equal(
+            options.headers.origin,
+            "https://css-studio-cross-origin.invalid",
+          );
+          assert.equal(options.headers["sec-fetch-site"], "cross-site");
+          assert.ok(!options.headers.cookie);
+          if (crossNoResponse) throw Error(secret + cookieValue);
+          return new Response("{}", {
+            status: crossStatus,
+            headers: {
+              "content-type": "application/json",
+              "cache-control": "no-store",
+              ...(crossResponseCookie ? { "set-cookie": cookieHeader } : {}),
+            },
+          });
+        }
         return Response.json(
           { available: false },
           { headers: { "cache-control": "no-store" } },
@@ -332,7 +342,7 @@ test("verifies browser cookie round-trip and cross-origin rejection without prop
   const f = fixture();
   const result = await runProxyCheck(f.options);
   assert.equal(result.sharedRemaining, 6000);
-  assert.equal(f.publicRequests.length, 4);
+  assert.equal(f.publicRequests.length, 5);
   assert.ok(f.isClosed());
   assert.ok(f.browserRequests.every((r) => !r.url.includes("propose")));
   assert.ok(
@@ -342,13 +352,14 @@ test("verifies browser cookie round-trip and cross-origin rejection without prop
         !r.headers["X-CSS-Studio-Canary"],
     ),
   );
-  const cross = f.headersSent.find(
+  const cross = f.publicRequests.find(
     (request) =>
-      request.headers.origin === "https://css-studio-cross-origin.invalid",
+      request.options.headers.origin ===
+      "https://css-studio-cross-origin.invalid",
   );
-  assert.equal(cross.headers["X-CSS-Studio"], "1");
-  assert.equal(cross.headers["content-type"], "application/json");
-  assert.ok(!cross.headers.cookie);
+  assert.equal(cross.options.headers["X-CSS-Studio"], "1");
+  assert.equal(cross.options.headers["content-type"], "application/json");
+  assert.ok(!cross.options.headers.cookie);
   for (const r of f.headersSent)
     if (r.headers["X-CSS-Studio-Canary"])
       assert.ok(r.url.startsWith(PROXY_PREVIEW + "/api/css-studio/"));
@@ -361,7 +372,7 @@ test("accepts an observed cookie-free 403 when the browser blocks its opaque res
   const result = await runProxyCheck(f.options);
   assert.equal(result.crossOriginRejected, true);
   assert.equal(result.sharedRemaining, 6000);
-  assert.equal(f.publicRequests.length, 4);
+  assert.equal(f.publicRequests.length, 5);
   assert.ok(!f.logs.join("\n").includes(secret));
   assert.ok(!f.logs.join("\n").includes(cookieValue));
 });
