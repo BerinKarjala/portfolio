@@ -181,6 +181,10 @@ function fixture({
           assert.equal(target, PROXY_PREVIEW + "/api/css-studio/session");
           assert.equal(options.mode, "no-cors");
           assert.equal(options.credentials, "include");
+          // Fetch rejects no-cors plus a non-follow redirect mode before the
+          // browser dispatches any request or Playwright can intercept it.
+          if (options.redirect !== "follow")
+            throw new TypeError("Failed to fetch " + secret + cookieValue);
           await routed(
             request(target, options.method, {
               origin: pageUrl.replace(/\/$/, ""),

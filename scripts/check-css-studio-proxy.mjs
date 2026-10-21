@@ -531,7 +531,10 @@ async function inspectProxy(
                 method: "POST",
                 mode: "no-cors",
                 credentials: "include",
-                redirect: "error",
+                // Fetch rejects no-cors with a non-follow redirect mode before
+                // dispatch. The exact intercepted target is forwarded above
+                // with redirect:error and must return a cookie-free 403.
+                redirect: "follow",
                 signal: AbortSignal.timeout(15000),
                 body: "{}",
               });
