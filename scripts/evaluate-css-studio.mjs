@@ -1,12 +1,15 @@
 import { pathToFileURL } from "node:url";
 import { deployProxyCheck } from "./deploy-css-studio-proxy.mjs";
-import { runProxyCheck, ProxyCheckError } from "./check-css-studio-proxy.mjs";
+import {
+  runProxyIdentityCheck,
+  ProxyCheckError,
+} from "./check-css-studio-proxy.mjs";
 import { runGptCheck, GptCheckError } from "./check-css-studio-gpt.mjs";
 import { GPT_THEME_PLAN } from "../server/css-studio/gptProvider.js";
 
 export async function evaluateStudio({
   deploy = deployProxyCheck,
-  proxy = runProxyCheck,
+  proxy = runProxyIdentityCheck,
   gpt = runGptCheck,
   now = Date.now,
 } = {}) {
@@ -16,7 +19,11 @@ export async function evaluateStudio({
     );
   return deploy({
     check: async (context) => {
-      await proxy(context);
+      const proof = await proxy(context);
+      if (proof?.session !== true || proof?.cookie !== true)
+        throw new ProxyCheckError(
+          "Private model evaluation requires verified proxy identity and cookies.",
+        );
       return gpt(context);
     },
   });

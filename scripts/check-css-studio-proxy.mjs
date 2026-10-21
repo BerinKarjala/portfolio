@@ -128,13 +128,22 @@ function sameSnapshot(a, b) {
   );
 }
 
-export async function runProxyCheck({
-  secret,
-  chromium,
-  fetch = globalThis.fetch,
-  now = Date.now,
-  log = console.log,
-} = {}) {
+export function runProxyCheck(options) {
+  return inspectProxy(options, true);
+}
+export function runProxyIdentityCheck(options) {
+  return inspectProxy(options, false);
+}
+async function inspectProxy(
+  {
+    secret,
+    chromium,
+    fetch = globalThis.fetch,
+    now = Date.now,
+    log = console.log,
+  } = {},
+  includeCrossOrigin,
+) {
   requireCheck(
     typeof secret === "string" && /^[0-9a-f]{64}$/.test(secret),
     "Private proxy credential is missing or invalid.",
@@ -500,69 +509,71 @@ export async function runProxyCheck({
         sameSnapshot(before, validateSnapshot(after.value, day)),
       "Proxy verification changed the allowance counters.",
     );
-    phase = "cross-origin";
-    stage = "foreign-navigation";
-    const foreignPage = await page.goto(FOREIGN_ORIGIN + "/", {
-      waitUntil: "domcontentloaded",
-      timeout: 15000,
-    });
-    requireCheck(
-      !blocked &&
-        page.url() === FOREIGN_ORIGIN + "/" &&
-        foreignPage?.status() === 200,
-      "The separate real browser origin could not be loaded without redirects.",
-    );
-    stage = "cross-origin-request";
-    const foreignOutcome = await page.evaluate(
-      async ({ kind, target }) => {
-        if (kind === "cross-origin") {
-          try {
-            await fetch(target, {
-              method: "POST",
-              mode: "no-cors",
-              credentials: "include",
-              redirect: "error",
-              signal: AbortSignal.timeout(15000),
-              body: "{}",
-            });
-            return "opaque-response";
-          } catch (error) {
-            // Chromium can block the opaque JSON rejection itself. This is
-            // acceptable only alongside the observed, cookie-free 403 below.
-            if (error instanceof TypeError) return "blocked-response";
-            throw error;
+    if (includeCrossOrigin) {
+      phase = "cross-origin";
+      stage = "foreign-navigation";
+      const foreignPage = await page.goto(FOREIGN_ORIGIN + "/", {
+        waitUntil: "domcontentloaded",
+        timeout: 15000,
+      });
+      requireCheck(
+        !blocked &&
+          page.url() === FOREIGN_ORIGIN + "/" &&
+          foreignPage?.status() === 200,
+        "The separate real browser origin could not be loaded without redirects.",
+      );
+      stage = "cross-origin-request";
+      const foreignOutcome = await page.evaluate(
+        async ({ kind, target }) => {
+          if (kind === "cross-origin") {
+            try {
+              await fetch(target, {
+                method: "POST",
+                mode: "no-cors",
+                credentials: "include",
+                redirect: "error",
+                signal: AbortSignal.timeout(15000),
+                body: "{}",
+              });
+              return "opaque-response";
+            } catch (error) {
+              // Chromium can block the opaque JSON rejection itself. This is
+              // acceptable only alongside the observed, cookie-free 403 below.
+              if (error instanceof TypeError) return "blocked-response";
+              throw error;
+            }
           }
-        }
-      },
-      { kind: "cross-origin", target: PROXY_PREVIEW + API + "session" },
-    );
-    requireCheck(
-      !blocked &&
-        crossRequestSafe &&
-        ["opaque-response", "blocked-response"].includes(foreignOutcome) &&
-        crossReply?.status === 403 &&
-        crossReply.hasCookie === false &&
-        crossReply.backendRejected === true,
-      `Cross-origin session protection did not hold. [safeRequest=${crossRequestSafe}; blocked=${blocked}; upstreamStatus=${crossReply?.status ?? "none"}; cookie=${crossReply?.hasCookie ?? "unknown"}; backendRejected=${crossReply?.backendRejected ?? "unknown"}; routeCategory=${routeFailure}]`,
-    );
-    phase = "private";
-    stage = "return-preview";
-    const returned = await page.goto(PROXY_PREVIEW + "/", {
-      waitUntil: "domcontentloaded",
-      timeout: 30000,
-    });
-    requireCheck(
-      !blocked &&
-        page.url() === PROXY_PREVIEW + "/" &&
-        returned?.status() === 200 &&
-        !returned?.request().redirectedFrom(),
-      "An unexpected or redirected browser request was blocked.",
-    );
-    stage = "return-cookie";
-    requireCheck(
-      (await identity()) === cookie,
-      "Private proxy identity changed after foreign navigation.",
-    );
+        },
+        { kind: "cross-origin", target: PROXY_PREVIEW + API + "session" },
+      );
+      requireCheck(
+        !blocked &&
+          crossRequestSafe &&
+          ["opaque-response", "blocked-response"].includes(foreignOutcome) &&
+          crossReply?.status === 403 &&
+          crossReply.hasCookie === false &&
+          crossReply.backendRejected === true,
+        `Cross-origin session protection did not hold. [safeRequest=${crossRequestSafe}; blocked=${blocked}; upstreamStatus=${crossReply?.status ?? "none"}; cookie=${crossReply?.hasCookie ?? "unknown"}; backendRejected=${crossReply?.backendRejected ?? "unknown"}; routeCategory=${routeFailure}]`,
+      );
+      phase = "private";
+      stage = "return-preview";
+      const returned = await page.goto(PROXY_PREVIEW + "/", {
+        waitUntil: "domcontentloaded",
+        timeout: 30000,
+      });
+      requireCheck(
+        !blocked &&
+          page.url() === PROXY_PREVIEW + "/" &&
+          returned?.status() === 200 &&
+          !returned?.request().redirectedFrom(),
+        "An unexpected or redirected browser request was blocked.",
+      );
+      stage = "return-cookie";
+      requireCheck(
+        (await identity()) === cookie,
+        "Private proxy identity changed after foreign navigation.",
+      );
+    }
     stage = "final-status";
     const final = await call("status");
     requireCheck(
@@ -583,20 +594,22 @@ export async function runProxyCheck({
       JSON.stringify({
         fixture: "browser-proxy-identity",
         cookieRetained: true,
-        crossOriginRejected: true,
+        crossOriginRejected: includeCrossOrigin,
         remainingPrompts: before.prompts,
         remainingImages: before.images,
         sharedRemaining: before.sharedRemaining,
       }),
     );
     log(
-      "PASS: Chromium proxy identity, reload and cross-origin checks passed; no inference requested.",
+      includeCrossOrigin
+        ? "PASS: Chromium proxy identity, reload and cross-origin checks passed; no inference requested."
+        : "PASS: Chromium proxy identity and reload checks passed; cross-site acceptance remains unverified. No inference requested.",
     );
     return {
       browser: "chromium",
       session: true,
       cookie: true,
-      crossOriginRejected: true,
+      crossOriginRejected: includeCrossOrigin,
       remainingPrompts: before.prompts,
       remainingImages: before.images,
       sharedRemaining: before.sharedRemaining,

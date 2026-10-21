@@ -1,4 +1,4 @@
-name: CSS Studio private proxy and GPT evaluation
+name: CSS Studio private identity and GPT evaluation
 on:
   push:
     branches: [css-studio-evaluation]
@@ -29,7 +29,7 @@ jobs:
       - run: npm test -- server/css-studio scripts/check-css-studio-proxy.test.mjs scripts/deploy-css-studio-proxy.test.mjs scripts/check-css-studio-gpt.test.mjs scripts/evaluate-css-studio.test.mjs
       - run: npm run test:css-studio:server
       - run: npx --no-install playwright install --with-deps chromium
-      - name: Verify real preview cookies, then admit at most one 4000-Neuron GPT fixture
+      - name: Verify preview identity, then admit at most one private 4000-Neuron GPT fixture
         run: node scripts/evaluate-css-studio.mjs
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

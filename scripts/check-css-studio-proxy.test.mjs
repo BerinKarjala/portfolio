@@ -4,6 +4,7 @@ import { runInNewContext } from "node:vm";
 import {
   classifyProxyRequest,
   runProxyCheck,
+  runProxyIdentityCheck,
   PROXY_PREVIEW,
   PROXY_BACKEND,
   ProxyCheckError,
@@ -382,6 +383,26 @@ test("accepts an observed cookie-free 403 when the browser blocks its opaque res
   assert.equal(f.publicRequests.length, 5);
   assert.ok(!f.logs.join("\n").includes(secret));
   assert.ok(!f.logs.join("\n").includes(cookieValue));
+});
+
+test("private model preflight verifies identity and reload without claiming cross-site acceptance", async () => {
+  const f = fixture({ crossNoResponse: true });
+  const proof = await runProxyIdentityCheck(f.options);
+  assert.equal(proof.session, true);
+  assert.equal(proof.cookie, true);
+  assert.equal(proof.crossOriginRejected, false);
+  assert.equal(proof.sharedRemaining, 6000);
+  assert.equal(f.publicRequests.length, 4);
+  assert.ok(
+    f.publicRequests.every((request) => request.options.method === "GET"),
+  );
+  assert.ok(
+    f.browserRequests.every((request) => request.url.startsWith(PROXY_PREVIEW)),
+  );
+  assert.ok(
+    f.logs.join("\n").includes("cross-site acceptance remains unverified"),
+  );
+  assert.ok(!f.logs.join("\n").includes(secret));
 });
 
 test("a blocked browser fetch cannot hide a successful session, changed cookie or missing rejection response", async () => {

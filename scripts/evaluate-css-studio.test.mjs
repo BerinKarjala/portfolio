@@ -2,7 +2,7 @@ import { expect, it, vi } from "vitest";
 import { evaluateStudio } from "./evaluate-css-studio.mjs";
 import { GPT_THEME_PLAN } from "../server/css-studio/gptProvider.js";
 
-it("runs exactly one GPT check only after successful private proxy verification", async () => {
+it("runs one private GPT check after verified identity while retaining separate cross-site acceptance", async () => {
   const order = [];
   const gpt = vi.fn(async () => {
     order.push("gpt");
@@ -16,12 +16,34 @@ it("runs exactly one GPT check only after successful private proxy verification"
     },
     proxy: async () => {
       order.push("proxy");
+      return { session: true, cookie: true, crossOriginRejected: false };
     },
     gpt,
   });
   expect(order).toEqual(["deploy", "proxy", "gpt"]);
   expect(gpt).toHaveBeenCalledOnce();
   expect(result).toEqual({ calls: 1 });
+});
+
+it("does not infer from incomplete identity or cookie verification", async () => {
+  for (const proof of [
+    undefined,
+    {},
+    { session: true },
+    { cookie: true },
+    { session: false, cookie: true },
+  ]) {
+    const gpt = vi.fn();
+    await expect(
+      evaluateStudio({
+        now: () => GPT_THEME_PLAN.verifiedUntil - 86400000,
+        deploy: async ({ check }) => check({}),
+        proxy: async () => proof,
+        gpt,
+      }),
+    ).rejects.toThrow(/verified proxy identity/);
+    expect(gpt).not.toHaveBeenCalled();
+  }
 });
 
 it("does not attempt GPT when deployment/proxy validation or the reviewed plan fails", async () => {
