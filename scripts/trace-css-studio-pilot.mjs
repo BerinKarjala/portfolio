@@ -1,4 +1,5 @@
 import { readJson } from "../src/shared/studioTransfer.js";
+import DefaultWebSocket from "ws";
 
 const TAILS =
   "https://api.cloudflare.com/client/v4/accounts/d33da711f0acb00005de85f10c11ab0f/workers/scripts/css-studio-ai/tails";
@@ -60,7 +61,7 @@ export async function withImagePilotTrace(
     token,
     pilotId,
     fetch = globalThis.fetch,
-    WebSocket = globalThis.WebSocket,
+    WebSocket = DefaultWebSocket,
     now = Date.now,
     log = () => {},
   } = {},
@@ -246,7 +247,12 @@ export async function withImagePilotTrace(
 
   async function connect(url) {
     try {
-      socket = new WebSocket(url, "trace-v1");
+      socket = new WebSocket(url, "trace-v1", {
+        handshakeTimeout: DEADLINE_MS,
+        maxPayload: MAX_BYTES,
+        followRedirects: false,
+        perMessageDeflate: false,
+      });
       socket.addEventListener("message", onMessage);
       socket.addEventListener("error", () => {
         if (!stopped) reason = "tail-unavailable";
@@ -295,6 +301,7 @@ export async function withImagePilotTrace(
         typeof pilotId === "string" &&
         UUID.test(pilotId) &&
         typeof WebSocket === "function" &&
+        typeof WebSocket.prototype?.terminate === "function" &&
         typeof fetch === "function" &&
         Number.isSafeInteger(started)
       ) {
@@ -324,12 +331,23 @@ export async function withImagePilotTrace(
   } finally {
     stopped = true;
     try {
-      socket?.close();
-    } catch {
-      reason = "cleanup-unavailable";
+      try {
+        socket?.close();
+      } catch {
+        reason = "cleanup-unavailable";
+      }
+      if (tailId && !(await api("DELETE", tailId)))
+        reason = "cleanup-unavailable";
+    } finally {
+      // Node's native WebSocket.close() can leave a referenced TCP handle
+      // waiting indefinitely for the peer. The pinned ws client provides a
+      // public hard close, including while connecting or already closing.
+      try {
+        socket?.terminate();
+      } catch {
+        reason = "cleanup-unavailable";
+      }
     }
-    if (tailId && !(await api("DELETE", tailId)))
-      reason = "cleanup-unavailable";
   }
   if (pilotFailed) throw new Error("Image pilot failed.");
   const telemetry =

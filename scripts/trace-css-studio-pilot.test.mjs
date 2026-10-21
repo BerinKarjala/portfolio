@@ -43,10 +43,11 @@ function fixture({ open = true } = {}) {
     close = vi.fn(() => {
       this.readyState = 3;
     });
-    constructor(url, protocol) {
+    constructor(url, protocol, options) {
       super();
       this.url = url;
       this.requestedProtocol = protocol;
+      this.options = options;
       sockets.push(this);
       if (open)
         queueMicrotask(() => {
@@ -62,6 +63,9 @@ function fixture({ open = true } = {}) {
       );
     }
   }
+  Socket.prototype.terminate = vi.fn(function () {
+    this.readyState = 3;
+  });
   const fetch = vi.fn(async (_url, options) =>
     options.method === "POST"
       ? Response.json({
@@ -119,6 +123,12 @@ it("starts a fixed, filtered ephemeral tail, runs once after opening, and retain
     expect.objectContaining({ method: "DELETE", redirect: "error" }),
   ]);
   expect(f.sockets[0].requestedProtocol).toBe("trace-v1");
+  expect(f.sockets[0].options).toEqual({
+    handshakeTimeout: 5000,
+    maxPayload: 65536,
+    followRedirects: false,
+    perMessageDeflate: false,
+  });
   expect(f.sockets[0].close).toHaveBeenCalledOnce();
   expect(result).toEqual({
     result: { completed: true },
@@ -370,6 +380,7 @@ it("runs once and cleans up if constructing the socket throws secret-bearing dat
     constructor() {
       throw new Error(token);
     }
+    terminate() {}
   }
   const run = vi.fn(async () => "done");
   const result = await withImagePilotTrace(
@@ -486,6 +497,54 @@ it("does not let a failed or hung cleanup suppress the pilot result", async () =
     cpuMeasured: false,
     reason: "cleanup-unavailable",
   });
+  expect(f.sockets[0].terminate).toHaveBeenCalledOnce();
+});
+
+it("hard terminates after bounded DELETE even if the peer ignores the close handshake", async () => {
+  vi.useFakeTimers();
+  const f = fixture();
+  const run = vi.fn(async () => {
+    f.sockets[0].close.mockImplementation(() => { f.sockets[0].readyState = 2; });
+    f.sockets[0].message(event());
+    return "done";
+  });
+  const result = await finish(withImagePilotTrace({ token, pilotId, ...f }, run));
+  expect(run).toHaveBeenCalledOnce();
+  expect(f.sockets[0].close).toHaveBeenCalledOnce();
+  expect(f.sockets[0].terminate).toHaveBeenCalledOnce();
+  expect(f.sockets[0].terminate.mock.invocationCallOrder[0])
+    .toBeGreaterThan(f.fetch.mock.invocationCallOrder[1]);
+  expect(f.sockets[0].readyState).toBe(3);
+  expect(result.telemetry.cpuMeasured).toBe(true);
+});
+
+it("does not allocate a native-like socket without public terminate support", async () => {
+  const f = fixture();
+  const allocated = vi.fn();
+  class NativeLikeSocket extends EventTarget {
+    constructor() { super(); allocated(); }
+    close() {}
+  }
+  const run = vi.fn(async () => "done");
+  const result = await withImagePilotTrace({ token, pilotId, ...f, WebSocket: NativeLikeSocket }, run);
+  expect(run).toHaveBeenCalledOnce();
+  expect(allocated).not.toHaveBeenCalled();
+  expect(f.fetch).not.toHaveBeenCalled();
+  expect(result.telemetry).toEqual({ cpuMeasured: false, reason: "tail-unavailable" });
+});
+
+it.each(["close", "terminate"])("sanitizes a %s failure and attempts hard cleanup", async (method) => {
+  vi.useFakeTimers();
+  const f = fixture();
+  const result = await finish(withImagePilotTrace({ token, pilotId, ...f }, async () => {
+    f.sockets[0][method].mockImplementation(() => { throw new Error(token); });
+    f.sockets[0].message(event());
+    return "done";
+  }));
+  expect(f.sockets[0].terminate).toHaveBeenCalledOnce();
+  expect(f.fetch).toHaveBeenCalledTimes(2);
+  expect(result).toEqual({ result: "done", telemetry: { cpuMeasured: false, reason: "cleanup-unavailable" } });
+  expect(JSON.stringify([result, f.log.mock.calls])).not.toContain(token);
 });
 
 it("runs once when optional tracing credentials or WebSocket support are absent", async () => {

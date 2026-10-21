@@ -34,6 +34,8 @@ jobs:
       - run: npm ci
       - run: npm test -- server/css-studio src/shared/studioRaster.test.js scripts/check-css-studio-canary.test.mjs scripts/deploy-css-studio-canary.test.mjs scripts/check-css-studio-proxy.test.mjs scripts/deploy-css-studio-proxy.test.mjs scripts/check-css-studio-image-readiness.test.mjs scripts/probe-css-studio-image-info.test.mjs scripts/run-css-studio-image-pilot.test.mjs scripts/trace-css-studio-pilot.test.mjs
       - run: npm run test:css-studio:server
+      - name: Verify bounded local telemetry shutdown without remote services
+        run: node --test scripts/runtime/css-studio-trace.runtime.mjs
       - name: Install Chromium for session-only verification
         if: github.event_name == 'workflow_dispatch' && (inputs.check == 'proxy' || inputs.check == 'image-info' || inputs.check == 'image')
         run: npx --no-install playwright install --with-deps chromium
