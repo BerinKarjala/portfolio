@@ -408,3 +408,32 @@ requirements/trace gates and build budgets pass. Four targeted Chromium cases
 cover generated-image restoration/history and the appearance traversal. The
 private Worker remains at its verified deployment source; no further inference,
 quota mutation or public activation was performed for these frontend fixes.
+
+## Portable image storage follow-up
+
+Focused run 39562442307 passed all 17 Studio and four storage cases in Chromium
+and Firefox with zero retries. WebKit still failed to persist even freshly
+materialized Blob records. Its real cache reload and fresh-client checks exposed
+the product compatibility issue; the fixture-only change was insufficient.
+
+Source `20752af` stores bounded ArrayBuffer bytes in IndexedDB and reconstructs
+the public Blob API at the backend boundary. The database name/version and saved
+image IDs remain unchanged. Blob-only legacy records still read and migrate when
+validated; asynchronous byte preparation stays outside transactions. Admission,
+pins, eviction and writes remain synchronous on fresh transaction rows. A second
+guarded transaction updates usage metadata after validation without reviving
+evicted images or deleting a concurrently changed record.
+
+Portable rows must have a supported MIME and matching byte length of at most
+4 MiB before Blob allocation. Hash and full raster validation still guard reads;
+binary backing fields never appear in public metadata or localStorage. The
+24-image/96-MiB logical cache limits and denied-storage visit fallback remain.
+The browser suite retains its network/canvas Blob inputs and now requires actual
+persistence through reload and a fresh third client. A fifth storage case checks
+malformed, oversized and wrong-MIME rows without losing valid images.
+
+Local verification at `20752af`: 288 unit/integration tests in 46 files, production
+build (381 modules), 12 cache unit cases and five actual Chromium storage cases
+pass. The focused CI matrix now covers 66 browser cases (17 Studio + five storage
+per engine) with zero retries; final results are linked from PR #245. These are
+frontend storage changes, with no additional model calls or quota changes.
