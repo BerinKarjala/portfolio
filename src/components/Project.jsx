@@ -1,3 +1,4 @@
+import { StudioGalleryEntry } from "../features/css-studio/Studio";
 import React, { useEffect, useState } from "react";
 import sanityClient from "../client.js";
 import Seo, { SITE_NAME, SITE_URL } from "./Seo";
@@ -150,6 +151,7 @@ export default function Project() {
                 Projects
               </h2>
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <StudioGalleryEntry />
                 {isLoading ? (
                   <div className="md:col-span-2 rounded-2xl border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 p-5 text-sm uppercase tracking-widest text-green-200 shadow-lg backdrop-filter backdrop-blur-sm">
                     Loading project entries...
