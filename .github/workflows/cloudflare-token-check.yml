@@ -69,14 +69,11 @@ jobs:
             const identity = await read("/user/tokens/verify", "Cloudflare rejected the token. Check its value, expiry and activation time.");
             if (identity?.status !== "active") throw new CheckError("The Cloudflare token is not active. Check its expiry and activation time.");
             console.log("PASS: Cloudflare accepts the saved token.");
-            const accounts = await read("/accounts?per_page=50", "The token is valid, but account listing was denied. Save the token settings and confirm GitHub stores this specific token.");
-            if (!Array.isArray(accounts) || !accounts.some((item) => item?.id === "d33da711f0acb00005de85f10c11ab0f")) {
-              throw new CheckError("The expected CSS Studio account was not found in the first page of accounts accessible to this token. Confirm the account ID and token scope.");
+            const workers = await read("/accounts/d33da711f0acb00005de85f10c11ab0f/workers/scripts", "Cloudflare accepted the token, but Worker access failed. Check the account ID, token scope and Workers Scripts permission.");
+            if (!Array.isArray(workers) || !workers.some((item) => item?.id === "css-studio-ai")) {
+              throw new CheckError("Worker access succeeded, but css-studio-ai was not found. Confirm the exact Worker name and URL.");
             }
-            console.log("PASS: The token includes the expected CSS Studio account.");
-            const account = await read("/accounts/d33da711f0acb00005de85f10c11ab0f", "The token is valid, but access to the CSS Studio account failed. Check Account Resources, Account Settings Read and the account ID.");
-            if (account?.id !== "d33da711f0acb00005de85f10c11ab0f") throw new CheckError("Cloudflare returned an unexpected account.");
-            console.log("PASS: CSS Studio account access verified.");
+            console.log("PASS: Access to the account's Workers verified.");
             const settings = await read("/accounts/d33da711f0acb00005de85f10c11ab0f/workers/scripts/css-studio-ai/settings", "The token is valid, but access to css-studio-ai failed. Check the account, Worker name and Workers Scripts permission.");
             if (!Array.isArray(settings?.bindings) || !settings.bindings.some((binding) => binding.type === "ai" && binding.name === "AI")) {
               throw new CheckError("Worker access succeeded, but the Workers AI binding named AI is missing.");
