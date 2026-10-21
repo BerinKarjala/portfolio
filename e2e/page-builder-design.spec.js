@@ -320,16 +320,21 @@ test("autosave completion preserves an in-progress effect-control click", async 
   await page.getByLabel("Animation", { exact: true }).selectOption("fade");
   const saved = page.getByRole("status", { name: "Save status" });
   await expect(saved).toHaveText("Saved in this browser");
-  await field(page, "Animation repeats (number or infinite)", "infinite");
   const pause = page.getByRole("button", { name: "Pause effects", exact: true });
   await pause.scrollIntoViewIfNeeded();
+  const now = new Date();
+  await page.clock.install({ time: now });
+  await page.clock.pauseAt(new Date(now.getTime() + 1000));
+  await field(page, "Animation repeats (number or infinite)", "infinite");
   await expect(saved).toHaveText("Unsaved changes");
   const box = await pause.boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
   // A normal save must not move the intended control between press and release.
+  await page.clock.runFor(1100);
   await expect(saved).toHaveText("Saved in this browser");
   await page.mouse.up();
+  await page.clock.resume();
   await expect(
     page.getByRole("button", { name: "Resume effects", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
@@ -337,6 +342,62 @@ test("autosave completion preserves an in-progress effect-control click", async 
     "animation-play-state",
     "paused",
   );
+});
+
+test("autosave labels keep toolbar geometry stable from phones to TV browsers", async ({
+  page,
+}, testInfo) => {
+  await boot(page);
+  await add(page, "Paragraph");
+  await tab(page, "Effects");
+  const saved = page.getByRole("status", { name: "Save status" });
+  await expect(saved).toHaveText("Saved in this browser");
+  await page.clock.install();
+  const sizes = [
+    [320, 740],
+    [390, 844],
+    [768, 1024],
+    [1440, 900],
+    [1920, 1080],
+    [3840, 2160],
+  ];
+  for (const [index, [width, height]] of sizes.entries()) {
+    await page.setViewportSize({ width, height });
+    const repeats = page.getByLabel("Animation repeats (number or infinite)", {
+      exact: true,
+    });
+    if (!(await repeats.isVisible()))
+      await page.getByRole("button", { name: "Inspector", exact: true }).click();
+    const now = await page.evaluate(() => Date.now());
+    await page.clock.pauseAt(now + 1000);
+    await field(
+      page,
+      "Animation repeats (number or infinite)",
+      String(index + 2),
+    );
+    await expect(saved).toHaveText("Unsaved changes");
+    const toolbar = page.locator(".pb-editor-toolbar");
+    const before = await toolbar.boundingBox();
+    await page.clock.runFor(1100);
+    await expect(saved).toHaveText("Saved in this browser");
+    const after = await toolbar.boundingBox();
+    expect(after.height, `${width}px toolbar height`).toBeCloseTo(before.height, 1);
+    expect(after.y, `${width}px toolbar position`).toBeCloseTo(before.y, 1);
+    await page.clock.resume();
+    expect(
+      await page
+        .locator(".pb-editor")
+        .evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
+      `${width}px editor fits horizontally`,
+    ).toBe(true);
+    if (width === 320 || width === 3840)
+      await testInfo.attach(`autosave-toolbar-${width}`, {
+        body: await page.screenshot({
+          path: testInfo.outputPath(`autosave-toolbar-${width}.png`),
+        }),
+        contentType: "image/png",
+      });
+  }
 });
 
 test("preset removal preserves effective styling; states, effects and responsive visibility work", async ({

@@ -606,6 +606,35 @@
   font-size: 0.8rem;
   color: #c3dfa4;
 }
+/* Keep autosave label changes from moving a control during a pointer press. */
+.pb-root .pb-save-state,
+.pb-root .pb-project-download,
+.pb-root .pb-save-action {
+  display: inline-grid;
+}
+.pb-root .pb-save-state > span,
+.pb-root .pb-project-download > span,
+.pb-root .pb-save-action > span,
+.pb-root .pb-save-state::before,
+.pb-root .pb-project-download::before,
+.pb-root .pb-save-action::before {
+  grid-area: 1 / 1;
+}
+.pb-root .pb-save-state::before,
+.pb-root .pb-project-download::before,
+.pb-root .pb-save-action::before {
+  visibility: hidden;
+  pointer-events: none;
+}
+.pb-root .pb-save-state::before {
+  content: "Save failed · unsaved changes";
+}
+.pb-root .pb-project-download::before {
+  content: "Download unsaved JSON";
+}
+.pb-root .pb-save-action::before {
+  content: "Retry save now";
+}
 .pb-root .pb-editor-body {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
