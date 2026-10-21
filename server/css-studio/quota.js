@@ -3,6 +3,7 @@ export const LIMITS = Object.freeze({
   prompts: 10,
   images: 3,
   neurons: 8000,
+  imageTransforms: 5000,
   inFlight: 2,
   burstMs: 5000,
   requestMs: 30000,
@@ -11,6 +12,7 @@ export const LIMITS = Object.freeze({
 export const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 export const utcDay = (now) => new Date(now).toISOString().slice(0, 10);
+export const utcMonth = (now) => utcDay(now).slice(0, 7);
 const denied = (code, status = 429, retryAfter = 1) => ({
   admitted: false,
   code,
@@ -44,6 +46,31 @@ export class QuotaLedger {
         "CREATE INDEX IF NOT EXISTS reservations_day ON reservations(day)",
       );
       this.exec("CREATE INDEX IF NOT EXISTS carry_day ON carry(day)");
+      // Separate tables extend existing authorities without rewriting legacy
+      // reservations or resetting either browser or daily accounting.
+      this.exec(
+        "CREATE TABLE IF NOT EXISTS transform_months (month TEXT PRIMARY KEY, transforms INTEGER NOT NULL DEFAULT 0, halted INTEGER NOT NULL DEFAULT 0)",
+      );
+      if (
+        !this.exec("PRAGMA table_info(transform_months)").some(
+          (column) => column.name === "halted",
+        )
+      )
+        this.exec(
+          "ALTER TABLE transform_months ADD COLUMN halted INTEGER NOT NULL DEFAULT 0",
+        );
+      this.exec(
+        "CREATE TABLE IF NOT EXISTS reservation_transforms (visitor TEXT NOT NULL, request_id TEXT NOT NULL, month TEXT NOT NULL, transforms INTEGER NOT NULL, PRIMARY KEY(visitor,request_id))",
+      );
+      this.exec(
+        "CREATE TABLE IF NOT EXISTS transform_carry (visitor TEXT NOT NULL, request_id TEXT NOT NULL, month TEXT NOT NULL, PRIMARY KEY(visitor,request_id,month))",
+      );
+      this.exec(
+        "CREATE INDEX IF NOT EXISTS reservation_transforms_month ON reservation_transforms(month)",
+      );
+      this.exec(
+        "CREATE INDEX IF NOT EXISTS transform_carry_month ON transform_carry(month)",
+      );
       this.exec(
         "CREATE TABLE IF NOT EXISTS control (id INTEGER PRIMARY KEY, reason TEXT)",
       );
@@ -55,9 +82,12 @@ export class QuotaLedger {
   }
   refresh(now) {
     const day = utcDay(now),
+      month = utcMonth(now),
       cutoff = now - LIMITS.retentionMs,
-      cutoffDay = utcDay(cutoff);
+      cutoffDay = utcDay(cutoff),
+      cutoffMonth = utcMonth(cutoff);
     this.exec("INSERT OR IGNORE INTO days(day) VALUES(?)", day);
+    this.exec("INSERT OR IGNORE INTO transform_months(month) VALUES(?)", month);
     const expired = this.exec(
       "SELECT request_id FROM reservations WHERE status='pending' AND deadline<=?",
       now,
@@ -95,6 +125,44 @@ export class QuotaLedger {
         );
       }
     }
+    // Transformations may continue after a month boundary. Hold their complete
+    // reservation once in every overlapping month, including uncertain work.
+    for (const row of this.exec(
+      "SELECT t.visitor,t.request_id,t.transforms FROM reservation_transforms t JOIN reservations r ON r.visitor=t.visitor AND r.request_id=t.request_id WHERE t.month<>? AND r.status IN ('pending','uncertain')",
+      month,
+    )) {
+      if (
+        !this.exec(
+          "SELECT 1 FROM transform_carry WHERE visitor=? AND request_id=? AND month=?",
+          row.visitor,
+          row.request_id,
+          month,
+        ).length
+      ) {
+        this.exec(
+          "INSERT INTO transform_carry(visitor,request_id,month) VALUES(?,?,?)",
+          row.visitor,
+          row.request_id,
+          month,
+        );
+        this.exec(
+          "UPDATE transform_months SET transforms=transforms+? WHERE month=?",
+          row.transforms,
+          month,
+        );
+      }
+    }
+    // Select expired requests through the age index, then prune associated
+    // monthly rows by primary key before deleting the requests themselves.
+    // Ordinary admissions must not scan the full month's request history.
+    this.exec(
+      "DELETE FROM reservation_transforms WHERE (visitor,request_id) IN (SELECT visitor,request_id FROM reservations WHERE started_at<? AND status NOT IN ('pending','uncertain'))",
+      cutoff,
+    );
+    this.exec(
+      "DELETE FROM transform_carry WHERE (visitor,request_id) IN (SELECT visitor,request_id FROM reservations WHERE started_at<? AND status NOT IN ('pending','uncertain'))",
+      cutoff,
+    );
     this.exec(
       "DELETE FROM reservations WHERE started_at<? AND status NOT IN ('pending','uncertain')",
       cutoff,
@@ -105,9 +173,24 @@ export class QuotaLedger {
       "DELETE FROM days WHERE day<? AND NOT EXISTS (SELECT 1 FROM reservations WHERE reservations.day=days.day)",
       cutoffDay,
     );
+    this.exec("DELETE FROM transform_carry WHERE month<?", cutoffMonth);
+    // A completed month's aggregate outlives its 72-hour request records. Keep
+    // unresolved origin months for reconciliation, without retaining every
+    // historical carry marker indefinitely.
+    this.exec(
+      "DELETE FROM transform_months WHERE month<? AND NOT EXISTS (SELECT 1 FROM reservation_transforms t WHERE t.month=transform_months.month)",
+      cutoffMonth,
+    );
     return day;
   }
-  reserve({ visitor, requestId, fingerprint, operation, reservedNeurons }) {
+  reserve({
+    visitor,
+    requestId,
+    fingerprint,
+    operation,
+    reservedNeurons,
+    imageTransforms = 0,
+  }) {
     if (
       !UUID.test(visitor) ||
       !UUID.test(requestId) ||
@@ -115,12 +198,17 @@ export class QuotaLedger {
       !["theme", "image", "refine"].includes(operation) ||
       !Number.isSafeInteger(reservedNeurons) ||
       reservedNeurons < 1 ||
-      reservedNeurons > LIMITS.neurons
+      reservedNeurons > LIMITS.neurons ||
+      !Number.isInteger(imageTransforms) ||
+      imageTransforms < 0 ||
+      imageTransforms > 2 ||
+      (operation === "theme" && imageTransforms !== 0)
     )
       throw Error("Invalid reservation");
     return this.storage.transactionSync(() => {
       const now = this.clock(),
         day = this.refresh(now),
+        month = utcMonth(now),
         retry = Math.max(
           1,
           Math.ceil((Date.parse(day + "T00:00:00Z") + 86400000 - now) / 1000),
@@ -169,6 +257,28 @@ export class QuotaLedger {
         );
       if (shared.neurons + reservedNeurons > LIMITS.neurons)
         return denied("shared-limit", 429, retry);
+      const monthly = this.exec(
+        "SELECT transforms,halted FROM transform_months WHERE month=?",
+        month,
+      )[0];
+      if (
+        (image && monthly.halted) ||
+        monthly.transforms + imageTransforms > LIMITS.imageTransforms
+      ) {
+        const date = new Date(now);
+        const nextMonth = Date.UTC(
+          date.getUTCFullYear(),
+          date.getUTCMonth() + 1,
+          1,
+        );
+        return denied(
+          image && monthly.halted
+            ? "image-provider-exhausted"
+            : "image-transform-limit",
+          429,
+          Math.max(1, Math.ceil((nextMonth - now) / 1000)),
+        );
+      }
       if (
         this.exec(
           "SELECT COUNT(*) AS count FROM reservations WHERE status='pending'",
@@ -199,11 +309,27 @@ export class QuotaLedger {
         now,
         now + LIMITS.requestMs,
       );
+      if (imageTransforms) {
+        this.exec(
+          "UPDATE transform_months SET transforms=transforms+? WHERE month=?",
+          imageTransforms,
+          month,
+        );
+        this.exec(
+          "INSERT INTO reservation_transforms(visitor,request_id,month,transforms) VALUES(?,?,?,?)",
+          visitor,
+          requestId,
+          month,
+          imageTransforms,
+        );
+      }
       return {
         admitted: true,
         day,
+        month,
         requestId,
         reservedNeurons,
+        imageTransforms,
         deadline: now + LIMITS.requestMs,
       };
     });
@@ -212,7 +338,12 @@ export class QuotaLedger {
     if (
       !UUID.test(visitor) ||
       !UUID.test(requestId) ||
-      !["complete", "uncertain", "provider-exhausted"].includes(outcome)
+      ![
+        "complete",
+        "uncertain",
+        "provider-exhausted",
+        "image-provider-exhausted",
+      ].includes(outcome)
     )
       throw Error("Invalid settlement");
     return this.storage.transactionSync(() => {
@@ -247,6 +378,19 @@ export class QuotaLedger {
         );
       if (outcome === "provider-exhausted")
         this.exec("UPDATE days SET halted=1 WHERE day IN (?,?)", row.day, day);
+      if (outcome === "image-provider-exhausted") {
+        const originMonth = row.day.slice(0, 7),
+          currentMonth = day.slice(0, 7);
+        this.exec(
+          "INSERT OR IGNORE INTO transform_months(month) VALUES(?)",
+          originMonth,
+        );
+        this.exec(
+          "UPDATE transform_months SET halted=1 WHERE month IN (?,?)",
+          originMonth,
+          currentMonth,
+        );
+      }
       this.exec(
         "UPDATE reservations SET status=? WHERE visitor=? AND request_id=?",
         status,
@@ -260,7 +404,12 @@ export class QuotaLedger {
     if (!UUID.test(visitor)) throw Error("Invalid visitor");
     return this.storage.transactionSync(() => {
       const day = this.refresh(this.clock()),
-        shared = this.exec("SELECT * FROM days WHERE day=?", day)[0];
+        month = day.slice(0, 7),
+        shared = this.exec("SELECT * FROM days WHERE day=?", day)[0],
+        monthly = this.exec(
+          "SELECT transforms,halted FROM transform_months WHERE month=?",
+          month,
+        )[0];
       const browser = this.exec(
         "SELECT prompts,images FROM visitors WHERE day=? AND visitor=?",
         day,
@@ -270,12 +419,22 @@ export class QuotaLedger {
         ?.reason;
       return {
         day,
+        month,
         available: !halt && !shared.halted,
+        imageAvailable:
+          !halt &&
+          !shared.halted &&
+          !monthly.halted &&
+          monthly.transforms < LIMITS.imageTransforms,
         remaining: {
           prompts: Math.max(0, LIMITS.prompts - browser.prompts),
           images: Math.max(0, LIMITS.images - browser.images),
         },
         sharedRemaining: Math.max(0, LIMITS.neurons - shared.neurons),
+        imageTransformsRemaining: Math.max(
+          0,
+          LIMITS.imageTransforms - monthly.transforms,
+        ),
       };
     });
   }

@@ -9,12 +9,17 @@ import {
   validateOutput,
 } from "./protocol.js";
 import { LIMITS } from "./quota.js";
-import { ProviderLimitError, ProviderOutputError } from "./providerErrors.js";
+import {
+  ProviderLimitError,
+  ProviderOutputError,
+  ImageLimitError,
+} from "./providerErrors.js";
 import {
   GPT_THEME_MODEL,
   GPT_MAX_CONTEXT_TOKENS,
   GPT_THEME_PLAN,
 } from "./gptProvider.js";
+import { KLEIN_IMAGE_MODEL, KLEIN_IMAGE_PLAN } from "./kleinProvider.js";
 export { ProviderLimitError } from "./providerErrors.js";
 const reply = (status, body, headers = {}) =>
   new Response(JSON.stringify(body), {
@@ -91,7 +96,13 @@ export function createApp({
     ) &&
     Number.isInteger(plan.imageSteps) &&
     plan.imageSteps >= 1 &&
-    plan.imageSteps <= 8;
+    plan.imageSteps <= 8 &&
+    (provider.image.model !== KLEIN_IMAGE_MODEL ||
+      (typeof provider.image.transformsFor === "function" &&
+        plan.imageVerifiedUntil >= clock() + LIMITS.requestMs &&
+        Object.entries(KLEIN_IMAGE_PLAN).every(
+          ([key, value]) => plan[key] === value,
+        )));
   return async function handle(request) {
     const url = new URL(request.url),
       route = url.pathname;
@@ -145,7 +156,12 @@ export function createApp({
         return reply(200, {
           available: snapshot.available,
           operations: snapshot.available
-            ? ["theme", ...(imageReady() ? ["image", "refine"] : [])]
+            ? [
+                "theme",
+                ...(imageReady() && snapshot.imageAvailable !== false
+                  ? ["image", "refine"]
+                  : []),
+              ]
             : [],
           day: snapshot.day,
           remaining: snapshot.remaining,
@@ -206,8 +222,21 @@ export function createApp({
         : null;
       if (!ready())
         return reply(503, { error: "AI design is currently unavailable." });
-      if (typeof provider.validateRequest === "function")
-        provider.validateRequest(input);
+      const adapter = imageOperation ? provider.image : provider;
+      if (typeof adapter.validateRequest === "function")
+        adapter.validateRequest(input);
+      const imageTransforms =
+        imageOperation && typeof adapter.transformsFor === "function"
+          ? adapter.transformsFor(input)
+          : 0;
+      if (
+        !Number.isInteger(imageTransforms) ||
+        imageTransforms < 0 ||
+        imageTransforms > 2 ||
+        (adapter.model === KLEIN_IMAGE_MODEL &&
+          imageTransforms !== (input.operation === "refine" ? 2 : 1))
+      )
+        throw Error("Invalid image transformation plan");
       const reservation = await ledger.reserve({
         visitor,
         requestId: input.id,
@@ -220,6 +249,7 @@ export function createApp({
         reservedNeurons: imageOperation
           ? plan.imageNeurons
           : plan.reservedNeurons,
+        imageTransforms,
       });
       if (!reservation.admitted)
         return reply(
@@ -304,16 +334,24 @@ export function createApp({
               "The designer returned unsupported styling or media. Existing themes remain available.",
           });
         }
+        const imageExhausted =
+          imageOperation && error instanceof ImageLimitError;
         const exhausted = error instanceof ProviderLimitError;
         await ledger.settle({
           visitor,
           requestId: input.id,
-          outcome: exhausted ? "provider-exhausted" : "uncertain",
+          outcome: imageExhausted
+            ? "image-provider-exhausted"
+            : exhausted
+              ? "provider-exhausted"
+              : "uncertain",
         });
-        return reply(exhausted ? 429 : 504, {
-          error: exhausted
-            ? "Provider allowance is exhausted."
-            : "The designer did not finish safely. Existing themes remain available.",
+        return reply(imageExhausted || exhausted ? 429 : 504, {
+          error: imageExhausted
+            ? "Image transformation allowance is exhausted."
+            : exhausted
+              ? "Provider allowance is exhausted."
+              : "The designer did not finish safely. Existing themes remain available.",
         });
       } finally {
         clearTimeout(timer);
@@ -323,7 +361,7 @@ export function createApp({
         visitor,
         requestId: input.id,
         outcome: "complete",
-        ...(result.output.usage?.verified === true
+        ...(!imageOperation && result.output.usage?.verified === true
           ? { measuredNeurons: result.output.usage.neurons }
           : {}),
       });

@@ -8,7 +8,7 @@ evaluation requires a server-only credential; an environment enable flag cannot
 expose inference to visitors.
 
 Two private Llama calls and one GPT call passed. Real preview identity/cookie
-issuance, reuse and reload also passed; live cross-site acceptance remains open.
+issuance, reuse, reload and the scoped untrusted-origin Chromium check passed.
 See [model-evaluation.md](model-evaluation.md) and
 [proxy evidence](private-proxy-verification.md) for source-specific scope.
 
@@ -28,7 +28,8 @@ a different, fixed Worker backend origin for the same-origin frontend proxy.
 The frontend calls relative `/api/css-studio/*` URLs; the proxy must preserve
 Origin, Cookie, Sec-Fetch-Site and Set-Cookie, and must not cache API responses.
 The Netlify rewrite precedes the SPA fallback. Actual preview proxy/cookie
-identity verification passed; live cross-site and production acceptance remain open.
+identity and untrusted-origin Chromium verification passed; production acceptance
+remains open.
 Direct cross-origin
 browser access is not offered; there are no CORS response headers. Forwarded-host
 headers are not trusted to choose an origin or upstream.
@@ -54,17 +55,17 @@ together or roll back. Indexes bound pending/age/day queries; DO memory and brow
 localStorage are not quota authorities. Provider work takes place outside the DO,
 after its reservation has committed.
 
-| Rule | Implemented behavior |
-| --- | --- |
-| Browser/day | At most ten admitted submitted prompts. Image/refinement submissions additionally consume one of three image slots. This conservative interpretation counts an image prompt in both counters; the counters remain separate. Invalid/denied requests do not consume admission; admitted provider failures do. |
-| Shared/day | Reserve an integer, conservatively rounded Neuron bound before dispatch; reject when the total would exceed 8,000. Only a server-owned reviewed cost plan supplies the bound. The private Llama plan retains 1,000 per request; the preflight GPT plan retains 4,000 against its documented 3,491 maximum. These are conservative ledger charges, not measured provider usage. |
-| Burst / concurrency | Five seconds between new admissions per browser; at most two pending operations across every visitor and day. Retries are checked before burst/counter admission. |
-| Idempotency | Bind a browser/request UUID to a SHA-256 fingerprint of canonical input for 72 hours. Pending repeats return 202; completed repeats return 409, without redispatch. Different input with the same key returns 409. Old response content is not stored or replayed. |
-| Reliable completion | Trusted adapter measurements can reduce the original day's conservative reservation. Missing usage retains the whole bound. Invalid or above-bound usage latches accounting closed. Model text/client fields are never usage authority. |
-| Timeout / uncertainty | Retain the whole reservation; latch all new admission closed, including subsequent days. Expired pending reservations do the same. There is no public reset endpoint or automatic refund. Recovery requires reviewed operator reconciliation. |
-| Provider exhaustion | Keep the admission and charge, and stop for its accounting day (also the settlement day if different). No paid fallback is selected. |
-| Midnight | Charge browser counters and settle against the UTC admission day. Also hold the full bound in each overlapping UTC day while pending; the settlement-day hold is not refunded. This prevents midnight completion from silently freeing a fresh shared budget. |
-| Failure | Storage/admission errors never dispatch. Settlement failure returns unavailable and leaves the durable reservation charged; expiry later closes accounting. |
+| Rule                  | Implemented behavior                                                                                                                                                                                                                                                                                                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Browser/day           | At most ten admitted submitted prompts. Image/refinement submissions additionally consume one of three image slots. This conservative interpretation counts an image prompt in both counters; the counters remain separate. Invalid/denied requests do not consume admission; admitted provider failures do.                                                                   |
+| Shared/day            | Reserve an integer, conservatively rounded Neuron bound before dispatch; reject when the total would exceed 8,000. Only a server-owned reviewed cost plan supplies the bound. The private Llama plan retains 1,000 per request; the preflight GPT plan retains 4,000 against its documented 3,491 maximum. These are conservative ledger charges, not measured provider usage. |
+| Burst / concurrency   | Five seconds between new admissions per browser; at most two pending operations across every visitor and day. Retries are checked before burst/counter admission.                                                                                                                                                                                                              |
+| Idempotency           | Bind a browser/request UUID to a SHA-256 fingerprint of canonical input for 72 hours. Pending repeats return 202; completed repeats return 409, without redispatch. Different input with the same key returns 409. Old response content is not stored or replayed.                                                                                                             |
+| Reliable completion   | Trusted adapter measurements can reduce the original day's conservative reservation. Missing usage retains the whole bound. Invalid or above-bound usage latches accounting closed. Model text/client fields are never usage authority.                                                                                                                                        |
+| Timeout / uncertainty | Retain the whole reservation; latch all new admission closed, including subsequent days. Expired pending reservations do the same. There is no public reset endpoint or automatic refund. Recovery requires reviewed operator reconciliation.                                                                                                                                  |
+| Provider exhaustion   | Keep the admission and charge, and stop for its accounting day (also the settlement day if different). No paid fallback is selected.                                                                                                                                                                                                                                           |
+| Midnight              | Charge browser counters and settle against the UTC admission day. Also hold the full bound in each overlapping UTC day while pending; the settlement-day hold is not refunded. This prevents midnight completion from silently freeing a fresh shared budget.                                                                                                                  |
+| Failure               | Storage/admission errors never dispatch. Settlement failure returns unavailable and leaves the durable reservation charged; expiry later closes accounting.                                                                                                                                                                                                                    |
 
 The ten/three/8,000 ceilings are maximums, not promised availability. Provider or
 supporting-service limits can stop earlier. Do not rename the authority, create a
@@ -140,10 +141,15 @@ verified real preview identity/cookies first and reports cross-site acceptance
 as unverified. It did not reset counters or retry inference. These results do
 not establish measured billing, a model winner or public operational headroom.
 
-Public activation remains blocked on reviewed comparative results, actual
-cross-site and production proxy evidence, supporting-service headroom and operational review.
+The later full proxy check passed the scoped Chromium preview gate without
+inference; the earlier private model evaluator intentionally made no such claim.
+Public activation remains blocked on reviewed comparative results, production
+proxy evidence, supporting-service headroom and operational review.
 Image/refinement additionally needs an approved editing contract, conservative
 costs, complete raster validation and Free Worker feasibility. Schnell's limits
 do not rule out every newer image model; current image research has made no live
-image call. The full photo/cultural and physical-device checks also remain open.
+image call. The [offline Klein adapter](image-adapter.md) now has a bounded Images
+normalizer and atomic monthly transformation reservation; it is not selected by
+the Worker or bound to Images. The full photo/cultural and physical-device checks
+also remain open.
 See cloudflare-readiness.md, model-evaluation.md and live-ai-setup.md.

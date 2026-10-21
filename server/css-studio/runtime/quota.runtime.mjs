@@ -25,7 +25,7 @@ const reserve = (n, cost = 1000) => ({
   fingerprint: "a".repeat(64),
   reservedNeurons: cost,
 });
-test("actual Workers SQLite serializes concurrent admission and survives a complete runtime restart", async () => {
+test("actual Workers SQLite serializes daily and monthly admission and survives a complete runtime restart", async () => {
   const path = await mkdtemp(join(tmpdir(), "css-studio-quota-"));
   let mf;
   try {
@@ -33,7 +33,11 @@ test("actual Workers SQLite serializes concurrent admission and survives a compl
     const call = await authority(mf);
     const admitted = await Promise.all(
       Array.from({ length: 12 }, (_, i) =>
-        call("reserve", reserve(i + 1, 4000)),
+        call("reserve", {
+          ...reserve(i + 1, 4000),
+          operation: "refine",
+          imageTransforms: 2,
+        }),
       ),
     );
     assert.equal(admitted.filter((row) => row.admitted).length, 2);
@@ -46,10 +50,16 @@ test("actual Workers SQLite serializes concurrent admission and survives a compl
         });
     const before = await call("snapshot", uuid(1));
     assert.equal(before.sharedRemaining, 0);
+    assert.equal(before.imageTransformsRemaining, 4996);
+    assert.match(before.month, /^\d{4}-\d{2}$/);
     await mf.dispose();
     mf = new Miniflare(options(path));
     const restored = await authority(mf);
     assert.equal((await restored("snapshot", uuid(1))).sharedRemaining, 0);
+    assert.equal(
+      (await restored("snapshot", uuid(1))).imageTransformsRemaining,
+      4996,
+    );
     assert.equal((await restored("reserve", reserve(99))).code, "shared-limit");
   } finally {
     await mf?.dispose();

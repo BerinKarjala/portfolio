@@ -8,12 +8,16 @@ The manual Studio, supplied asset catalog, generated-image client workflows and
 durable server boundary are implemented. The private Llama text canary is deployed
 and passed two actual model requests. One private GPT fixture then passed in
 827 ms; its retained 4,000 reservation leaves 2,000 shared Neurons on October 21
-UTC. Real preview identity/cookie reuse/reload passed. Public inference and
-image/refinement remain disabled. Live cross-site/production proxy acceptance,
-broader model evaluation and public operational headroom remain open. M5 fixes
-cover contrast, enlarged text/reflow and reduced motion; 21 local Chromium checks
-pass, with the strengthened three-engine follow-up pending in this record.
-Klein image metadata is verified; Images decoding is not bound or activated.
+UTC. Real preview identity/cookie reuse/reload and the deliberate untrusted-origin
+Chromium check passed; the latter preserved all counters without inference.
+Public inference and image/refinement remain disabled. Production-origin proxy
+acceptance, broader model evaluation and public operational headroom remain open.
+M5 fixes cover contrast, enlarged text/reflow and reduced motion; the follow-up at
+`cab3636` passed all 78 focused checks across Chromium, Firefox and WebKit.
+Klein metadata and an offline adapter/Images normalization pipeline are implemented
+with atomic monthly transformation accounting. Images Free status, binding and
+runtime decoding/CPU behavior remain unverified; the adapter is not selected by
+the Worker. See [the implementation and activation limits](image-adapter.md).
 Earlier increment
 sections below are chronological records; later entries supersede their status.
 See [model evaluation](model-evaluation.md), [proxy evidence](private-proxy-verification.md)

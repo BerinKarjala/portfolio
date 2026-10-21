@@ -14,18 +14,18 @@ No Workers Paid upgrade or payment configuration was performed.
 
 The two fixed fixtures passed safe-token validation on October 21 UTC:
 
-| Fixture | End-to-end latency | Prompt allowance after | Shared allowance after |
-| --- | ---: | ---: | ---: |
-| Winter, dark, high contrast | 2,228 ms | 9 | 7,000 Neurons |
-| Diwali, light | 2,320 ms | 8 | 6,000 Neurons |
+| Fixture                     | End-to-end latency | Prompt allowance after | Shared allowance after |
+| --------------------------- | -----------------: | ---------------------: | ---------------------: |
+| Winter, dark, high contrast |           2,228 ms |                      9 |          7,000 Neurons |
+| Diwali, light               |           2,320 ms |                      8 |          6,000 Neurons |
 
 Each retained its full 1,000-Neuron reservation. These are application-ledger
 charges, not measured Cloudflare usage or a semantic quality benchmark. Public
 status remained unavailable before and after. The private session cookie was
 verified as Secure, HttpOnly, SameSite=Strict, Path=/, with no Domain attribute.
 This establishes a direct Worker integration. The later
-[real Netlify identity check](private-proxy-verification.md) passed; cross-site
-and production proxy acceptance remain open. No credentials were logged.
+[real Netlify identity and scoped cross-site Chromium check](private-proxy-verification.md)
+passed; production proxy acceptance remains open. No credentials were logged.
 
 The initial GPT-OSS projection was followed by the complete public input/output
 schema in [metadata-only run 39559393158](https://github.com/BerinKarjala/portfolio/actions/runs/39559393158),
@@ -110,6 +110,7 @@ The browser connects to fixed same-origin endpoints only after the visitor opens
 Studio, with manual fallback on failure. It follows session creation with a fresh
 status read and exposes only server-supported operations. The Netlify proxy rule
 precedes the SPA fallback. Actual preview identity/cookie reuse/reload passed;
-live cross-site and production acceptance remain open. No canary secret is
+the scoped live cross-site Chromium check passed, while production acceptance
+remains open. No canary secret is
 shipped in the frontend. Public activation also requires reviewed comparative
 evaluation, Free supporting-service headroom and deployment evidence.
