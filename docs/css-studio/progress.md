@@ -19,8 +19,10 @@ M5 fixes cover contrast, enlarged text/reflow and reduced motion; the follow-up 
 Klein metadata and an offline adapter/Images normalization pipeline are implemented
 with atomic monthly transformation accounting. Actual native local Images tests
 now pass generation, owned refinement, corrupt-raster rejection and the private
-metadata route. A separate free metadata-only live check is prepared; Images
-Free status and production decoding/CPU behavior remain unverified. The adapter
+metadata route. The free metadata-only live check then passed, confirming the
+native Images binding and fixed PNG metadata without inference, transformations
+or shared quota changes. Billing visibility returned 403; Images Free status and
+production decoding/CPU behavior remain unverified. The adapter
 is not selected by the Worker. See [the implementation](image-adapter.md) and
 [runtime evidence and activation limits](image-runtime-verification.md).
 Earlier increment

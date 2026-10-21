@@ -1,8 +1,41 @@
 # Images runtime and private metadata verification
 
-October 21, 2026. Image generation remains disabled in the deployed Worker.
-This increment adds a private metadata diagnostic and actual local Images
+October 21, 2026. The live private metadata check passed; image generation
+remains disabled. This increment adds that diagnostic and actual local Images
 runtime tests. Neither selects the Klein provider in production.
+
+## Observed live result
+
+[Run 39637036922](https://github.com/BerinKarjala/portfolio/actions/runs/39637036922)
+passed from `7ef774a3a187fabda3c821ae16f86ae0dabd970d` on the isolated
+`css-studio-image-info-check` branch, based on feature `5bc6297`. Its 177 boundary
+and helper tests and three actual SQLite tests passed before deployment. The
+inference step was skipped. The preserving deployment confirmed the existing
+identity secret, quota namespace, fixed origins and exact native Images binding.
+
+At 16:42:38 UTC, native Cloudflare `Images.info()` returned the fixed PNG's
+64×64 geometry and `image/png` format in **9 ms elapsed wall time**. No inference
+or transformation was requested. This does not measure CPU or full decoding.
+See the [exact safe metadata result](image-info-result-2026-10-21.json) and
+[read-only account snapshot](image-readiness-2026-10-21.json). Snapshot flags
+describe only the read-only readiness helper, not the later deployment.
+
+The two real Chromium proxy checks passed identity/cookie reuse, reload and
+foreign-Origin rejection. Each fresh visitor retained ten prompts and three
+image slots within its own proof; the shared balance stayed **2,000 Neurons**
+across both checks. Fetch Metadata was absent at interception and was not
+invented. Public inference was unavailable before and after each proof.
+
+The first run, [39636307320](https://github.com/BerinKarjala/portfolio/actions/runs/39636307320)
+at `5bc6297`, deployed the binding but stopped at browser session creation before
+any metadata request. Its cause is unconfirmed. The later source adds only safe
+HTTP-status/availability/cookie-count diagnostics and associated regression tests;
+it does not relax checks or add automatic retries. The second run was explicitly
+dispatched after review. No image inference, transformation or quota reset occurred
+in either run.
+
+Billing returned HTTP 403 in both runs. Images plan and transformation headroom
+therefore remain unknown; a functioning binding does not resolve that gate.
 
 ## Local decoding evidence
 
@@ -57,7 +90,7 @@ recorded as unknown visibility; it never requests wider token permissions or
 infers Images Free status. Legacy billing error 9432 is retained as a fixed
 numeric category without changing billing. Metadata success establishes only
 the binding and metadata operation, not full production decoding or Free-plan
-eligibility. Live results will be retained separately after execution.
+eligibility. The observed live results are retained above.
 
 ## Remaining activation gates
 
@@ -71,7 +104,11 @@ transformations; neither limit is evidence of the account's current headroom.
 A separately bounded private pilot still needs full production decoding,
 request-correlated Worker CPU/memory evidence and output-quality review.
 JavaScript base64 conversion and repeated container scans at the accepted 4 MiB
-bound remain resource concerns; local elapsed time does not prove the Workers
-Free CPU allowance. No paid upgrade, inference, remote transformation, public
+bound remain resource concerns. A future optimization can feature-detect native
+`Uint8Array.fromBase64` (available in the pinned local workerd) while preserving
+all current wire bounds and fallback behavior. JPEG limits must cover both marker
+steps and fill-byte scanning. Neither change is part of this increment, and local
+elapsed time does not prove the Workers Free CPU allowance. No paid upgrade,
+inference, remote transformation, public
 activation, automatic retry, ledger reset or allowance refund is authorized by
 the metadata workflow.
