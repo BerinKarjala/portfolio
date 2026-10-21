@@ -25,7 +25,7 @@ This is a working client-workflow increment, not the completed v2.2 release.
 - [Unmodified supplied handoff](handoff/README.md)
 
 The supplied 248-photo catalog, thumbnails, credits and standalone browser are
-integrated under public/css-studio/. Live inference remains disabled. The bounded
+integrated under public/css-studio/. Public inference remains disabled. The bounded
 IndexedDB cache now supports Studio image proposals, explicit Apply, restoration,
 history/comparison and downloads. These paths use injected responses in tests; the
 public app has no image generator enabled. The Worker includes signed identity,
