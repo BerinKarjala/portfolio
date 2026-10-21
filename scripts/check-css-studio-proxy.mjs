@@ -1,8 +1,9 @@
 import { pathToFileURL } from "node:url";
 import { readJson, readBytes } from "../src/shared/studioTransfer.js";
 
-export const PROXY_PREVIEW =
-  "https://deploy-preview-245--berinkarjala.netlify.app";
+// This isolated production-check branch retains the helper's existing export
+// name while pinning every browser/session request to the production origin.
+export const PROXY_PREVIEW = "https://berinkarjala.netlify.app";
 export const PROXY_BACKEND = "https://css-studio-ai.berin-karjala.workers.dev";
 // Production is an approved APP_ORIGIN and cannot prove untrusted-Origin
 // rejection when Fetch Metadata is absent at browser interception.

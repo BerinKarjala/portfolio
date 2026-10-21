@@ -1,4 +1,4 @@
-# Private Netlify proxy verification. Browser checks use only session/status.
+# Private production-origin proxy verification. Checks use only session/status.
 name = "css-studio-ai"
 account_id = "d33da711f0acb00005de85f10c11ab0f"
 main = "worker.js"
@@ -10,7 +10,7 @@ keep_vars = true
 [vars]
 APP_ORIGIN = "https://berinkarjala.netlify.app"
 ENDPOINT_ORIGIN = "https://css-studio-ai.berin-karjala.workers.dev"
-CANARY_APP_ORIGIN = "https://deploy-preview-245--berinkarjala.netlify.app"
+CANARY_APP_ORIGIN = "https://berinkarjala.netlify.app"
 CANARY_MODEL = "llama"
 
 [ai]

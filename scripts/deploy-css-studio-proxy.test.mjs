@@ -62,7 +62,7 @@ function fixture({
                   type: "plain_text",
                   text: badOrigin
                     ? "https://unexpected.invalid"
-                    : "https://deploy-preview-245--berinkarjala.netlify.app",
+                    : "https://berinkarjala.netlify.app",
                 },
                 { name: "CANARY_MODEL", type: "plain_text", text: "llama" },
               ],

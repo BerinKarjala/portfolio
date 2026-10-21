@@ -18,7 +18,7 @@ const snapshot = {
   operations: ["theme"],
   day: "2026-10-21",
   remaining: { prompts: 10, images: 3 },
-  sharedRemaining: 6000,
+  sharedRemaining: 2000,
 };
 
 test("scopes private headers to exact preview status/session requests", () => {
@@ -238,7 +238,7 @@ function fixture({
               status: 200,
               value: {
                 ...snapshot,
-                sharedRemaining: changedCounter && statuses >= 3 ? 5000 : 6000,
+                sharedRemaining: changedCounter && statuses >= 3 ? 1000 : 2000,
               },
               cache: "no-store",
             }
@@ -361,7 +361,19 @@ function fixture({
 test("verifies browser cookie round-trip and cross-origin rejection without proposals", async () => {
   const f = fixture();
   const result = await runProxyCheck(f.options);
-  assert.equal(result.sharedRemaining, 6000);
+  assert.equal(result.sharedRemaining, 2000);
+  assert.ok(
+    f.browserRequests.some(
+      (request) => request.url === "https://berinkarjala.netlify.app/",
+    ),
+  );
+  assert.ok(
+    f.browserRequests.every(
+      (request) =>
+        new URL(request.url).origin === "https://berinkarjala.netlify.app" ||
+        new URL(request.url).origin === "https://example.com",
+    ),
+  );
   assert.equal(f.publicRequests.length, 5);
   assert.ok(f.isClosed());
   assert.ok(f.browserRequests.every((r) => !r.url.includes("propose")));
@@ -389,7 +401,7 @@ test("accepts an observed cookie-free 403 when the browser blocks its opaque res
   const f = fixture({ crossFetchRejects: true });
   const result = await runProxyCheck(f.options);
   assert.equal(result.crossOriginRejected, true);
-  assert.equal(result.sharedRemaining, 6000);
+  assert.equal(result.sharedRemaining, 2000);
   assert.equal(f.publicRequests.length, 5);
   assert.ok(!f.logs.join("\n").includes(secret));
   assert.ok(!f.logs.join("\n").includes(cookieValue));
@@ -449,7 +461,7 @@ test("private model preflight verifies identity and reload without claiming cros
   assert.equal(proof.session, true);
   assert.equal(proof.cookie, true);
   assert.equal(proof.crossOriginRejected, false);
-  assert.equal(proof.sharedRemaining, 6000);
+  assert.equal(proof.sharedRemaining, 2000);
   assert.equal(f.publicRequests.length, 4);
   assert.ok(
     f.publicRequests.every((request) => request.options.method === "GET"),
