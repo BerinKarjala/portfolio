@@ -3,6 +3,17 @@
   "decisionsFinalized": "2026-10-17",
   "status": "approved_requirements_not_implemented",
   "totalDecisions": 130,
+  "acceptanceExceptions": [
+    {
+      "id": "AC-EX-TV-REMOTE",
+      "approvedOn": "2026-10-21",
+      "approvedBy": "project_owner",
+      "scope": "physical_tv_remotes",
+      "status": "excluded_from_verification",
+      "blocksRelease": false,
+      "requirement": "Physical TV remotes will not be verified. Responsive TV-browser layouts and other existing acceptance requirements remain in scope."
+    }
+  ],
   "decisions": [
     {
       "id": "Q001",

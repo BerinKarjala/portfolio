@@ -39,10 +39,15 @@ Use the Node version in `.nvmrc` and `npm ci` with the committed lockfile.
 - Test Chromium, Firefox, and WebKit in CI. Automated layout tests use controlled
   CMS content; they do not establish that every future content entry will fit.
 - Inspect mobile and 4K screenshots. Check real phones and target TV browsers,
-  physical remote mappings, viewing-distance readability, browser zoom, and
+  viewing-distance readability, browser zoom, and
   assistive technology before claiming device-specific compatibility. A physical
   4K panel can expose a smaller CSS viewport; screen resolution alone does not
   identify viewing distance or request a TV layout.
+- Physical TV remotes will not be verified and are excluded from release
+  acceptance by the project owner's October 21, 2026 decision
+  (AC-EX-TV-REMOTE). This does not establish physical remote compatibility;
+  responsive TV-browser layouts and other input/accessibility checks remain
+  in scope.
 
 Run `npm run test:e2e -- e2e/portfolio-responsive.spec.js` after building for the
 portfolio layout/navigation checks. The existing Page Builder CI workflow runs

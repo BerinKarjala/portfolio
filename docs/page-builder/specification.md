@@ -307,6 +307,10 @@ Use these **acceptance IDs** in milestone PRs and link the related questions fro
 - **Visual regression (Playwright):** Chromium, Firefox, WebKit with separate baselines; mobile/tablet/desktop viewports, preview-versus-export comparisons, state-specific styles, reduced-motion, sticky and overflow. Pin test assets, fonts and timing. Capture screenshot diffs and traces in CI.
 - **Manual:** current Chrome/Edge/Firefox/Safari desktops and Chrome Android/Safari iOS; screen reader spot checks, real touch behavior, actual font/media failure, Netlify deploy preview, end-to-end JSON backup on different browser instance.
 
+### Approved verification exception
+
+AC-EX-TV-REMOTE — approved by the project owner on October 21, 2026. Physical TV remotes will not be verified and are excluded from release acceptance. This exception does not establish physical remote compatibility. Responsive layouts for TV browsers and existing keyboard, mouse, touch, accessibility and security requirements remain in scope.
+
 ### Quality budgets and measurement
 
 Known fixed requirement: warn around **200+ components**; no arbitrary hard component cap. Startup/load target and absolute performance budgets are **not newly invented**: measure baseline at Milestone 1, document agreed budgets with evidence before treating them as release-blocking. The Q126 C performance test infrastructure must be present and observable at release. No misleading claim of pixel identity across different engines; each engine has its own reviewed screenshot baseline, and fidelity comparisons use the same engine/viewport.

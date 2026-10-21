@@ -1,5 +1,7 @@
 # Q001–Q130 implementation trace
 
+Approved exception AC-EX-TV-REMOTE (project owner, October 21, 2026): physical TV remotes will not be verified and are excluded from release acceptance. Responsive TV-browser layouts and other existing acceptance requirements remain in scope. See the acceptance exception in `specification.md` and `decisions.json`.
+
 All decisions remain approved. “M1 verified” means the foundation implementation has evidence; it does not mark the final product or release accepted. Partial rows require later milestone coverage. M2 adds structural/canvas evidence in `m2-canvas.md`; M3 adds content/design evidence in `m3-design.md`; M4 adds compiler, preflight, sandbox and recovery evidence in `m4-export.md`. M4 remote results are recorded in `progress.md`; M5 implementation and acceptance mapping are in `m5-release.md`. Post-merge evidence and additional acceptance coverage are in `release-verification.md`. Final acceptance remains open. See `progress.md` for the actual test runs and `specification.md` for acceptance contracts.
 
 | Decision | Option | Requirement | Implementation status / evidence |

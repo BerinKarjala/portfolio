@@ -125,7 +125,7 @@ export default function Editor() {
           aria-live="polite"
           className={`pb-save-state ${dirty ? "pb-warning" : ""}`}
         >
-          {statusLabel}
+          <span>{statusLabel}</span>
         </span>
         <button
           ref={previewButton}
@@ -138,15 +138,22 @@ export default function Editor() {
         >
           {mode === "edit" ? "Preview and export" : "Back to editor"}
         </button>
-        <button type="button" onClick={exportDraft}>
-          {dirty ? "Download unsaved JSON" : "Download project JSON"}
+        <button
+          type="button"
+          className="pb-project-download"
+          onClick={exportDraft}
+        >
+          <span>{dirty ? "Download unsaved JSON" : "Download project JSON"}</span>
         </button>
         <TemplateReset />
-        {dirty && !readOnly && (
-          <button type="button" className="pb-primary" onClick={saveNow}>
-            Retry save now
-          </button>
-        )}
+        <button
+          type="button"
+          className="pb-primary pb-save-action"
+          disabled={!dirty || readOnly || status === "saving"}
+          onClick={saveNow}
+        >
+          <span>{status === "failed" ? "Retry save now" : "Save now"}</span>
+        </button>
       </div>
       {readOnly && (
         <div className="pb-banner pb-warning" role="alert">

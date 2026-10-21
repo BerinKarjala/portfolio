@@ -392,12 +392,16 @@ test("overlap cycling and layer picker select covered elements; Escape cancels a
   ).toBeDisabled();
   await second.focus();
   const viewport = page.getByTestId("canvas-scroll");
+  // Wrapped toolbars can put the bottom of this scroll region below the screen.
+  await viewport.scrollIntoViewIfNeeded();
   const view = await viewport.boundingBox();
+  const panY = view.y + view.height - 30;
+  expect(panY).toBeLessThan(page.viewportSize().height);
   const initialScroll = await viewport.evaluate((el) => el.scrollTop);
   await page.keyboard.down("Space");
-  await page.mouse.move(view.x + 20, view.y + view.height - 30);
+  await page.mouse.move(view.x + 20, panY);
   await page.mouse.down();
-  await page.mouse.move(view.x + 20, view.y + view.height - 50, { steps: 5 });
+  await page.mouse.move(view.x + 20, panY - 20, { steps: 5 });
   await page.mouse.up();
   await page.keyboard.up("Space");
   await expect
