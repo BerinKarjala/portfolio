@@ -310,6 +310,35 @@ test("linked components edit through either instance and detach without losing c
   );
 });
 
+test("autosave completion preserves an in-progress effect-control click", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await boot(page);
+  await add(page, "Paragraph");
+  await tab(page, "Effects");
+  await page.getByLabel("Animation", { exact: true }).selectOption("fade");
+  const saved = page.getByRole("status", { name: "Save status" });
+  await expect(saved).toHaveText("Saved in this browser");
+  await field(page, "Animation repeats (number or infinite)", "infinite");
+  const pause = page.getByRole("button", { name: "Pause effects", exact: true });
+  await pause.scrollIntoViewIfNeeded();
+  await expect(saved).toHaveText("Unsaved changes");
+  const box = await pause.boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  // A normal save must not move the intended control between press and release.
+  await expect(saved).toHaveText("Saved in this browser");
+  await page.mouse.up();
+  await expect(
+    page.getByRole("button", { name: "Resume effects", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByTestId("canvas-paragraph")).toHaveCSS(
+    "animation-play-state",
+    "paused",
+  );
+});
+
 test("preset removal preserves effective styling; states, effects and responsive visibility work", async ({
   page,
 }) => {
