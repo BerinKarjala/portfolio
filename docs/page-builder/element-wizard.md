@@ -81,6 +81,8 @@ changes are included. The Codex Security scan helper and required preflight
 reference are unavailable in this host; manual review and targeted security
 tests do not constitute a completed automated Codex Security scan.
 
-Physical TV remotes, actual on-screen keyboards, assistive technology, and
-viewing-distance readability remain manual release checks. Browser viewport
-tests establish responsive behavior, not device certification.
+Physical TV remotes will not be verified and are excluded from release
+acceptance under AC-EX-TV-REMOTE, approved by the project owner on October 21,
+2026. Actual on-screen keyboards, assistive technology, and viewing-distance
+readability remain manual release checks. Browser viewport tests establish
+responsive behavior, not physical remote compatibility or device certification.

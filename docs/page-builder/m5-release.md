@@ -43,10 +43,16 @@ Nine M4 per-engine exported-page images and two representative Chromium canvas i
 
 ## Manual verification matrix — not yet performed
 
+Approved exception AC-EX-TV-REMOTE (project owner, October 21, 2026): physical TV
+remotes will not be verified and are excluded from release acceptance. This
+does not establish physical remote compatibility. Responsive TV-browser layouts
+and all other existing acceptance requirements remain in scope.
+
 For every entry record reviewer, date, OS/device, browser/AT version, result and evidence link here or in the linked release issue. Desktop browser engines in Playwright do not prove current branded-browser or physical-device support.
 
 | Environment | Required actions | Result |
 |---|---|---|
+| Physical TV remotes | Verification excluded by owner decision AC-EX-TV-REMOTE, October 21, 2026 | Approved exception; not verified; does not block release |
 | Current Chrome and Edge, desktop | Launch/close focus; create/edit/save/reload; keyboard/mouse drag and autoscroll; ZIP open; mobile/tablet/desktop preview and native exported controls | Pending |
 | Current Firefox, desktop | Same workflow; rich selection, formatting/paste/IME; resize/cancel; collection restore | Pending |
 | Current Safari, macOS | Same workflow; native dialog/focus; downloads; pointer/keyboard resize; media/font failure | Pending |

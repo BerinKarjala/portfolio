@@ -21,8 +21,11 @@ A separate browser-local project was used. The live browser check confirmed:
 ![Published wizard with saved settings and contextual preview](qa/wizard-production.jpg)
 
 This was a desktop browser smoke check. Phone/4K browser viewport coverage is
-provided by the automated tests. Physical TV remotes, real on-screen keyboards,
-and assistive-technology checks remain manual.
+provided by the automated tests. Physical TV remotes will not be verified and
+are excluded from release acceptance under AC-EX-TV-REMOTE, approved by the
+project owner on October 21, 2026. This is an accepted exception, not a passed
+physical-device check. Real on-screen keyboards and assistive-technology checks
+remain manual.
 
 ## Autosave pointer regression
 
