@@ -1,16 +1,72 @@
 # CSS Studio development progress
 
-Updated: October 21, 2026 (America/New_York). Branch: `css-studio`.
+Updated: October 22, 2026 (UTC). Branch: `css-studio`.
 
 ## Current position
 
 The manual Studio, supplied asset catalog, generated-image client workflows and
 durable server boundary are implemented. The private Llama text canary is deployed
-and passed two actual model requests with conservative quota accounting. Public
-inference and image/refinement remain disabled. Netlify proxy acceptance, broader
-model evaluation and public operational headroom remain open. Earlier increment
+and passed two actual model requests. One private GPT fixture then passed in
+827 ms; its retained 4,000 reservation leaves 2,000 shared Neurons on October 21
+UTC. Real preview identity/cookie reuse/reload and the deliberate untrusted-origin
+Chromium check passed; the latter preserved all counters without inference.
+Public inference and image/refinement remain disabled. The private production
+Chromium session/proxy check also passed without inference or quota changes;
+see [its retained proof](production-session-proof.md). Other engines' live proxy
+behavior, broader model evaluation and public operational headroom remain open.
+M5 fixes cover contrast, enlarged text/reflow and reduced motion; the follow-up at
+`cab3636` passed all 78 focused checks across Chromium, Firefox and WebKit.
+Klein metadata and an offline adapter/Images normalization pipeline are implemented
+with atomic monthly transformation accounting. Actual native local Images tests
+now pass generation, owned refinement, corrupt-raster rejection and the private
+metadata route. The free metadata-only live check then passed, confirming the
+native Images binding and fixed PNG metadata without inference, transformations
+or shared quota changes. Billing visibility returned 403; Images Free status and
+production decoding/CPU behavior remain unverified. The later plan review reuses
+the owner's complete subscription screenshot and Cloudflare's default-Free rule;
+the 0/5,000 Zones counter alone cannot establish plan or binding headroom.
+The Worker now selects images only behind the existing secret and an exact
+private image header. The single quota-accounted pilot returned HTTP 504 without
+verified image completion. It retained 500 Neurons and one transformation, leaving
+1,500 shared Neurons and 4,999 monthly application reservations. Public inference
+stayed off. The inference-free private quota inspection subsequently passed at
+`75e89a1` ([run 39694420073](https://github.com/BerinKarjala/portfolio/actions/runs/39694420073)):
+admission unavailable, 1,500 shared Neurons, 4,999 monthly slots, zero proposals
+and public inference off. Its fresh visitor's ten prompts/three images are not a
+refund to the failed request's visitor. The uncertainty halt persists across UTC
+rollover and has not been reconciled. A verified telemetry shutdown fix is also
+implemented; the failure is not reported as a successful image generation or a
+CPU measurement. Native base64 decoding and bounded JPEG inspection passed
+local/runtime tests.
+The subsequent private failure-diagnostic increment distinguishes a request
+deadline from operation/output/allowance failures using fixed processing phases.
+It keeps the 18-second limit and settlement rules, freezes terminal evidence
+before abort, and omits raw error text and public/text diagnostics. The runner
+accepts only a bounded projection for its own request ID. These changes passed
+526 unit cases across 62 files, three native SQLite cases, three native Images
+cases, the native socket-shutdown case, source/bundle gates and the 382-module
+production build on Node 22.22.2. They have not been deployed or used for another
+model call. The original HTTP 504's cause and live CPU/memory remain unverified.
+See [the private pilot](private-image-pilot.md), [the implementation](image-adapter.md) and
+[runtime evidence and activation limits](image-runtime-verification.md).
+Earlier increment
 sections below are chronological records; later entries supersede their status.
-See [private-text-canary.md](private-text-canary.md) for live evidence and limits.
+The branch also incorporates owner-merged main `9a4a0e5`, preserving its read-only
+credential-check workflow, the Page Builder keyboard sensor fix and the
+metadata-only image-contract helper. The
+helper's seven native Node tests run separately from Vitest. The expanded browser
+workflow keeps zero retries and has a 25-minute job limit; its previous complete
+run took about 19.5 minutes before the added keyboard preflight.
+See [model evaluation](model-evaluation.md), [proxy evidence](private-proxy-verification.md)
+and [M5 verification](verification-m5.md) for evidence and limits. Reservations
+are not measured provider usage; no model winner is established.
+
+The metadata increment passed 433 unit tests, six native Images/SQLite runtime
+cases and the production build (382 modules) locally. A subsequent focused
+four-case runner test passed after review tightened missing-allowance validation
+and removed comparisons between different browser identities. The frontend and
+dependencies are unchanged; the earlier three-engine and Page Builder evidence
+at `28ddcb1` remains the applicable browser baseline.
 
 ## Baseline and source priority
 

@@ -1,0 +1,19 @@
+{
+  "model": "@cf/openai/gpt-oss-20b",
+  "fixture": "season-high-contrast",
+  "calls": 1,
+  "latencyMs": 827,
+  "reservedNeurons": 4000,
+  "reservationIsActualUsage": false,
+  "sharedRemaining": 2000,
+  "remainingPrompts": 9,
+  "overrides": {
+    "accent": "#99ccff",
+    "background": "#102030",
+    "text": "#ffffff",
+    "font": "system",
+    "radius": "8px"
+  },
+  "rawTextBackgroundContrast": 16.518308439770358,
+  "winnerEstablished": false
+}

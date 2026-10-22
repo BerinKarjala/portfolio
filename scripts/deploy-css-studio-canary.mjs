@@ -21,6 +21,27 @@ const MODEL = "@cf/openai/gpt-oss-20b";
 function assert(condition, message) {
   if (!condition) throw new CanaryError(message);
 }
+function resourceBindingsCompatible(bindings, requireImages = false) {
+  const expected = new Map([
+    ["AI", "ai"],
+    ["QUOTA", "durable_object_namespace"],
+    ["IMAGES", "images"],
+  ]);
+  return (
+    bindings.every(
+      (binding) =>
+        binding &&
+        (expected.has(binding.name)
+          ? binding.type === expected.get(binding.name)
+          : ["secret_text", "plain_text", "json"].includes(binding.type)),
+    ) &&
+    [...expected].every(
+      ([name]) =>
+        bindings.filter((binding) => binding.name === name).length <= 1,
+    ) &&
+    (!requireImages || bindings.some((binding) => binding.name === "IMAGES"))
+  );
+}
 export function summarizeModelSchema(
   result,
   observedAt = new Date().toISOString(),
@@ -129,8 +150,13 @@ export async function deployCanary({
     WRANGLER_SEND_METRICS: "false",
     WRANGLER_LOG: "error",
   };
-  delete env.CANARY_SECRET;
-  delete env.IDENTITY_SECRET;
+  for (const name of [
+    "CANARY_SECRET",
+    "IDENTITY_SECRET",
+    "CLOUDFLARE_API_KEY",
+    "CLOUDFLARE_EMAIL",
+  ])
+    delete env[name];
   async function api(path, maxBytes = 65536) {
     let response;
     try {
@@ -183,6 +209,10 @@ export async function deployCanary({
   assert(
     Array.isArray(settings?.bindings),
     "The existing Worker settings are invalid.",
+  );
+  assert(
+    resourceBindingsCompatible(settings.bindings),
+    "Existing Worker resource bindings are incompatible; deployment was not started.",
   );
   const identities = settings.bindings.filter(
     (binding) => binding.name === "IDENTITY_SECRET",
@@ -250,6 +280,10 @@ export async function deployCanary({
   );
   const bindings = deployed?.bindings;
   assert(Array.isArray(bindings), "Deployed Worker settings are invalid.");
+  assert(
+    resourceBindingsCompatible(bindings, true),
+    "Deployed Worker resource bindings are invalid; no verification was started.",
+  );
   const quota = bindings.find((binding) => binding.name === "QUOTA");
   assert(
     quota?.type === "durable_object_namespace" &&

@@ -9,8 +9,26 @@ import {
   validateOutput,
 } from "./protocol.js";
 import { LIMITS } from "./quota.js";
-import { ProviderLimitError, ProviderOutputError } from "./providerErrors.js";
+import {
+  ProviderLimitError,
+  ProviderOutputError,
+  ImageLimitError,
+} from "./providerErrors.js";
+import {
+  GPT_THEME_MODEL,
+  GPT_MAX_CONTEXT_TOKENS,
+  GPT_THEME_PLAN,
+} from "./gptProvider.js";
+import { KLEIN_IMAGE_MODEL, KLEIN_IMAGE_PLAN } from "./kleinProvider.js";
 export { ProviderLimitError } from "./providerErrors.js";
+class RequestDeadlineError extends Error {}
+const IMAGE_PHASES = new Set([
+  "provider",
+  "response-body",
+  "raster",
+  "normalize",
+  "receipt",
+]);
 const reply = (status, body, headers = {}) =>
   new Response(JSON.stringify(body), {
     status,
@@ -28,6 +46,7 @@ export function createApp({
   ledger,
   provider,
   policy,
+  diagnostics = false,
   clock = Date.now,
 } = {}) {
   const plan = policy ? Object.freeze({ ...policy }) : null;
@@ -48,6 +67,15 @@ export function createApp({
   } catch {
     /* Missing developer configuration keeps the route unavailable. */
   }
+  const boundedOutput = () =>
+    provider?.model === GPT_THEME_MODEL
+      ? provider.maxContextTokens === GPT_MAX_CONTEXT_TOKENS &&
+        Object.entries(GPT_THEME_PLAN).every(
+          ([key, value]) => plan?.[key] === value,
+        )
+      : Number.isSafeInteger(plan?.maxOutputTokens) &&
+        plan.maxOutputTokens >= 1 &&
+        plan.maxOutputTokens <= 512;
   const ready = () =>
     Boolean(
       identity &&
@@ -59,9 +87,7 @@ export function createApp({
       Number.isSafeInteger(plan.reservedNeurons) &&
       plan.reservedNeurons >= 1 &&
       plan.reservedNeurons <= LIMITS.neurons &&
-      Number.isSafeInteger(plan.maxOutputTokens) &&
-      plan.maxOutputTokens >= 1 &&
-      plan.maxOutputTokens <= 512 &&
+      boundedOutput() &&
       Number.isSafeInteger(plan.timeoutMs) &&
       plan.timeoutMs >= 1 &&
       plan.timeoutMs <= 25000,
@@ -79,7 +105,13 @@ export function createApp({
     ) &&
     Number.isInteger(plan.imageSteps) &&
     plan.imageSteps >= 1 &&
-    plan.imageSteps <= 8;
+    plan.imageSteps <= 8 &&
+    (provider.image.model !== KLEIN_IMAGE_MODEL ||
+      (typeof provider.image.transformsFor === "function" &&
+        plan.imageVerifiedUntil >= clock() + LIMITS.requestMs &&
+        Object.entries(KLEIN_IMAGE_PLAN).every(
+          ([key, value]) => plan[key] === value,
+        )));
   return async function handle(request) {
     const url = new URL(request.url),
       route = url.pathname;
@@ -133,11 +165,19 @@ export function createApp({
         return reply(200, {
           available: snapshot.available,
           operations: snapshot.available
-            ? ["theme", ...(imageReady() ? ["image", "refine"] : [])]
+            ? [
+                "theme",
+                ...(imageReady() && snapshot.imageAvailable !== false
+                  ? ["image", "refine"]
+                  : []),
+              ]
             : [],
           day: snapshot.day,
           remaining: snapshot.remaining,
           sharedRemaining: snapshot.sharedRemaining,
+          ...(diagnostics === true
+            ? { imageTransformsRemaining: snapshot.imageTransformsRemaining }
+            : {}),
         });
       }
       const jsonType = /^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(
@@ -194,8 +234,21 @@ export function createApp({
         : null;
       if (!ready())
         return reply(503, { error: "AI design is currently unavailable." });
-      if (typeof provider.validateRequest === "function")
-        provider.validateRequest(input);
+      const adapter = imageOperation ? provider.image : provider;
+      if (typeof adapter.validateRequest === "function")
+        adapter.validateRequest(input);
+      const imageTransforms =
+        imageOperation && typeof adapter.transformsFor === "function"
+          ? adapter.transformsFor(input)
+          : 0;
+      if (
+        !Number.isInteger(imageTransforms) ||
+        imageTransforms < 0 ||
+        imageTransforms > 2 ||
+        (adapter.model === KLEIN_IMAGE_MODEL &&
+          imageTransforms !== (input.operation === "refine" ? 2 : 1))
+      )
+        throw Error("Invalid image transformation plan");
       const reservation = await ledger.reserve({
         visitor,
         requestId: input.id,
@@ -208,6 +261,7 @@ export function createApp({
         reservedNeurons: imageOperation
           ? plan.imageNeurons
           : plan.reservedNeurons,
+        imageTransforms,
       });
       if (!reservation.admitted)
         return reply(
@@ -229,13 +283,44 @@ export function createApp({
         return reply(503, { error: "AI admission expired before dispatch." });
       }
       const controller = new AbortController();
+      const diagnosticEnabled = diagnostics === true && imageOperation;
+      const began = diagnosticEnabled ? clock() : null;
+      let phase = "provider",
+        finished = false,
+        diagnostic;
+      const onPhase = (value) => {
+        if (diagnosticEnabled && !finished && IMAGE_PHASES.has(value))
+          phase = value;
+      };
+      const finishDiagnostic = (failure) => {
+        if (finished) return diagnostic;
+        finished = true;
+        const elapsedWallMs = diagnosticEnabled ? clock() - began : null;
+        if (
+          diagnosticEnabled &&
+          Number.isSafeInteger(elapsedWallMs) &&
+          elapsedWallMs >= 0
+        )
+          diagnostic = Object.freeze({
+            requestId: input.id,
+            phase,
+            failure,
+            elapsedWallMs,
+            timeoutMs: plan.timeoutMs,
+          });
+        return diagnostic;
+      };
       let timer;
       let result;
       try {
         const timeout = new Promise((_, reject) => {
           timer = setTimeout(() => {
+            const error = new RequestDeadlineError();
+            // Freeze the terminal phase before an abort listener can report a
+            // later phase. Reject our deadline before provider abort rejection.
+            finishDiagnostic("request-deadline");
+            reject(error);
             controller.abort();
-            reject(Error("deadline"));
           }, plan.timeoutMs);
         });
         result = await Promise.race([
@@ -246,6 +331,7 @@ export function createApp({
                   width: plan.imageWidth,
                   height: plan.imageHeight,
                   steps: plan.imageSteps,
+                  ...(diagnosticEnabled ? { onPhase } : {}),
                   ...(base ? { baseImage: attachment.image } : {}),
                 })
               : await provider.propose(input, {
@@ -253,6 +339,7 @@ export function createApp({
                   maxOutputTokens: plan.maxOutputTokens,
                 });
             try {
+              onPhase("receipt");
               const proposal = validateOutput(output?.proposal, {
                 allowEmpty: imageOperation,
               });
@@ -281,6 +368,16 @@ export function createApp({
           timeout,
         ]);
       } catch (error) {
+        const failure =
+          error instanceof RequestDeadlineError
+            ? "request-deadline"
+            : error instanceof ProviderOutputError
+              ? "invalid-output"
+              : error instanceof ImageLimitError ||
+                  error instanceof ProviderLimitError
+                ? "allowance-exhausted"
+                : "operation-failed";
+        const finalDiagnostic = finishDiagnostic(failure);
         if (error instanceof ProviderOutputError) {
           await ledger.settle({
             visitor,
@@ -288,22 +385,33 @@ export function createApp({
             outcome: "complete",
           });
           return reply(502, {
+            ...(finalDiagnostic ? { diagnostic: finalDiagnostic } : {}),
             error:
               "The designer returned unsupported styling or media. Existing themes remain available.",
           });
         }
+        const imageExhausted =
+          imageOperation && error instanceof ImageLimitError;
         const exhausted = error instanceof ProviderLimitError;
         await ledger.settle({
           visitor,
           requestId: input.id,
-          outcome: exhausted ? "provider-exhausted" : "uncertain",
+          outcome: imageExhausted
+            ? "image-provider-exhausted"
+            : exhausted
+              ? "provider-exhausted"
+              : "uncertain",
         });
-        return reply(exhausted ? 429 : 504, {
-          error: exhausted
-            ? "Provider allowance is exhausted."
-            : "The designer did not finish safely. Existing themes remain available.",
+        return reply(imageExhausted || exhausted ? 429 : 504, {
+          ...(finalDiagnostic ? { diagnostic: finalDiagnostic } : {}),
+          error: imageExhausted
+            ? "Image transformation allowance is exhausted."
+            : exhausted
+              ? "Provider allowance is exhausted."
+              : "The designer did not finish safely. Existing themes remain available.",
         });
       } finally {
+        finished = true;
         clearTimeout(timer);
       }
       // Usage comes from a trusted provider adapter, never model text or the request body.
@@ -311,7 +419,7 @@ export function createApp({
         visitor,
         requestId: input.id,
         outcome: "complete",
-        ...(result.output.usage?.verified === true
+        ...(!imageOperation && result.output.usage?.verified === true
           ? { measuredNeurons: result.output.usage.neurons }
           : {}),
       });

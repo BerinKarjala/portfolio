@@ -1,0 +1,41 @@
+name: CSS Studio private proxy verification
+
+on:
+  push:
+    branches: [css-studio-proxy-check]
+    paths:
+      - "server/css-studio/**"
+      - "src/shared/**"
+      - "scripts/*css-studio-proxy*"
+      - "package*.json"
+      - ".nvmrc"
+      - ".github/workflows/css-studio-proxy.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: css-studio-private-canary-global
+  cancel-in-progress: false
+
+jobs:
+  verify-private-proxy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: npm
+      - run: npm ci
+      - name: Verify local server and proxy guards
+        run: npm test -- server/css-studio scripts/deploy-css-studio-proxy.test.mjs scripts/check-css-studio-proxy.test.mjs
+      - run: npm run test:css-studio:server
+      - name: Install Chromium for private cookie verification
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Deploy private configuration and verify real proxy without inference
+        run: node scripts/deploy-css-studio-proxy.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WRANGLER_SEND_METRICS: "false"

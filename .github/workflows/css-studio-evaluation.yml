@@ -1,0 +1,44 @@
+name: CSS Studio private identity and GPT evaluation
+on:
+  push:
+    branches: [css-studio-evaluation]
+    paths:
+      - "server/css-studio/**"
+      - "src/shared/**"
+      - "scripts/*css-studio*"
+      - "package*.json"
+      - ".nvmrc"
+      - ".github/workflows/css-studio-evaluation.yml"
+permissions:
+  contents: read
+concurrency:
+  # Serialize with the existing canary so both share the same daily authority.
+  group: css-studio-private-canary-global
+  cancel-in-progress: false
+jobs:
+  verify-proxy-and-one-gpt-fixture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: npm
+      - run: npm ci
+      - run: npm test -- server/css-studio scripts/check-css-studio-proxy.test.mjs scripts/deploy-css-studio-proxy.test.mjs scripts/check-css-studio-gpt.test.mjs scripts/evaluate-css-studio.test.mjs
+      - run: npm run test:css-studio:server
+      - run: npx --no-install playwright install --with-deps chromium
+      - name: Verify preview identity, then admit at most one private 4000-Neuron GPT fixture
+        run: node scripts/evaluate-css-studio.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WRANGLER_SEND_METRICS: "false"
+      - name: Retain safe fixed-fixture tokens and metrics only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: css-studio-gpt-evaluation
+          path: artifacts/css-studio-evaluation/gpt-winter.json
+          if-no-files-found: ignore
+          retention-days: 7

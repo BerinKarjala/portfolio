@@ -1,0 +1,18 @@
+{
+  "observedAt": "2026-10-21T16:42:38.092Z",
+  "billingVisibility": "forbidden",
+  "imagesPlan": "unknown",
+  "readyForTransform": false,
+  "info": {
+    "width": 64,
+    "height": 64,
+    "format": "image/png"
+  },
+  "elapsedWallMs": 9,
+  "bindingVerified": true,
+  "sessionChecksPassed": true,
+  "sharedRemaining": 2000,
+  "inferencePerformed": false,
+  "transformationPerformed": false,
+  "cpuMeasured": false
+}

@@ -10,3 +10,9 @@ export class ProviderOutputError extends Error {
     this.name = "ProviderOutputError";
   }
 }
+export class ImageLimitError extends Error {
+  constructor() {
+    super("Image transformation allowance unavailable");
+    this.name = "ImageLimitError";
+  }
+}

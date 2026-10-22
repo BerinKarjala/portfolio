@@ -25,5 +25,7 @@ jobs:
       - run: npm ci
       - run: npm test -- server/css-studio
       - run: npm run test:css-studio:server
+      - name: Native local Images decoding without remote services
+        run: node --test server/css-studio/runtime/images.runtime.mjs
       - run: npx playwright install --with-deps chromium
       - run: npm run test:css-studio:server:browser

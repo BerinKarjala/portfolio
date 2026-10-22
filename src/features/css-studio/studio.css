@@ -5,6 +5,7 @@
 }
 .studio-canvas {
   min-width: 0;
+  overflow-wrap: anywhere;
   grid-column: 1;
   grid-row: 1;
 }
@@ -25,7 +26,7 @@
   color: #111827;
   padding: 18px;
   font:
-    15px/1.5 system-ui,
+    0.9375rem/1.5 system-ui,
     sans-serif;
   position: sticky;
   top: 64px;
@@ -47,7 +48,7 @@
 }
 .studio-panel h2 {
   font-weight: 700;
-  font-size: 20px;
+  font-size: 1.25rem;
 }
 .studio-panel p {
   margin: 10px 0;
@@ -90,7 +91,7 @@
   top: 0;
   z-index: 20;
   font:
-    14px system-ui,
+    0.875rem system-ui,
     sans-serif;
 }
 .studio-toolbar strong {
@@ -159,7 +160,7 @@
   color: white;
 }
 .studio-gallery h3 {
-  font-size: 22px;
+  font-size: 1.375rem;
   margin: 8px 0;
 }
 .studio-gallery p {
@@ -208,10 +209,10 @@ html[data-studio-theme] .studio-canvas .nav-active {
 }
 html[data-studio-theme]
   .studio-canvas
-  :is(button:not(.studio-moon), .resetbtn) {
+  :is(button:not(.studio-moon), .resetbtn, a.bg-green-400) {
   border-radius: var(--studio-radius);
   background: var(--studio-accent);
-  color: var(--studio-button-text);
+  color: var(--studio-button-text) !important;
 }
 html[data-studio-theme] .studio-canvas :focus-visible {
   outline: 3px solid var(--studio-link);
@@ -250,7 +251,7 @@ html[data-studio-theme] .studio-canvas :focus-visible {
   border: 2px solid #475569;
   border-radius: 12px;
   font:
-    16px/1.5 system-ui,
+    1rem/1.5 system-ui,
     sans-serif;
 }
 .studio-examples::backdrop {
@@ -258,11 +259,18 @@ html[data-studio-theme] .studio-canvas :focus-visible {
 }
 .studio-examples header {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 12px;
 }
 .studio-examples h2 {
   font-weight: 700;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.studio-examples header button {
+  margin: 0;
+  max-width: 100%;
 }
 .studio-examples button,
 .studio-examples select {
@@ -270,6 +278,7 @@ html[data-studio-theme] .studio-canvas :focus-visible {
   border: 1px solid #475569;
   margin: 8px;
   border-radius: 6px;
+  max-width: calc(100% - 16px);
 }
 .studio-examples iframe {
   width: 100%;
@@ -318,6 +327,16 @@ html[data-studio-theme] .studio-canvas {
   background-position: center;
   background-attachment: fixed;
 }
+@media (prefers-reduced-motion: reduce) {
+  html[data-studio-theme] .studio-canvas {
+    background-attachment: scroll;
+  }
+  html[data-studio-theme] .studio-canvas * {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
 html[data-studio-theme] .studio-canvas :is(main, .forest-bg) {
   background: transparent;
 }
@@ -340,7 +359,7 @@ html[data-studio-theme] .studio-canvas :is(main, .forest-bg) {
 .studio-photo-grid button {
   margin: 0;
   padding: 4px;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .studio-photo-grid img {
   width: 100%;

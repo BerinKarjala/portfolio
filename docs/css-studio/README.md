@@ -15,13 +15,21 @@ This is a working client-workflow increment, not the completed v2.2 release.
 - [Server boundary and accounting contract](server-boundary.md)
 - [Cloudflare readiness observations](cloudflare-readiness.md)
 - [Private text canary and remaining activation gates](private-text-canary.md)
+- [Observed GPT evaluation and whole-context cost proof](model-evaluation.md)
+- [Real preview identity and cross-site verification](private-proxy-verification.md)
+- [Private production session proof](production-session-proof.md)
+- [Image-model contract and decoding research](image-model-research.md)
+- [Image adapter and monthly transformation accounting](image-adapter.md)
+- [Images runtime and private metadata verification](image-runtime-verification.md)
+- [One private image pilot and Free-plan evidence](private-image-pilot.md)
+- [M5 accessibility and reflow verification](verification-m5.md)
 - [M4 server verification](verification-m4-server.md)
 - [Owned-media transport and activation limits](owned-media.md)
 - [Live AI prerequisites](live-ai-setup.md)
 - [Unmodified supplied handoff](handoff/README.md)
 
 The supplied 248-photo catalog, thumbnails, credits and standalone browser are
-integrated under public/css-studio/. Live inference remains disabled. The bounded
+integrated under public/css-studio/. Public inference remains disabled. The bounded
 IndexedDB cache now supports Studio image proposals, explicit Apply, restoration,
 history/comparison and downloads. These paths use injected responses in tests; the
 public app has no image generator enabled. The Worker includes signed identity,

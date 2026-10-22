@@ -1,24 +1,36 @@
-# M4 server boundary foundation
+# CSS Studio server boundary
 
-This source is implemented and locally tested, but is not deployed or connected
-to the browser designer. `server/css-studio/worker.js` contains no AI binding,
-provider implementation, model selection or environment enable flag. The public
-browser still uses unavailableDesigner. Tests inject a local provider fixture;
-no test can make an external provider request.
+October 21, 2026. The Worker has a deployed private Llama canary, signed browser
+identity and one durable quota authority. Public inference and image/refinement
+remain unavailable. The browser discovers capabilities through fixed same-origin
+endpoints only after Studio opens and retains manual tools on failure. Private
+evaluation requires a server-only credential; an environment enable flag cannot
+expose inference to visitors.
+
+Two private Llama calls and one GPT call passed. Real preview identity/cookie
+issuance, reuse, reload and the scoped untrusted-origin Chromium check passed.
+See [model-evaluation.md](model-evaluation.md) and
+[proxy evidence](private-proxy-verification.md) for source-specific scope.
 
 ## Entry point and identity
 
-The proposed entry point is a Cloudflare Worker with one SQLite-backed Durable
+The entry point is a Cloudflare Worker with one SQLite-backed Durable
 Object, named `css-studio-global-v1`, for all visitors, presets and accounting
 operations. It is not partitioned by browser, theme family, UTC day or location.
-The example Wrangler configuration disables workers.dev and preview URLs and
-contains no production route or secrets. No Cloudflare resources were created.
+The default Wrangler example disables workers.dev and preview URLs and has no
+public inference configuration. The separate private-canary configuration targets
+the user's existing `css-studio-ai` Worker with AI and SQLite bindings. Its first
+deployment provisioned the missing identity secret and quota namespace; subsequent
+deployments must preserve both identity and accounting state.
 
 `APP_ORIGIN` is the exact HTTPS browser origin. `ENDPOINT_ORIGIN` optionally names
-a different, fixed Worker backend origin for a future same-origin frontend proxy.
-The frontend would call relative `/api/css-studio/*` URLs; the proxy must preserve
+a different, fixed Worker backend origin for the same-origin frontend proxy.
+The frontend calls relative `/api/css-studio/*` URLs; the proxy must preserve
 Origin, Cookie, Sec-Fetch-Site and Set-Cookie, and must not cache API responses.
-No production Netlify proxy has been configured or verified. Direct cross-origin
+The Netlify rewrite precedes the SPA fallback. Actual preview proxy/cookie
+identity and untrusted-origin Chromium verification passed; production acceptance
+remains open.
+Direct cross-origin
 browser access is not offered; there are no CORS response headers. Forwarded-host
 headers are not trusted to choose an origin or upstream.
 
@@ -43,17 +55,17 @@ together or roll back. Indexes bound pending/age/day queries; DO memory and brow
 localStorage are not quota authorities. Provider work takes place outside the DO,
 after its reservation has committed.
 
-| Rule | Implemented behavior |
-| --- | --- |
-| Browser/day | At most ten admitted submitted prompts. Image/refinement submissions additionally consume one of three image slots. This conservative interpretation counts an image prompt in both counters; the counters remain separate. Invalid/denied requests do not consume admission; admitted provider failures do. |
-| Shared/day | Reserve an integer, conservatively rounded Neuron bound before dispatch; reject when the total would exceed 8,000. Only a server-owned verified cost plan can supply the bound. Current plan values in tests are fixtures, not verified model costs. |
-| Burst / concurrency | Five seconds between new admissions per browser; at most two pending operations across every visitor and day. Retries are checked before burst/counter admission. |
-| Idempotency | Bind a browser/request UUID to a SHA-256 fingerprint of canonical input for 72 hours. Pending repeats return 202; completed repeats return 409, without redispatch. Different input with the same key returns 409. Old response content is not stored or replayed. |
-| Reliable completion | Trusted adapter measurements can reduce the original day's conservative reservation. Missing usage retains the whole bound. Invalid or above-bound usage latches accounting closed. Model text/client fields are never usage authority. |
-| Timeout / uncertainty | Retain the whole reservation; latch all new admission closed, including subsequent days. Expired pending reservations do the same. There is no public reset endpoint or automatic refund. Recovery requires reviewed operator reconciliation. |
-| Provider exhaustion | Keep the admission and charge, and stop for its accounting day (also the settlement day if different). No paid fallback is selected. |
-| Midnight | Charge browser counters and settle against the UTC admission day. Also hold the full bound in each overlapping UTC day while pending; the settlement-day hold is not refunded. This prevents midnight completion from silently freeing a fresh shared budget. |
-| Failure | Storage/admission errors never dispatch. Settlement failure returns unavailable and leaves the durable reservation charged; expiry later closes accounting. |
+| Rule                  | Implemented behavior                                                                                                                                                                                                                                                                                                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Browser/day           | At most ten admitted submitted prompts. Image/refinement submissions additionally consume one of three image slots. This conservative interpretation counts an image prompt in both counters; the counters remain separate. Invalid/denied requests do not consume admission; admitted provider failures do.                                                                   |
+| Shared/day            | Reserve an integer, conservatively rounded Neuron bound before dispatch; reject when the total would exceed 8,000. Only a server-owned reviewed cost plan supplies the bound. The private Llama plan retains 1,000 per request; the preflight GPT plan retains 4,000 against its documented 3,491 maximum. These are conservative ledger charges, not measured provider usage. |
+| Burst / concurrency   | Five seconds between new admissions per browser; at most two pending operations across every visitor and day. Retries are checked before burst/counter admission.                                                                                                                                                                                                              |
+| Idempotency           | Bind a browser/request UUID to a SHA-256 fingerprint of canonical input for 72 hours. Pending repeats return 202; completed repeats return 409, without redispatch. Different input with the same key returns 409. Old response content is not stored or replayed.                                                                                                             |
+| Reliable completion   | Trusted adapter measurements can reduce the original day's conservative reservation. Missing usage retains the whole bound. Invalid or above-bound usage latches accounting closed. Model text/client fields are never usage authority.                                                                                                                                        |
+| Timeout / uncertainty | Retain the whole reservation; latch all new admission closed, including subsequent days. Expired pending reservations do the same. There is no public reset endpoint or automatic refund. Recovery requires reviewed operator reconciliation.                                                                                                                                  |
+| Provider exhaustion   | Keep the admission and charge, and stop for its accounting day (also the settlement day if different). No paid fallback is selected.                                                                                                                                                                                                                                           |
+| Midnight              | Charge browser counters and settle against the UTC admission day. Also hold the full bound in each overlapping UTC day while pending; the settlement-day hold is not refunded. This prevents midnight completion from silently freeing a fresh shared budget.                                                                                                                  |
+| Failure               | Storage/admission errors never dispatch. Settlement failure returns unavailable and leaves the durable reservation charged; expiry later closes accounting.                                                                                                                                                                                                                    |
 
 The ten/three/8,000 ceilings are maximums, not promised availability. Provider or
 supporting-service limits can stop earlier. Do not rename the authority, create a
@@ -62,12 +74,13 @@ use; evaluations and future deployment contexts must use the same shared authori
 
 ## HTTP and provider contract
 
-- GET `/api/css-studio/status`: unavailable by default; an active test-injected
-  route returns the authenticated browser's counters and shared remainder.
+- GET `/api/css-studio/status`: unavailable publicly by default; an authenticated,
+  ready private route returns supported operations, browser counters and shared
+  remainder. Text-only providers expose `theme`, never image/refinement.
 - POST `/api/css-studio/session`: empty JSON object; issue/reuse the signed cookie
-  only when configuration and the injected provider plan are ready.
+  only when configuration and the reviewed provider plan are ready.
 - POST `/api/css-studio/propose`: server-owned request schema, valid identity and
-  atomic admission precede provider dispatch. Production always returns unavailable.
+  atomic admission precede provider dispatch. Public dispatch remains unavailable.
   Image/refinement requires an additional trusted image adapter, decoder/inspector
   and bounded image cost/geometry/step plan. A local generated ID alone is never
   proof of server media ownership. See [owned-media.md](owned-media.md).
@@ -80,11 +93,28 @@ remaining-quota fields are rejected. Proposal output accepts only bounded messag
 text and safe color/font/radius tokens, never selectors, HTML fields, CSS source,
 URLs or generated references nominated by the model.
 
-The internal provider seam receives at most 512 output tokens and a timeout no
-longer than 25 seconds. An approved future adapter must enforce fixed models,
-actual input/output wire bounds, reliable usage conversion and trusted media
-ownership. The plan expires and must remain valid through the reservation window.
-An expired admission never dispatches. Provider exceptions are redacted; no full
+Ordinary providers retain the 512-output-token ceiling and a timeout no longer
+than 25 seconds. The private GPT exception requires the exact
+`@cf/openai/gpt-oss-20b` identity, its 128,000-token context declaration and every
+field of the fixed reviewed plan: 4,000 Neurons, 18 seconds and expiration at
+`2026-10-28T00:00:00Z`. Its internal `maxOutputTokens: 128000` denotes the
+conservative whole-context ceiling, not a requested or verified visible-output
+parameter. It does not relax the ordinary ceiling for other models or accept
+client-selected policy. Cloudflare defines context to include input, reasoning
+and completion; the complete proof and official references are in
+[model-evaluation.md](model-evaluation.md).
+
+Both private text adapters bound complete serialized input to 8 KiB and raw
+non-streaming output to 64 KiB. GPT uses one native `AI.run` with low reasoning
+effort and no tools, batch, continuation loop, inference retry, AI Gateway or
+fallback. It accepts only one completed assistant message after ignoring reasoning
+items, then applies the existing safe-token validator. Neither adapter reports
+trusted measured usage, so successful or invalid-output requests retain their
+entire reservation. Byte/time bounds do not establish that remote computation
+stopped; uncertain outcomes retain the charge and close admission.
+
+The plan expires and must remain valid through the reservation window. An
+expired admission never dispatches. Provider exceptions are redacted; no full
 prompts, transcripts, model results, secret values or signed cookies are logged.
 Ledger tables retain pseudonymous UUIDs, fingerprints, operation/status, counters,
 integer costs and timestamps. Request records expire after 72 hours; UTC aggregate
@@ -98,13 +128,28 @@ node:sqlite driver. `npm run test:css-studio:server` runs the same authority ins
 Miniflare/workerd, including simultaneous admission and a full persistent-runtime
 restart. `npm run test:css-studio:server:browser` uses Chromium, real cookie rules
 and a proxy simulation against the local Worker fixture. The simulation is not a
-live Netlify deployment. A dedicated CI workflow is added; remote CI has not run.
+live Netlify deployment. Dedicated CI and the earlier private deployment have
+run; consult their source-specific records rather than treating fixtures as live
+model evidence.
 Miniflare 4.20260730.0 is pinned as a development-only dependency; existing locked
 package records/versions are unchanged. Native binaries are local test tooling,
 not browser bundles.
 
-Activation remains blocked on actual Cloudflare account/Free-plan eligibility,
-current model availability/terms and conservative costs, supporting-service usage
-measurement, a verified live media decoder/adapter, a verified same-origin proxy, live model tests,
-and public-route operational review. No AI binding should be added to the example
-configuration before those gates pass. See cloudflare-readiness.md and live-ai-setup.md.
+The observed October 21 canaries retained 2,000 Neurons for two Llama requests
+and 4,000 for one GPT request, leaving 2,000 shared Neurons. The private evaluator
+verified real preview identity/cookies first and reports cross-site acceptance
+as unverified. It did not reset counters or retry inference. These results do
+not establish measured billing, a model winner or public operational headroom.
+
+The later full proxy check passed the scoped Chromium preview gate without
+inference; the earlier private model evaluator intentionally made no such claim.
+Public activation remains blocked on reviewed comparative results, production
+proxy evidence, supporting-service headroom and operational review.
+Image/refinement additionally needs an approved editing contract, conservative
+costs, complete raster validation and Free Worker feasibility. Schnell's limits
+do not rule out every newer image model; current image research has made no live
+image call. The [offline Klein adapter](image-adapter.md) now has a bounded Images
+normalizer and atomic monthly transformation reservation; it is not selected by
+the Worker or bound to Images. The full photo/cultural and physical-device checks
+also remain open.
+See cloudflare-readiness.md, model-evaluation.md and live-ai-setup.md.

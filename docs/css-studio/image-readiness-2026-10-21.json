@@ -1,0 +1,38 @@
+{
+  "observedAt": "2026-10-21T16:42:24.672Z",
+  "billingVisibility": "forbidden",
+  "billingStatus": 403,
+  "imagesPlan": "unknown",
+  "safeSubscriptions": [],
+  "worker": {
+    "name": "css-studio-ai",
+    "settingsVisibility": "visible",
+    "settingsStatus": 200,
+    "bindings": {
+      "AI": {
+        "name": "AI",
+        "expectedType": "ai",
+        "present": true,
+        "available": true
+      },
+      "QUOTA": {
+        "name": "QUOTA",
+        "expectedType": "durable_object_namespace",
+        "present": true,
+        "available": true
+      },
+      "IMAGES": {
+        "name": "IMAGES",
+        "expectedType": "images",
+        "present": true,
+        "available": true
+      }
+    },
+    "anyImagesBinding": true
+  },
+  "readyForTransform": false,
+  "inferencePerformed": false,
+  "transformationPerformed": false,
+  "deploymentPerformed": false,
+  "bindingChangesPerformed": false
+}
