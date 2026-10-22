@@ -57,6 +57,72 @@ async function withNativeDecoder(decoder, action) {
   }
 }
 
+it("reports fixed phases around one model call and each admitted normalization", async () => {
+  for (const refine of [false, true]) {
+    const { ai, normalizer, provider } = await fixture();
+    const onPhase = vi.fn();
+    await provider.propose(
+      refine
+        ? {
+            ...input,
+            operation: "refine",
+            baseImageId: "generated-00000000-0000-4000-8000-000000000001",
+          }
+        : input,
+      { onPhase, ...(refine ? { baseImage: png() } : {}) },
+    );
+    expect(onPhase.mock.calls).toEqual(
+      [
+        ...(refine ? ["normalize"] : []),
+        "provider",
+        "response-body",
+        "raster",
+        "normalize",
+      ].map((phase) => [phase]),
+    );
+    expect(ai.run).toHaveBeenCalledOnce();
+    expect(ai.run.mock.calls[0][2]).not.toHaveProperty("onPhase");
+    expect(normalizer.normalize).toHaveBeenCalledTimes(refine ? 2 : 1);
+  }
+});
+
+it("stops phase evidence at provider, response, raster or normalization failure without retries", async () => {
+  for (const failure of ["provider", "response-body", "raster", "normalize"]) {
+    const { ai, normalizer, provider } = await fixture();
+    const onPhase = vi.fn();
+    if (failure === "provider")
+      ai.run.mockRejectedValue(Error("private upstream details"));
+    if (failure === "response-body")
+      ai.run.mockResolvedValue(new Response("invalid JSON"));
+    if (failure === "raster")
+      ai.run.mockResolvedValue(Response.json({ image: "AAAA" }));
+    if (failure === "normalize")
+      normalizer.normalize.mockRejectedValue(Error("private decoder details"));
+    await expect(provider.propose(input, { onPhase })).rejects.toThrow();
+    expect(onPhase.mock.calls.at(-1)).toEqual([failure]);
+    expect(ai.run).toHaveBeenCalledOnce();
+    expect(normalizer.normalize).toHaveBeenCalledTimes(
+      failure === "normalize" ? 1 : 0,
+    );
+    expect(JSON.stringify(onPhase.mock.calls)).not.toContain("private");
+  }
+  const { ai, normalizer, provider } = await fixture();
+  const onPhase = vi.fn();
+  normalizer.normalize.mockRejectedValue(Error("private base decoder details"));
+  await expect(
+    provider.propose(
+      {
+        ...input,
+        operation: "refine",
+        baseImageId: "generated-00000000-0000-4000-8000-000000000001",
+      },
+      { baseImage: png(), onPhase },
+    ),
+  ).rejects.toThrow();
+  expect(onPhase.mock.calls).toEqual([["normalize"]]);
+  expect(ai.run).not.toHaveBeenCalled();
+});
+
 it("uses native decoding when available and preserves fallback bytes including nonzero unused pad bits", async () => {
   const alphabet =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

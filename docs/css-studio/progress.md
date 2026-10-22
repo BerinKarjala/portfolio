@@ -1,6 +1,6 @@
 # CSS Studio development progress
 
-Updated: October 21, 2026 (America/New_York). Branch: `css-studio`.
+Updated: October 22, 2026 (UTC). Branch: `css-studio`.
 
 ## Current position
 
@@ -29,16 +29,31 @@ The Worker now selects images only behind the existing secret and an exact
 private image header. The single quota-accounted pilot returned HTTP 504 without
 verified image completion. It retained 500 Neurons and one transformation, leaving
 1,500 shared Neurons and 4,999 monthly application reservations. Public inference
-stayed off. A verified telemetry shutdown fix and an inference-free private quota
-inspection are implemented; the failure is not reported as a successful image
-generation or a CPU measurement. Native base64 decoding and bounded JPEG
-inspection passed local/runtime tests.
+stayed off. The inference-free private quota inspection subsequently passed at
+`75e89a1` ([run 39694420073](https://github.com/BerinKarjala/portfolio/actions/runs/39694420073)):
+admission unavailable, 1,500 shared Neurons, 4,999 monthly slots, zero proposals
+and public inference off. Its fresh visitor's ten prompts/three images are not a
+refund to the failed request's visitor. The uncertainty halt persists across UTC
+rollover and has not been reconciled. A verified telemetry shutdown fix is also
+implemented; the failure is not reported as a successful image generation or a
+CPU measurement. Native base64 decoding and bounded JPEG inspection passed
+local/runtime tests.
+The subsequent private failure-diagnostic increment distinguishes a request
+deadline from operation/output/allowance failures using fixed processing phases.
+It keeps the 18-second limit and settlement rules, freezes terminal evidence
+before abort, and omits raw error text and public/text diagnostics. The runner
+accepts only a bounded projection for its own request ID. These changes passed
+526 unit cases across 62 files, three native SQLite cases, three native Images
+cases, the native socket-shutdown case, source/bundle gates and the 382-module
+production build on Node 22.22.2. They have not been deployed or used for another
+model call. The original HTTP 504's cause and live CPU/memory remain unverified.
 See [the private pilot](private-image-pilot.md), [the implementation](image-adapter.md) and
 [runtime evidence and activation limits](image-runtime-verification.md).
 Earlier increment
 sections below are chronological records; later entries supersede their status.
-The branch also incorporates owner-merged main `8c11250`, preserving the Page
-Builder keyboard sensor fix and the metadata-only image-contract helper. The
+The branch also incorporates owner-merged main `9a4a0e5`, preserving its read-only
+credential-check workflow, the Page Builder keyboard sensor fix and the
+metadata-only image-contract helper. The
 helper's seven native Node tests run separately from Vitest. The expanded browser
 workflow keeps zero retries and has a 25-minute job limit; its previous complete
 run took about 19.5 minutes before the added keyboard preflight.

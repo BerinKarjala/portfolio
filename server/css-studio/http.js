@@ -21,6 +21,14 @@ import {
 } from "./gptProvider.js";
 import { KLEIN_IMAGE_MODEL, KLEIN_IMAGE_PLAN } from "./kleinProvider.js";
 export { ProviderLimitError } from "./providerErrors.js";
+class RequestDeadlineError extends Error {}
+const IMAGE_PHASES = new Set([
+  "provider",
+  "response-body",
+  "raster",
+  "normalize",
+  "receipt",
+]);
 const reply = (status, body, headers = {}) =>
   new Response(JSON.stringify(body), {
     status,
@@ -275,13 +283,44 @@ export function createApp({
         return reply(503, { error: "AI admission expired before dispatch." });
       }
       const controller = new AbortController();
+      const diagnosticEnabled = diagnostics === true && imageOperation;
+      const began = diagnosticEnabled ? clock() : null;
+      let phase = "provider",
+        finished = false,
+        diagnostic;
+      const onPhase = (value) => {
+        if (diagnosticEnabled && !finished && IMAGE_PHASES.has(value))
+          phase = value;
+      };
+      const finishDiagnostic = (failure) => {
+        if (finished) return diagnostic;
+        finished = true;
+        const elapsedWallMs = diagnosticEnabled ? clock() - began : null;
+        if (
+          diagnosticEnabled &&
+          Number.isSafeInteger(elapsedWallMs) &&
+          elapsedWallMs >= 0
+        )
+          diagnostic = Object.freeze({
+            requestId: input.id,
+            phase,
+            failure,
+            elapsedWallMs,
+            timeoutMs: plan.timeoutMs,
+          });
+        return diagnostic;
+      };
       let timer;
       let result;
       try {
         const timeout = new Promise((_, reject) => {
           timer = setTimeout(() => {
+            const error = new RequestDeadlineError();
+            // Freeze the terminal phase before an abort listener can report a
+            // later phase. Reject our deadline before provider abort rejection.
+            finishDiagnostic("request-deadline");
+            reject(error);
             controller.abort();
-            reject(Error("deadline"));
           }, plan.timeoutMs);
         });
         result = await Promise.race([
@@ -292,6 +331,7 @@ export function createApp({
                   width: plan.imageWidth,
                   height: plan.imageHeight,
                   steps: plan.imageSteps,
+                  ...(diagnosticEnabled ? { onPhase } : {}),
                   ...(base ? { baseImage: attachment.image } : {}),
                 })
               : await provider.propose(input, {
@@ -299,6 +339,7 @@ export function createApp({
                   maxOutputTokens: plan.maxOutputTokens,
                 });
             try {
+              onPhase("receipt");
               const proposal = validateOutput(output?.proposal, {
                 allowEmpty: imageOperation,
               });
@@ -327,6 +368,16 @@ export function createApp({
           timeout,
         ]);
       } catch (error) {
+        const failure =
+          error instanceof RequestDeadlineError
+            ? "request-deadline"
+            : error instanceof ProviderOutputError
+              ? "invalid-output"
+              : error instanceof ImageLimitError ||
+                  error instanceof ProviderLimitError
+                ? "allowance-exhausted"
+                : "operation-failed";
+        const finalDiagnostic = finishDiagnostic(failure);
         if (error instanceof ProviderOutputError) {
           await ledger.settle({
             visitor,
@@ -334,6 +385,7 @@ export function createApp({
             outcome: "complete",
           });
           return reply(502, {
+            ...(finalDiagnostic ? { diagnostic: finalDiagnostic } : {}),
             error:
               "The designer returned unsupported styling or media. Existing themes remain available.",
           });
@@ -351,6 +403,7 @@ export function createApp({
               : "uncertain",
         });
         return reply(imageExhausted || exhausted ? 429 : 504, {
+          ...(finalDiagnostic ? { diagnostic: finalDiagnostic } : {}),
           error: imageExhausted
             ? "Image transformation allowance is exhausted."
             : exhausted
@@ -358,6 +411,7 @@ export function createApp({
               : "The designer did not finish safely. Existing themes remain available.",
         });
       } finally {
+        finished = true;
         clearTimeout(timer);
       }
       // Usage comes from a trusted provider adapter, never model text or the request body.

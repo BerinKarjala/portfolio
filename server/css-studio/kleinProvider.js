@@ -102,7 +102,10 @@ export function createKleinImageProvider(binding, normalizer) {
       return promptFor(input).valid.operation === "refine" ? 2 : 1;
     },
     inspectImage: (image) => normalizer.inspectImage(image),
-    async propose(input, { signal, baseImage } = {}) {
+    async propose(input, { signal, baseImage, onPhase } = {}) {
+      const phase = (value) => {
+        if (typeof onPhase === "function") onPhase(value);
+      };
       const { valid, prompt } = promptFor(input);
       if ((valid.operation === "refine") !== Boolean(baseImage))
         throw new HttpError(
@@ -116,6 +119,7 @@ export function createKleinImageProvider(binding, normalizer) {
       form.set("width", "512");
       form.set("height", "512");
       if (baseImage) {
+        phase("normalize");
         const normalized = await normalizer.normalize(baseImage, {
           size: 256,
           signal,
@@ -132,6 +136,7 @@ export function createKleinImageProvider(binding, normalizer) {
       }
       const serialized = new Response(form);
       aborted(signal);
+      phase("provider");
       const response = await binding.run(
         KLEIN_IMAGE_MODEL,
         {
@@ -150,6 +155,7 @@ export function createKleinImageProvider(binding, normalizer) {
       if (!response.ok) throw new Error("Provider request failed");
       let output;
       try {
+        phase("response-body");
         output = await readJson(response, ENCODED_LIMIT + 128);
       } catch (error) {
         if (error instanceof HttpError && error.status === 400)
@@ -165,7 +171,10 @@ export function createKleinImageProvider(binding, normalizer) {
         !Object.hasOwn(output, "image")
       )
         throw new ProviderOutputError();
-      const normalized = await normalizer.normalize(raster(output.image), {
+      phase("raster");
+      const generated = raster(output.image);
+      phase("normalize");
+      const normalized = await normalizer.normalize(generated, {
         size: 512,
         signal,
       });

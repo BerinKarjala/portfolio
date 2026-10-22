@@ -20,8 +20,8 @@ All 248 preflight boundary/helper cases and three native SQLite cases passed;
 the preserving deployment and full Chromium proxy proof passed before the
 proposal. The theme and metadata inference-free options were skipped. After
 writing the failure result, the process stayed open until the job's 15-minute
-timeout; the always-run artifact step preserved the JSON. The workflow is
-reported as failed, not as a successful image check.
+timeout; the always-run artifact step preserved the JSON. GitHub's final workflow
+conclusion is `cancelled` after that timeout; the image check failed.
 
 A separate shutdown defect was reproduced and fixed at `ed9c4c9`: native Node
 WebSocket CLOSE can wait on the peer indefinitely. The existing pinned `ws`
@@ -38,6 +38,52 @@ preserving deployment identity/namespace and public unavailability. Its separate
 fails before deployment. The ordinary image mode retains its complete browser
 proof and single-proposal limit. A red-first halted-ledger case verifies no
 proposal or trace; all 56 combined runner/trace tests pass afterward.
+
+## Quota inspection after the failure
+
+[Run 39694420073](https://github.com/BerinKarjala/portfolio/actions/runs/39694420073)
+at `75e89a1fd54dbcb2255611b3aa44545942fc4175` passed the explicit `image-status`
+mode. The [retained status](image-quota-status-2026-10-21.json), observed at
+23:36:28.663 UTC on October 21, records zero proposals, admission unavailable,
+1,500 shared Neurons and 4,999 monthly application transformation slots. Public
+inference remained unavailable. No CPU measurement or model completion is claimed.
+The workflow skipped every model-producing step and did not create a tail.
+
+The new signed visitor had ten prompts and three image slots. Those are that new
+visitor's counters; they do not refund the failed request's original visitor,
+whose retained result records nine prompts and two image slots. The existing
+identity secret, quota namespace and shared reservations were preserved.
+
+Admission being unavailable is consistent with the conservative uncertainty
+halt; the status response does not expose the control reason. Source review
+confirms that `accounting-uncertain` persists across UTC day rollover, even when
+daily counters refresh. No reconciliation, refund, reset or further proposal was
+performed. A day change alone does not authorize another model request.
+
+## Private failure diagnostics
+
+The follow-up adds local, fixed-phase diagnostics for future admitted private
+image/refinement requests. The existing secret and exact image header must select
+the Worker configuration, and `createApp` must receive `diagnostics === true`.
+Public and text responses omit the projection; request flags cannot enable it.
+
+The error diagnostic can contain only the validated request ID, last phase
+(`provider`, `response-body`, `raster`, `normalize` or `receipt`), a fixed failure
+category, elapsed wall milliseconds and the configured request deadline. A typed
+deadline error is recorded before signaling abort, so a provider's abort handler
+cannot replace it with an ordinary operation failure. Late callbacks/completion
+cannot change the terminal projection or cause a second settlement.
+
+The pilot runner reads at most 2 KiB for one second, accepts only that exact field
+set for its submitted request ID and matching HTTP status, and retains the safe
+projection as `failureDiagnostic`. Invalid, oversized, stalled or unrelated
+responses leave the diagnostic unavailable. Error text, provider bodies, prompts,
+credentials and receipts are never retained. The existing 18-second request
+deadline and all quota/settlement rules are unchanged.
+
+This increment is verified with local fixtures; it has not been deployed or used
+for another model call. It does not retrospectively identify the original HTTP
+504's cause, prove upstream cancellation, or measure Worker CPU/memory.
 
 ## Plan evidence
 

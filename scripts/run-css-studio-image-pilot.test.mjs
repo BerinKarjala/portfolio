@@ -171,6 +171,160 @@ it("retains safe failure evidence and never retries a failed proposal", async ()
   });
   expect(JSON.stringify(f.write.mock.calls)).not.toContain(secret);
 });
+it.each([
+  [504, "provider", "request-deadline"],
+  [504, "normalize", "operation-failed"],
+  [502, "raster", "invalid-output"],
+  [429, "provider", "allowance-exhausted"],
+])(
+  "retains only the bounded, request-matched private diagnostic for %i/%s/%s",
+  async (status, phase, failure) => {
+    const diagnostic = {
+      requestId: id,
+      phase,
+      failure,
+      elapsedWallMs: 18001,
+      timeoutMs: 18000,
+    };
+    const f = await fixture(),
+      original = f.fetch.getMockImplementation();
+    f.fetch.mockImplementation(async (url, options) => {
+      const response = await original(url, options);
+      return url.endsWith("propose")
+        ? Response.json(
+            { error: secret, diagnostic },
+            { status, headers: { "Cache-Control": "no-store" } },
+          )
+        : response;
+    });
+    await expect(runPrivateImagePilot({ secret, ...f })).rejects.toThrow();
+    expect(f.write.mock.calls[0][0].record).toMatchObject({
+      failureDiagnostic: diagnostic,
+      proposalRequests: 1,
+      httpStatus: status,
+      modelCompletionVerified: false,
+      accountingVerified: true,
+      publicUnavailableVerifiedAfter: true,
+    });
+    expect(
+      f.fetch.mock.calls.filter(([url]) => url.endsWith("propose")),
+    ).toHaveLength(1);
+    expect(
+      JSON.stringify([f.write.mock.calls, f.log.mock.calls]),
+    ).not.toContain(secret);
+  },
+);
+it("cancels a stalled diagnostic body and completes post-checks without a second proposal", async () => {
+  const f = await fixture(),
+    original = f.fetch.getMockImplementation(),
+    entered = Promise.withResolvers(),
+    cancel = vi.fn();
+  f.fetch.mockImplementation(async (url, options) => {
+    const response = await original(url, options);
+    if (!url.endsWith("propose")) return response;
+    return new Response(
+      new ReadableStream({
+        start() {
+          entered.resolve();
+        },
+        cancel,
+      }),
+      {
+        status: 504,
+        headers: {
+          "Cache-Control": "no-store",
+          "Content-Type": "application/json",
+        },
+      },
+    );
+  });
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  try {
+    const pending = runPrivateImagePilot({ secret, ...f }).catch(
+      (error) => error,
+    );
+    await entered.promise;
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(await pending).toBeInstanceOf(Error);
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(f.write.mock.calls[0][0].record).toMatchObject({
+      valid: false,
+      proposalRequests: 1,
+      accountingVerified: true,
+      publicUnavailableVerifiedAfter: true,
+    });
+    expect(f.write.mock.calls[0][0].record.failureDiagnostic).toBeUndefined();
+    expect(
+      f.fetch.mock.calls.filter(([url]) => url.endsWith("propose")),
+    ).toHaveLength(1);
+    expect(vi.getTimerCount()).toBe(0);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+it("omits malformed, mismatched, oversized or status-inconsistent failure diagnostics", async () => {
+  const diagnostic = {
+    requestId: id,
+    phase: "provider",
+    failure: "request-deadline",
+    elapsedWallMs: 18000,
+    timeoutMs: 18000,
+  };
+  const cases = [
+    { requestId: "b427c1c5-5940-44e2-9610-6eca34a18cc9" },
+    { phase: secret },
+    { phase: "settle" },
+    { failure: secret },
+    { elapsedWallMs: -1 },
+    { elapsedWallMs: 1.5 },
+    { elapsedWallMs: Number.MAX_SAFE_INTEGER + 1 },
+    { timeoutMs: 25000 },
+    { message: secret },
+    null,
+    "oversized",
+    "non-json",
+    "wrong-status",
+  ];
+  for (const patch of cases) {
+    const f = await fixture(),
+      original = f.fetch.getMockImplementation();
+    f.fetch.mockImplementation(async (url, options) => {
+      const response = await original(url, options);
+      if (!url.endsWith("propose")) return response;
+      const body =
+        patch === "non-json"
+          ? secret
+          : JSON.stringify({
+              error: patch === "oversized" ? secret.repeat(80) : secret,
+              diagnostic:
+                patch === null
+                  ? null
+                  : {
+                      ...diagnostic,
+                      ...(typeof patch === "object" ? patch : {}),
+                    },
+            });
+      return new Response(body, {
+        status: patch === "wrong-status" ? 429 : 504,
+        headers: {
+          "Cache-Control": "no-store",
+          "Content-Type": "application/json",
+        },
+      });
+    });
+    await expect(runPrivateImagePilot({ secret, ...f })).rejects.toThrow();
+    expect(f.write.mock.calls[0][0].record.failureDiagnostic).toBeUndefined();
+    expect(f.write.mock.calls[0][0].record.publicUnavailableVerifiedAfter).toBe(
+      true,
+    );
+    expect(
+      f.fetch.mock.calls.filter(([url]) => url.endsWith("propose")),
+    ).toHaveLength(1);
+    expect(
+      JSON.stringify([f.write.mock.calls, f.log.mock.calls]),
+    ).not.toContain(secret);
+  }
+});
 it("rejects malformed image bytes and suppresses receipts in retained results", async () => {
   const f = await fixture(),
     original = f.fetch.getMockImplementation();

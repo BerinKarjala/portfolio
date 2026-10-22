@@ -1,0 +1,13 @@
+{
+  "mode": "status-only",
+  "observedAt": "2026-10-21T23:36:28.663Z",
+  "proposalRequests": 0,
+  "available": false,
+  "day": "2026-10-21",
+  "sharedRemaining": 1500,
+  "imageTransformsRemaining": 4999,
+  "remainingPrompts": 10,
+  "remainingImages": 3,
+  "publicInferenceEnabled": false,
+  "cpuMeasured": false
+}

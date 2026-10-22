@@ -63,6 +63,58 @@ function snapshot(value) {
     );
   return value;
 }
+async function readFailureDiagnostic(response, requestId) {
+  try {
+    const failures = {
+      429: ["allowance-exhausted"],
+      502: ["invalid-output"],
+      504: ["request-deadline", "operation-failed"],
+    }[response.status];
+    if (
+      !failures ||
+      !/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(
+        response.headers.get("content-type") || "",
+      )
+    )
+      throw Error("Unavailable diagnostic");
+    // Never retain the response body or error text. This bounded read projects
+    // only fixed private fields for the one proposal submitted by this runner.
+    const value = (await readJson(response, 2048, 1000))?.diagnostic;
+    const keys = [
+      "requestId",
+      "phase",
+      "failure",
+      "elapsedWallMs",
+      "timeoutMs",
+    ];
+    if (
+      !value ||
+      typeof value !== "object" ||
+      Array.isArray(value) ||
+      Object.keys(value).length !== keys.length ||
+      !keys.every((key) => Object.hasOwn(value, key)) ||
+      value.requestId !== requestId ||
+      !["provider", "response-body", "raster", "normalize", "receipt"].includes(
+        value.phase,
+      ) ||
+      !failures.includes(value.failure) ||
+      !Number.isSafeInteger(value.elapsedWallMs) ||
+      value.elapsedWallMs < 0 ||
+      value.timeoutMs !== 18000
+    )
+      throw Error("Unavailable diagnostic");
+    return {
+      requestId,
+      phase: value.phase,
+      failure: value.failure,
+      elapsedWallMs: value.elapsedWallMs,
+      timeoutMs: value.timeoutMs,
+    };
+  } catch {
+    void response.body?.cancel().catch(() => {});
+    return undefined;
+  }
+}
 // Plan basis is the owner's complete same-session subscriptions screenshot
 // (Workers Free only, no payment method) and documented default Images Free.
 // The current 0/5,000 Zones counter alone does not distinguish Free from Paid.
@@ -184,6 +236,7 @@ export async function runPrivateImagePilot({
     httpStatus = null,
     image,
     metadata,
+    failureDiagnostic,
     telemetry = { cpuMeasured: false, reason: "unavailable" },
     failed = false;
   try {
@@ -211,7 +264,7 @@ export async function runPrivateImagePilot({
         });
         httpStatus = response.status;
         if (!response.ok) {
-          void response.body?.cancel().catch(() => {});
+          failureDiagnostic = await readFailureDiagnostic(response, id);
           throw new ImagePilotError(
             "The single image proposal failed. No generation retry was made.",
           );
@@ -301,6 +354,7 @@ export async function runPrivateImagePilot({
     valid,
     proposalRequests: submitted ? 1 : 0,
     httpStatus,
+    ...(failureDiagnostic ? { failureDiagnostic } : {}),
     modelCompletionVerified: Boolean(image),
     image: image ? metadata : undefined,
     sharedBefore: before.sharedRemaining,
