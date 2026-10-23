@@ -1,0 +1,45 @@
+name: Weekly dependency security checks
+
+on:
+  schedule:
+    - cron: '0 12 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: weekly-security-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: Audit ${{ matrix.directory }} lockfile
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - directory: '.'
+            artifact: root
+          - directory: studio13
+            artifact: studio13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - name: Audit committed lockfile, including development dependencies
+        working-directory: ${{ matrix.directory }}
+        shell: bash
+        run: |
+          npm audit --package-lock-only --include=dev --audit-level=low --json > dependency-audit.json
+      - name: Preserve audit output even when vulnerabilities or API errors are reported
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-audit-${{ matrix.artifact }}-${{ github.run_id }}
+          path: ${{ matrix.directory }}/dependency-audit.json
+          if-no-files-found: error
+          retention-days: 30

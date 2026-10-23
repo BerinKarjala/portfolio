@@ -1,0 +1,80 @@
+name: Dependabot security issue sync
+
+on:
+  schedule:
+    - cron: '25 12 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/dependabot-issue-sync.yml'
+      - 'scripts/sync-dependabot-issues.cjs'
+      - 'scripts/sync-dependabot-issues.test.cjs'
+  pull_request:
+    paths:
+      - '.github/workflows/dependabot-issue-sync.yml'
+      - 'scripts/sync-dependabot-issues.cjs'
+      - 'scripts/sync-dependabot-issues.test.cjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependabot-security-issue-sync
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - run: node --test scripts/sync-dependabot-issues.test.cjs
+
+  sync:
+    if: github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check alert-read credential
+        env:
+          DEPENDABOT_ALERTS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN }}
+        shell: bash
+        run: |
+          if [[ -z "$DEPENDABOT_ALERTS_TOKEN" ]]; then
+            echo '::error::Set DEPENDABOT_ALERTS_TOKEN to a fine-grained token scoped to this repository with Dependabot alerts: read. No alerts have been checked.'
+            exit 1
+          fi
+      - name: Create or reuse one issue per open alert
+        uses: actions/github-script@v7
+        env:
+          DEPENDABOT_ALERTS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN }}
+        with:
+          # Keep the alert credential separate from the issue-writing credential.
+          github-token: ${{ github.token }}
+          retries: 0
+          script: |
+            const { syncDependabotIssues } = require('./scripts/sync-dependabot-issues.cjs');
+            const alertClient = new github.constructor({
+              auth: process.env.DEPENDABOT_ALERTS_TOKEN,
+              retry: { enabled: false },
+            });
+            const result = await syncDependabotIssues({
+              ...context.repo,
+              alertClient,
+              issueClient: github,
+              onProgress: core.info,
+            });
+            await core.summary
+              .addHeading('Dependabot security issue sync')
+              .addRaw(`Open alerts: ${result.openAlerts}. Created: ${result.created.length}. Reused: ${result.reused.length}.\n`)
+              .addRaw('Existing closed issues remain closed. Existing status labels are preserved.\n')
+              .write();
