@@ -41,6 +41,15 @@ const PhotoCredit = lazy(() =>
 );
 const Examples = lazy(() => import("./Examples"));
 const StudioContext = createContext(null);
+// Read-only status lets the landing scene pause without changing Studio's
+// nonmodal presentation, launch contract, or focus restoration.
+export function useStudioControls() {
+  const context = useContext(StudioContext);
+  return context ? { launch: context.launch, navLauncher: context.navLauncher } : null;
+}
+export function useStudioOpen() {
+  return useContext(StudioContext)?.open ?? false;
+}
 export function StudioProvider({
   children,
   designer: suppliedDesigner,
@@ -350,7 +359,7 @@ export function StudioProvider({
       setSavingPreview(false);
     }
   }
-  const value = { launch, navLauncher };
+  const value = { launch, navLauncher, open };
   return (
     <StudioContext.Provider value={value}>
       {open && (
@@ -876,14 +885,14 @@ export function MoonLauncher() {
     </span>
   );
 }
-export function StudioGalleryEntry() {
+export function StudioGalleryEntry({ headingAs: Heading = "h3" } = {}) {
   const context = useContext(StudioContext);
   if (!context) return null;
   const { launch } = context;
   return (
     <article className="studio-gallery">
       <p>FOUR SEASONS</p>
-      <h3>CSS Theme Studio</h3>
+      <Heading>CSS Theme Studio</Heading>
       <p>
         Style this portfolio with seasonal and international holiday palettes.
         Explore CSS variables and keep your own presets.

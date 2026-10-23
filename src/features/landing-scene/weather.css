@@ -1,0 +1,32 @@
+.scene-weather { display: flex; align-items: center; gap: .5rem; max-width: 24rem; color: #f0f8e9; }
+.scene-weather-object { min-width: 64px; min-height: 64px; border-radius: 50%; cursor: pointer; }
+.scene-weather-details { min-width: 0; font-size: .8rem; line-height: 1.4; }
+.scene-weather time { display: flex; flex-wrap: wrap; gap: 0 .35rem; }
+.scene-weather time strong { display: block; flex-basis: 100%; font-size: 1.25rem; }
+.scene-weather-actions { display: flex; flex-wrap: wrap; gap: .3rem; }
+.scene-weather-actions button { min-width: 44px; min-height: 44px; padding: .25rem .5rem; border: 1px solid #5aa27a; border-radius: .4rem; }
+.scene-weather button:focus-visible { outline: 3px solid #f5ebd4; outline-offset: 3px; }
+.scene-weather small, .weather-zone { display: block; font-size: .7rem; }
+@media (max-width: 45rem) {
+  .portfolio-nav:has(.scene-weather) { flex-wrap: wrap; }
+  .portfolio-nav:has(.scene-weather) > div:first-child { flex-basis: 100%; }
+  .scene-weather { max-width: 100%; }
+}
+.scene-weather-object { touch-action: pinch-zoom; }
+.scene-weather { position: relative; z-index: 5; }
+.scene-weather-object { min-width: 4rem; min-height: 4rem; }
+.scene-weather-object svg { width: 4rem; height: 4rem; }
+html[data-studio-theme] .studio-canvas .scene-weather { color: var(--studio-text); }
+@media (max-width: 45rem) {
+  .portfolio-nav:has(.scene-weather) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .5rem; align-items: start; }
+  .portfolio-nav:has(.scene-weather) > div:first-child { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem .25rem; }
+  .portfolio-nav:has(.scene-weather) a { padding: .25rem; font-size: .875rem; }
+  .portfolio-nav:has(.scene-weather) a:first-child { grid-column: 1 / -1; font-size: 1rem; letter-spacing: .08em; }
+  .scene-weather { display: block; width: 100%; }
+  .scene-weather-object { position: absolute; top: 0; right: 0; }
+  .scene-weather time { padding-right: 4rem; display: block; }
+  .scene-weather time span { display: block; }
+  .scene-weather time strong { font-size: 1.1rem; }
+  .scene-weather .weather-zone { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .scene-weather-actions button { padding: .25rem; font-size: .75rem; }
+}

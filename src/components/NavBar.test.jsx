@@ -12,33 +12,31 @@ function renderNavigation() {
     home: screen.getByRole("link", { name: "Berin Karjala" }),
     projects: screen.getByRole("link", { name: "Projects" }),
     about: screen.getByRole("link", { name: "About Me!" }),
-    linkedin: screen.getByRole("link", { name: "LinkedIn" }),
-    github: screen.getByRole("link", { name: "GitHub" }),
   };
 }
 
 describe("portfolio navigation", () => {
-  it("moves focus with directional keys across page and social links", () => {
-    const { home, projects, about, linkedin, github } = renderNavigation();
+  it("moves focus with directional keys across the three page links", () => {
+    const { home, projects, about } = renderNavigation();
     home.focus();
-    for (const link of [projects, about, linkedin, github, home]) {
+    for (const link of [projects, about, home]) {
       fireEvent.keyDown(document.activeElement, { key: "ArrowRight" });
       expect(document.activeElement).toBe(link);
     }
     fireEvent.keyDown(home, { key: "ArrowLeft" });
-    expect(document.activeElement).toBe(github);
-    fireEvent.keyDown(github, { key: "ArrowUp" });
-    expect(document.activeElement).toBe(linkedin);
-    fireEvent.keyDown(linkedin, { key: "ArrowDown" });
-    expect(document.activeElement).toBe(github);
+    expect(document.activeElement).toBe(about);
+    fireEvent.keyDown(about, { key: "ArrowUp" });
+    expect(document.activeElement).toBe(projects);
+    fireEvent.keyDown(projects, { key: "ArrowDown" });
+    expect(document.activeElement).toBe(about);
   });
 
   it("supports Home and End without activating a destination", () => {
-    const { home, projects, github } = renderNavigation();
+    const { home, projects, about } = renderNavigation();
     projects.focus();
     fireEvent.keyDown(projects, { key: "End" });
-    expect(document.activeElement).toBe(github);
-    fireEvent.keyDown(github, { key: "Home" });
+    expect(document.activeElement).toBe(about);
+    fireEvent.keyDown(about, { key: "Home" });
     expect(document.activeElement).toBe(home);
     expect(home.getAttribute("aria-current")).toBe("page");
   });
@@ -59,4 +57,11 @@ describe("portfolio navigation", () => {
     fireEvent(projects, handled);
     expect(document.activeElement).toBe(projects);
   });
+});
+
+it("removes social navigation while retaining page destinations", () => {
+  renderNavigation();
+  expect(screen.getAllByRole("link")).toHaveLength(3);
+  expect(screen.queryByRole("link", { name: "GitHub" })).toBeNull();
+  expect(screen.queryByRole("link", { name: "LinkedIn" })).toBeNull();
 });

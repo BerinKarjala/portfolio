@@ -1,255 +1,111 @@
-import React, { useEffect, useState } from "react";
-import { getLandingPage } from "../client.js";
-import { cancelIdle, runWhenIdle } from "../utils/idleCallback";
-import Seo, {
-  DEFAULT_DESCRIPTION,
-  SITE_NAME,
-  SITE_URL,
-  SOCIAL_LINKS,
-} from "./Seo";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import sanityClient from '../client.js';
+import { cancelIdle, runWhenIdle } from '../utils/idleCallback';
+import { StudioGalleryEntry, useStudioOpen } from '../features/css-studio/Studio';
+import { includePageBuilder } from '../features/page-builder/gallery';
+import Seo, { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL, SOCIAL_LINKS } from './Seo';
+import sudoku from '../assets/sudoku-solver-preview.svg';
+import mines from '../assets/minesweeper-preview.svg';
+import desk from '../assets/landing/walnut-desk.webp';
+import WritingSet from '../features/landing-scene/WritingSet';
+import TextEditor from '../features/landing-scene/TextEditor';
+import './landing-scene.css';
+import useCarouselRotation from './useCarouselRotation';
+import Calendar from './Calendar';
+import { useScene } from '../features/landing-scene/SceneContext';
 
-const CHECKMARK_SYMBOL = "\u2713";
-
-const fallbackContent = {
-  title: "Berin Karjala",
-  roleLabel:
-    "Full-Stack Developer \u2022 QA-Minded Engineer \u2022 UX-Aware Builder",
-  heroParagraph:
-    "I design and build calm, reliable digital experiences rooted in clarity, structure, and long-term maintainability. My background spans software quality assurance, front-end development, and systems-focused problem solving, allowing me to bridge clean user interfaces with dependable technical foundations.",
-  heroSupportingLine:
-    "I focus on React-based front ends, content-driven platforms using Sanity, and thoughtful workflows that prioritize correctness, accessibility, and performance.",
-  ctaLabel: "Contact Me",
-  ctaSubtext: "Open to full-time and contract opportunities.",
-  coreStrengthsHeading: "Core Strengths",
-  strengthGroups: [
-    {
-      heading: "Frontend Engineering",
-      bullets: [
-        "React and modern JavaScript with a focus on clarity, consistency, and component reuse",
-        "Layout systems that prioritize accessibility, responsiveness, and real-world usability",
-      ],
-    },
-    {
-      heading: "Quality-Driven Development",
-      bullets: [
-        "QA-informed development mindset focused on verification, edge cases, and reliability",
-        "Strong documentation habits and structured testing workflows",
-      ],
-    },
-    {
-      heading: "Content & Systems Thinking",
-      bullets: [
-        "Sanity CMS modeling, content pipelines, and scalable page structures",
-        "Experience translating business requirements into clean technical solutions",
-      ],
-    },
-    {
-      heading: "Delivery & Operations",
-      bullets: [
-        "Reliable build, deployment, and workflow coordination",
-        "Comfortable working across development, operations, and support-oriented roles",
-      ],
-    },
-  ],
-  howIWorkHeading: "How I Work",
-  howIWorkBody:
-    "I bring a quality-first mindset shaped by years of working in structured, high-compliance environments. Whether I'm writing UI code, refining content models, or validating workflows, I focus on building systems that are calm, predictable, and easy to maintain.\n\nMy background in software QA, operations coordination, and technical support informs every development decision I make. I value clear communication, careful verification, and solutions that hold up over time.",
-  currentlyOpenToHeading: "Currently Open To",
-  currentlyOpenToBullets: [
-    "Full-time frontend or full-stack roles",
-    "Contract or project-based web development",
-    "Teams that value clarity, quality, and thoughtful execution",
-  ],
-};
-
+const bundled = [
+  { name: 'Sudoku Solver', link: '/projects/SudokuSolver', description: 'Solve Sudoku puzzles with clarity.', thumbnail: { asset: { url: sudoku } } },
+  { name: 'Minesweeper', link: '/projects/Minesweeper', description: 'A classic mine-finding puzzle.', thumbnail: { asset: { url: mines } } },
+];
+function safeProject(project) {
+  if (typeof project?.name !== 'string' || typeof project.link !== 'string') return false;
+  try { return ['https:', 'http:'].includes(new URL(project.link, SITE_URL).protocol); }
+  catch { return false; }
+}
+function localRoute(link, route) {
+  const url = new URL(link, SITE_URL);
+  return url.origin === SITE_URL && url.pathname.replace(/\/$/, '').toLowerCase() === route.toLowerCase();
+}
+function gallery(data) {
+  const projects = includePageBuilder(data.filter(safeProject));
+  // Normalize owned routes so trailing slashes and absolute CMS links cannot
+  // create duplicate application cards or lose the selected project's preview.
+  const applications = bundled.map(fallback => {
+    const cms = projects.find(project => localRoute(project.link, fallback.link));
+    return { ...fallback, ...cms, link: fallback.link, thumbnail: fallback.thumbnail };
+  });
+  return [...applications, ...projects.filter(project => !bundled.some(fallback => localRoute(project.link, fallback.link)))];
+}
 export default function Home() {
-  const [showContact, setShowContact] = useState(false);
-  const [email, setEmail] = useState("");
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [landing, setLanding] = useState(null);
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const isEmailValid = email.length === 0 || emailPattern.test(email);
-
+  const [projects, setProjects] = useState(() => gallery([]));
+  const [selectedKey, setSelectedKey] = useState('/projects/SudokuSolver');
+  const [status, setStatus] = useState('Loading latest project content…');
   useEffect(() => {
-    let isActive = true;
-    const handle = runWhenIdle(() => {
-      getLandingPage()
-        .then((data) => {
-          if (isActive) {
-            setLanding(data);
-          }
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+    let active = true;
+    const idle = runWhenIdle(() => {
+      sanityClient.fetch('*[_type == "project"]{name,description,link,thumbnail{asset->{url},alt}}')
+        .then(data => { if (active) { setProjects(gallery(Array.isArray(data) ? data : [])); setStatus(''); } })
+        .catch(() => { if (active) setStatus('Latest project content is unavailable. Bundled projects remain available.'); });
     });
-
-    return () => {
-      isActive = false;
-      cancelIdle(handle);
-    };
+    return () => { active = false; cancelIdle(idle); };
   }, []);
-
-  const content = landing || fallbackContent;
-  const strengthGroups = Array.isArray(content.strengthGroups)
-    ? content.strengthGroups
-    : [];
-  const howIWorkParagraphs = (content.howIWorkBody || "")
-    .split("\n\n")
-    .filter(Boolean);
-  const heroDescription = content.heroParagraph || DEFAULT_DESCRIPTION;
-  const pageDescription =
-    heroDescription.length > 160
-      ? `${heroDescription.slice(0, 157)}...`
-      : heroDescription;
-  const personSchema = {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    name: SITE_NAME,
-    url: SITE_URL,
-    jobTitle: "Full-Stack Developer",
-    sameAs: SOCIAL_LINKS,
-  };
-  const webSiteSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: SITE_NAME,
-    url: SITE_URL,
-    description: DEFAULT_DESCRIPTION,
-    inLanguage: "en",
-  };
-  const webPageSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: "Home",
-    url: SITE_URL,
-    description: pageDescription,
-    isPartOf: {
-      "@type": "WebSite",
-      name: SITE_NAME,
-      url: SITE_URL,
-    },
-  };
-  return (
-    <>
-      <Seo
-        title="Berin Karjala | Full-Stack Developer Portfolio"
-        description={pageDescription}
-        path="/"
-        jsonLd={[personSchema, webSiteSchema, webPageSchema]}
-      />
-      <main className="relative forest-bg text-green-50">
-      <div className="absolute inset-0 pointer-events-none"></div>
-      <section className="container mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-10 flex justify-center relative z-10">
-        <div className="w-full max-w-5xl bg-green-900 bg-opacity-40 border border-green-700 border-opacity-40 rounded-2xl shadow-2xl backdrop-filter backdrop-blur-sm p-4 sm:p-8 lg:p-10">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold mt-3 text-green-50">
-            {content.title}
-          </h1>
-          <hr />
-          <p className="uppercase tracking-widest text-xs sm:text-sm text-green-200 text-center">
-            {content.roleLabel}
-          </p>
-          <div className="mt-4 space-y-4 text-sm sm:text-base text-green-100 leading-relaxed max-w-3xl">
-            <p>{content.heroParagraph}</p>
-            <p>{content.heroSupportingLine}</p>
-          </div>
-          <div className="mt-8 border-t border-green-700 border-opacity-40 pt-6">
-            <h2 className="text-lg sm:text-xl font-semibold text-green-50">
-              {content.coreStrengthsHeading}
-            </h2>
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-              {strengthGroups.map((strengthGroup) => (
-                <div key={strengthGroup.heading}>
-                  <h3 className="text-base sm:text-lg font-semibold text-green-100">
-                    {strengthGroup.heading}
-                  </h3>
-                  <ul className="mt-2 space-y-2 text-green-100 text-sm">
-                    {strengthGroup.bullets.map((bullet) => (
-                      <li key={bullet} className="flex gap-2">
-                        <span className="text-green-300">{CHECKMARK_SYMBOL}</span>
-                        <span>{bullet}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <button
-              type="button"
-              className="hidden bg-green-400 text-gray-900 font-semibold text-lg px-8 py-3 rounded-lg shadow-md transform transition duration-300 hover:bg-green-500 hover:shadow-lg active:scale-95"
-              onClick={() => setShowContact((visible) => !visible)}
-              aria-expanded={showContact}
-            >
-              {content.ctaLabel}
-            </button>
-            {showContact && (
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    placeholder="you@domain.com"
-                    className="w-56 sm:w-64 px-4 py-2 rounded border border-green-200 text-gray-900"
-                    required
-                    pattern="^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
-                    aria-label="Your email address"
-                    aria-invalid={!isEmailValid}
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    onBlur={() => setEmailTouched(true)}
-                  />
-                  <button
-                    type="button"
-                    className="bg-green-400 text-gray-900 font-semibold px-4 py-2 rounded-lg shadow-md transform transition duration-300 hover:bg-green-500 hover:shadow-lg active:scale-95"
-                  >
-                    Submit
-                  </button>
-                </div>
-                {emailTouched && !isEmailValid && (
-                  <p className="text-xs text-green-200">
-                    Enter a valid email address.
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-          <p className="mt-4 text-sm text-center text-green-100">
-            {content.ctaSubtext}
-          </p>
-          <div className="mt-10 border-t border-green-700 border-opacity-40 pt-6 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            <div>
-              <h2 className="text-lg sm:text-xl font-semibold text-green-50 text-left">
-                {content.howIWorkHeading}
-              </h2>
-              {howIWorkParagraphs.map((paragraph) => (
-                <p
-                  key={paragraph}
-                  className="mt-4 text-green-100 leading-relaxed text-sm text-left"
-                >
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-            <div>
-              <h2 className="text-lg sm:text-xl font-semibold text-green-50 text-center">
-                {content.currentlyOpenToHeading}
-              </h2>
-              <ul className="mt-3 space-y-2 text-green-100 text-sm text-left">
-                {content.currentlyOpenToBullets.map((bullet) => (
-                  <li key={bullet} className="flex gap-2">
-                    <span className="text-green-300">{CHECKMARK_SYMBOL}</span>
-                    <span>{bullet}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+  const { utility, openCalendar, openEditor, closeUtility, interacting, timeZone, calendarLauncher, editorLauncher } = useScene();
+  const deskRef = useRef(null);
+  const utilityHeading = useRef(null);
+  useEffect(() => { if (utility) utilityHeading.current?.focus(); }, [utility]);
+  const keys = useMemo(() => [...projects.map(project => project.link), 'studio'], [projects]);
+  const count = keys.length;
+  const selected = Math.max(0, keys.indexOf(selectedKey));
+  const move = useCallback(delta => setSelectedKey(key => keys[(Math.max(0, keys.indexOf(key)) + delta + keys.length) % keys.length]), [keys]);
+  const studioOpen = useStudioOpen();
+  const utilityOpen = studioOpen || utility !== null;
+  const advance = useCallback(() => move(1), [move]);
+  const rotation = useCarouselRotation({ blocked: utilityOpen || interacting, count, advance });
+  return <>
+    <Seo title={SITE_NAME} description={DEFAULT_DESCRIPTION} path="/" jsonLd={{ '@context': 'https://schema.org', '@type': 'Person', name: SITE_NAME, url: SITE_URL, sameAs: SOCIAL_LINKS }} />
+    <main className="landing-scene forest-bg">
+      <h1 className="sr-only">Berin Karjala</h1>
+      <section className="landing-gallery" aria-label="Project gallery" aria-roledescription="carousel" {...rotation.interactions}>
+        <div className="landing-stage">
+          {Array.from({ length: count }, (_, index) => {
+            const offset = (index - selected + count) % count;
+            const position = offset === 0 ? 'center' : offset === 1 ? 'right' : offset === count - 1 ? 'left' : 'hidden';
+            const project = projects[index];
+            return <div key={project?.link || 'studio'} className={`landing-card landing-card--${position}`} inert={offset !== 0 ? true : undefined} aria-hidden={offset !== 0 ? true : undefined}>
+              {offset === 0 && utility ? <section aria-label={utility === 'calendar' ? 'Calendar utility' : 'Text editor utility'} className="landing-utility">
+                <div className="landing-utility-heading"><h2 ref={utilityHeading} tabIndex={-1}>{utility === 'calendar' ? 'Calendar' : 'Text Editor'}</h2><button onClick={closeUtility} aria-label={utility === 'calendar' ? 'Close calendar' : 'Close text editor'}>×</button></div>
+                {utility === 'calendar' ? <Calendar timeZone={timeZone} /> : <TextEditor onClose={closeUtility} />}
+              </section> : project ? <article>
+                <div className="landing-preview">{project.thumbnail?.asset?.url ? <img src={project.thumbnail.asset.url} alt={project.thumbnail.alt || `${project.name} preview`} width="640" height="360" loading={offset === 0 ? 'eager' : 'lazy'} decoding="async" /> : <p>Preview unavailable</p>}</div>
+                <h2>{project.name}</h2>
+                <p>{project.description || 'Explore this portfolio project.'}</p>
+                <a href={project.link}>Open {project.name} <span aria-hidden="true">↗</span></a>
+              </article> : <StudioGalleryEntry headingAs="h2" />}
+            </div>;
+          })}
         </div>
+        <div className="landing-desk" ref={deskRef}>
+          <img src={desk} alt="" width="2172" height="724" decoding="async" />
+          <WritingSet deskRef={deskRef} />
+        </div>
+        <div className="landing-controls">
+          <button disabled={utilityOpen} aria-label="Previous project" onClick={() => move(-1)}>←</button>
+          <p aria-live={rotation.rotating ? "off" : "polite"} aria-atomic="true">{selected + 1} / {count}</p>
+          <button disabled={utilityOpen} aria-label="Next project" onClick={() => move(1)}>→</button>
+        </div>
+        <div className="landing-utility-launchers">
+          <button ref={calendarLauncher} onClick={event => openCalendar(event.currentTarget)}>Open calendar</button>
+          <button ref={editorLauncher} onClick={event => openEditor(event.currentTarget)}>Open text editor</button>
+        </div>
+        <div className="landing-rotation">
+          <button data-rotation-control disabled={utilityOpen || rotation.reducedMotion} onClick={rotation.toggle}>
+            {rotation.enabled ? 'Pause carousel' : 'Start carousel'}
+          </button>
+          <p>{utilityOpen ? 'Carousel paused while tools are open.' : rotation.reducedMotion ? 'Reduced motion: use the project arrows.' : 'Keyboard interaction pauses rotation. Use Start carousel to resume.'}</p>
+        </div>
+        <div className="landing-status-slot">{status && <p className="landing-status" role="status">{status}</p>}</div>
       </section>
-      </main>
-    </>
-  );
+    </main>
+  </>;
 }
