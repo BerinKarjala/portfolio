@@ -133,9 +133,18 @@ export function RichTextEditor({
   disabled = false,
   inlineToolbar = false,
   compact = false,
+  renderToolbar,
+  renderDocument,
+  initialSelection,
+  autoFocus = true,
+  surfaceLabel = "Rich text content",
+  placeholder,
+  hideHelp = false,
+  plainTextDrop = false,
+  onSelectionChange,
 }) {
   const root = useRef(null),
-    saved = useRef({ start: 0, end: 0 }),
+    saved = useRef(initialSelection || { start: 0, end: 0 }),
     pending = useRef(null),
     composing = useRef(false);
   const [link, setLink] = useState(""),
@@ -155,8 +164,10 @@ export function RichTextEditor({
       return;
     const a = offsetOf(root.current, s.anchorNode, s.anchorOffset),
       b = offsetOf(root.current, s.focusNode, s.focusOffset);
-    if (a !== null && b !== null)
+    if (a !== null && b !== null) {
       saved.current = { start: Math.min(a, b), end: Math.max(a, b) };
+      onSelectionChange?.(saved.current);
+    }
   }
   function restore(range = saved.current) {
     if (!root.current) return;
@@ -172,7 +183,7 @@ export function RichTextEditor({
   }
   useEffect(() => {
     window.document.addEventListener("selectionchange", capture);
-    restore();
+    if (autoFocus) restore();
     return () =>
       window.document.removeEventListener("selectionchange", capture);
   }, []);
@@ -182,13 +193,14 @@ export function RichTextEditor({
       pending.current = null;
       restore(r);
     }
-  }, [doc]);
+  });
   function commit(next, range, key) {
     if (disabled) return;
     setError("");
+    const before = saved.current;
     saved.current = range;
     pending.current = range;
-    onChange(next, key);
+    onChange(next, key, { before, after: range });
   }
   function done() {
     setError("");
@@ -307,10 +319,20 @@ export function RichTextEditor({
     node.addEventListener("beforeinput", handler);
     return () => node.removeEventListener("beforeinput", handler);
   }, []);
+  function history(direction) {
+    const range = onHistory?.(direction, saved.current);
+    if (range && Number.isInteger(range.start) && Number.isInteger(range.end)) {
+      saved.current = range;
+      pending.current = range;
+    }
+  }
   const dock = inlineToolbar
     ? null
     : window.document.querySelector(".pb-rich-dock");
-  const toolbar = (
+  const toolbar = renderToolbar ? renderToolbar({ format, getSelection: () => saved.current, history, preserveSelection: command => {
+    pending.current = saved.current;
+    command(saved.current);
+  } }) : (
     <div
       className="pb-rich-toolbar"
       role="toolbar"
@@ -473,7 +495,9 @@ export function RichTextEditor({
         ref={root}
         className="pb-rich-surface"
         role="textbox"
-        aria-label="Rich text content"
+        aria-label={surfaceLabel}
+        aria-placeholder={placeholder}
+        data-empty={!richPlainText(doc) || undefined}
         aria-multiline="true"
         contentEditable={!disabled}
         suppressContentEditableWarning
@@ -487,6 +511,12 @@ export function RichTextEditor({
           composing.current = false;
           reconcile();
         }}
+        onDragOver={plainTextDrop ? event => event.preventDefault() : undefined}
+        onDrop={plainTextDrop ? event => {
+          event.preventDefault();
+          capture();
+          replace(event.dataTransfer.getData("text/plain"));
+        } : undefined}
         onPaste={(event) => {
           event.preventDefault();
           capture();
@@ -499,11 +529,17 @@ export function RichTextEditor({
           ) {
             event.preventDefault();
             event.stopPropagation();
-            onHistory?.(
+            history(
               event.key.toLowerCase() === "y" || event.shiftKey
                 ? "REDO"
                 : "UNDO",
             );
+            return;
+          }
+          if (renderToolbar && (event.ctrlKey || event.metaKey) && ["b", "i", "u"].includes(event.key.toLowerCase())) {
+            event.preventDefault();
+            capture();
+            format({ mark: { b: "bold", i: "italic", u: "underline" }[event.key.toLowerCase()] });
             return;
           }
           if (event.key === "Escape") {
@@ -518,12 +554,12 @@ export function RichTextEditor({
           }
         }}
       >
-        <RichText document={doc} />
+        {renderDocument ? renderDocument(doc) : <RichText document={doc} />}
       </div>
-      <p className="pb-rich-help">
+      {!hideHelp && <p className="pb-rich-help">
         Select text, then format it. Pasted content becomes plain text. Escape
         finishes editing.
-      </p>
+      </p>}
     </div>
   );
 }

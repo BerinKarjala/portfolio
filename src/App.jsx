@@ -2,6 +2,7 @@ import { Suspense, lazy } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import NavBar from "./components/NavBar";
+import { SceneProvider } from "./features/landing-scene/SceneContext";
 import { StudioProvider } from "./features/css-studio/Studio";
 
 const Home = lazy(() => import("./components/Home"));
@@ -19,6 +20,7 @@ function App() {
     <HelmetProvider>
       <BrowserRouter>
         <StudioProvider connectDesigner>
+          <SceneProvider>
           <NavBar />
           <Suspense
             fallback={
@@ -42,6 +44,7 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
+          </SceneProvider>
         </StudioProvider>
       </BrowserRouter>
     </HelmetProvider>

@@ -1,7 +1,8 @@
 import React from "react";
+import { useScene } from "../features/landing-scene/SceneContext";
+import WeatherWidget from "../features/landing-scene/WeatherWidget";
 import { MoonLauncher } from "../features/css-studio/Studio";
-import { NavLink } from "react-router-dom";
-import { FaGithub, FaLinkedin } from "react-icons/fa";
+import { NavLink, useLocation } from "react-router-dom";
 
 function moveNavigationFocus(event) {
   if (
@@ -37,6 +38,8 @@ function moveNavigationFocus(event) {
 }
 
 export default function NavBar() {
+  const scene = useScene();
+  const location = useLocation();
   const navLinkBaseClasses =
     "inline-flex items-center px-3 sm:px-5 py-1.5 sm:py-1 rounded nav-item text-white hover:text-red-100 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900";
 
@@ -71,28 +74,8 @@ export default function NavBar() {
             >
               About Me!
             </NavLink>
-            <MoonLauncher />
           </div>
-          <div className="flex items-center gap-3 sm:gap-4 mt-1 sm:mt-0">
-            <a
-              href="https://www.linkedin.com/in/berin-karjala-90846842/"
-              className="text-white hover:text-emerald-200 transition-colors focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900 rounded"
-              target="_blank"
-              rel="noreferrer noopener"
-              aria-label="LinkedIn"
-            >
-              <FaLinkedin size={30} className="sm:w-9 sm:h-9" />
-            </a>
-            <a
-              href="https://github.com/BerinKarjala/portfolio"
-              className="text-white hover:text-emerald-200 transition-colors focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900 rounded"
-              target="_blank"
-              rel="noreferrer noopener"
-              aria-label="GitHub"
-            >
-              <FaGithub size={30} className="sm:w-9 sm:h-9" />
-            </a>
-          </div>
+          {scene && location.pathname === "/" ? <WeatherWidget /> : <MoonLauncher />}
         </nav>
       </div>
     </header>

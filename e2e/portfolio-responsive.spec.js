@@ -41,7 +41,7 @@ for (const viewport of screens) {
       await expect(page.getByRole("heading", { level: 1, name: heading, exact: true }))
         .toBeVisible();
       const nav = page.getByRole("navigation", { name: "Primary" });
-      await expect(nav.getByRole("link")).toHaveCount(5);
+      await expect(nav.getByRole("link")).toHaveCount(3);
       const geometry = await nav.getByRole("link").evaluateAll((links) => links.map((link) => {
         const { x, y, width, height } = link.getBoundingClientRect();
         return { label: link.getAttribute("aria-label") || link.textContent, x, y, width, height };
@@ -55,8 +55,8 @@ for (const viewport of screens) {
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth), path)
         .toBeLessThanOrEqual(viewport.width + 1);
-      if (path === "/project") {
-        await testInfo.attach(`projects-${viewport.width}`, {
+      if (path === "/project" || path === "/") {
+        await testInfo.attach(`${path === "/" ? "landing" : "projects"}-${viewport.width}`, {
           body: await page.screenshot(), contentType: "image/png",
         });
       }
@@ -74,7 +74,7 @@ for (const viewport of [screens[1], screens[5]]) {
     const home = nav.getByRole("link", { name: "Berin Karjala" });
     const projects = nav.getByRole("link", { name: "Projects", exact: true });
     const about = nav.getByRole("link", { name: "About Me!" });
-    const github = nav.getByRole("link", { name: "GitHub", exact: true });
+    const lastLink = about;
     await home.focus();
     await page.keyboard.press("ArrowRight");
     await expect(projects).toBeFocused();
@@ -95,11 +95,11 @@ for (const viewport of [screens[1], screens[5]]) {
     await page.keyboard.press("Home");
     await expect(home).toBeFocused();
     await page.keyboard.press("ArrowLeft");
-    await expect(github).toBeFocused();
+    await expect(lastLink).toBeFocused();
     await page.keyboard.press("ArrowDown");
     await expect(home).toBeFocused();
     await page.keyboard.press("End");
-    await expect(github).toBeFocused();
+    await expect(lastLink).toBeFocused();
     await page.keyboard.press("Home");
     await page.keyboard.press("Tab");
     await expect(projects).toBeFocused();
@@ -116,7 +116,7 @@ test("4K text and content grow together and scaling stays bounded", async ({ pag
       content: document.querySelector("main section > div").getBoundingClientRect().width,
     }));
   };
-  await page.goto("/");
+  await page.goto("/project");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   const desktop = await measure(1440, 900);
   const television = await measure(3840, 2160);
