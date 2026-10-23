@@ -176,7 +176,8 @@ test('editor formats, undoes, saves across reload and downloads plain text', asy
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download', exact: true }).click();
   const file = await download;
-  expect(file.suggestedFilename()).toBe('Forest notes.txt');
+  // WebKit may normalize spaces in a suggested filename to underscores.
+  expect(['Forest notes.txt', 'Forest_notes.txt']).toContain(file.suggestedFilename());
   const stream = await file.createReadStream(); const chunks = [];
   for await (const chunk of stream) chunks.push(chunk);
   expect(Buffer.concat(chunks).toString('utf8')).toBe('- A quiet forest');
@@ -187,12 +188,16 @@ test('editor accepts plain pasted text, retains an unsaved draft and reports sav
   await page.goto('/');
   await page.getByRole('button', { name: 'Open text editor', exact: true }).click();
   const sheet = page.getByRole('textbox', { name: 'Writing area' });
-  await sheet.evaluate(root => {
+  const pasted = await sheet.evaluate(root => {
     root.focus(); const data = new DataTransfer();
-    data.setData('text/plain', '<img src=x onerror=alert(1)>\nSecond line');
-    data.setData('text/html', '<img src=x onerror=alert(1)>');
-    root.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+    const event = new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true });
+    // Gecko constructs its own transfer; populate the event's actual payload.
+    event.clipboardData.setData('text/plain', '<img src=x onerror=alert(1)>\nSecond line');
+    event.clipboardData.setData('text/html', '<img src=x onerror=alert(1)>');
+    root.dispatchEvent(event);
+    return event.clipboardData.getData('text/plain');
   });
+  expect(pasted).toBe('<img src=x onerror=alert(1)>\nSecond line');
   await expect(sheet.locator('img')).toHaveCount(0);
   await expect(sheet).toContainText('<img src=x onerror=alert(1)>');
   await page.getByRole('button', { name: 'Close text editor' }).click();
@@ -210,9 +215,12 @@ test('the writing set moves as one object without opening the editor and support
   await object.scrollIntoViewIfNeeded();
   const box = await object.boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down(); await page.mouse.move(-1000, 3000, { steps: 8 }); await page.mouse.up();
+  // Keep the physical pointer inside the viewport while crossing the tabletop's
+  // bounds. Gecko does not deliver all synthetic moves outside the window.
+  await page.mouse.down(); await page.mouse.move(1, page.viewportSize().height - 1, { steps: 8 }); await page.mouse.up();
   await expect(page.getByRole('textbox', { name: 'Writing area' })).toHaveCount(0);
   const moved = await object.boundingBox(), desk = await page.locator('.landing-desk').boundingBox();
+  expect(moved.x).toBeLessThan(box.x);
   expect(moved.x).toBeGreaterThanOrEqual(desk.x + desk.width * .2 - 1);
   expect(moved.y + moved.height).toBeLessThanOrEqual(desk.y + desk.height * .85 + 1);
   await page.getByRole('button', { name: 'Reset writing set position' }).click();

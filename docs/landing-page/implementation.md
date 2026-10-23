@@ -180,3 +180,43 @@ Production build passed (394 modules), Page Builder source requirements passed
 undo browser regressions passed separately (**2/2**). The broader suite's earlier
 failures and unavailable engines remain as described above; they are not claimed
 fixed by this focused pass.
+
+## Cross-browser stabilization (October 23)
+
+The [first PR CI run](https://github.com/BerinKarjala/portfolio/actions/runs/39911569965)
+passed all 565 unit tests, then finished the browser suite with 305 passed,
+6 skipped and 4 failed. The failures were Firefox weather drag/reset, Firefox
+writing-set drag/reset, Firefox synthetic paste and WebKit's suggested filename.
+
+The gesture hook now ends a captured mouse session when the pointer returns
+without any buttons pressed, preserving the last position. This recovers from
+a missed release outside the window and leaves Reset controls usable. A new unit
+regression failed against the original hook and passes with the fix. The weather
+browser regression still releases the pointer outside the viewport.
+
+The writing-set browser test now crosses the tabletop boundary with an in-viewport
+pointer and explicitly checks that the object moved; Firefox does not reliably
+deliver synthetic moves outside the window. The paste fixture fills the actual
+ClipboardEvent transfer, following the existing Page Builder fixture. The download
+assertion accepts WebKit's space-to-underscore normalization while retaining the
+exact plain-text byte assertion.
+
+Verification on Windows with Node 22.22.2 and the matching installed Playwright
+engines:
+
+- **43/43 focused unit tests**, across 9 files, with one worker.
+- **12/12 browser checks**, covering all four affected workflows in Chromium,
+  Firefox and WebKit, with one worker and no retries.
+- Production build, all 130 Page Builder source decisions, both bundle budget
+  gates and `git diff --check` passed.
+
+The browser command was `npm run test:e2e -- e2e/landing-scene.spec.js --workers=1
+--retries=0 --grep 'dragging the weather|plain pasted|writing set moves|editor formats'`.
+The focused unit command was `npm test -- src/features/landing-scene
+src/components/Home.test.jsx src/components/Calendar.test.jsx
+src/components/NavBar.test.jsx --maxWorkers=1`.
+
+These are focused results. Broader local attempts hit test deadlines, including
+the 4K responsive route workflow; a complete local suite pass is not established.
+No test deadlines or visual snapshots were changed. Full PR CI must run against
+the stabilization commit, and the physical-device review gaps above remain open.

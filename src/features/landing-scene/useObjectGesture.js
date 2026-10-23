@@ -78,7 +78,15 @@ export default function useObjectGesture({ primary, secondary, bounds, onInterac
         state.contacts.set(event.pointerId, { x: event.clientX, y: event.clientY });
         try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* Capture is optional in older engines. */ }
       },
-      onPointerMove: move,
+      onPointerMove: event => {
+        // A mouse release outside the browser may not deliver pointerup (Gecko).
+        // End that session on return, before capture can swallow another control.
+        if (event.pointerType === 'mouse' && event.buttons === 0 && session.current?.contacts.has(event.pointerId)) {
+          cancel(false);
+          return;
+        }
+        move(event);
+      },
       onPointerUp: event => {
         const state = session.current;
         if (!state?.contacts.has(event.pointerId)) return;

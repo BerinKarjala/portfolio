@@ -17,7 +17,7 @@ function scene() {
   target.setPointerCapture = vi.fn(); target.releasePointerCapture = vi.fn(); target.hasPointerCapture = () => true;
   return { target, primary, secondary };
 }
-const pointer = (id, x, y, type = 'touch') => ({ pointerId: id, clientX: x, clientY: y, pointerType: type, button: 0 });
+const pointer = (id, x, y, type = 'touch') => ({ pointerId: id, clientX: x, clientY: y, pointerType: type, button: 0, buttons: 1 });
 it('distinguishes a click from a bounded drag and suppresses the follow-up click', () => {
   const { target, primary } = scene();
   fireEvent.pointerDown(target, pointer(1, 0, 0, 'mouse'));
@@ -40,6 +40,22 @@ it('cancels movement on pointer cancellation without opening anything', () => {
   fireEvent.click(target);
   expect(target.style.transform).toBe('translate(0px, 0px)');
   expect(primary).not.toHaveBeenCalled(); expect(secondary).not.toHaveBeenCalled();
+});
+it('ends a mouse drag when it returns after a release outside the browser', () => {
+  const { target, primary } = scene();
+  fireEvent.pointerDown(target, pointer(1, 0, 0, 'mouse'));
+  fireEvent.pointerMove(target, pointer(1, 50, 50, 'mouse'));
+  // Some engines miss pointerup outside the viewport. The next hover must
+  // release capture without moving the object or activating its launcher.
+  fireEvent.pointerMove(target, { ...pointer(1, 10, 10, 'mouse'), buttons: 0 });
+  expect(target.style.transform).toBe('translate(50px, 50px)');
+  expect(target.releasePointerCapture).toHaveBeenCalledWith(1);
+  fireEvent.click(target);
+  expect(primary).not.toHaveBeenCalled();
+  fireEvent.pointerDown(target, pointer(1, 10, 10, 'mouse'));
+  fireEvent.pointerUp(target, pointer(1, 10, 10, 'mouse'));
+  fireEvent.click(target);
+  expect(primary).toHaveBeenCalledOnce();
 });
 it('opens the secondary action only after both stationary contacts finish', () => {
   const { target, primary, secondary } = scene();
