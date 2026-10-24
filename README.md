@@ -2,6 +2,7 @@
 
 ## Local development
 - Follow the [development, responsive design, security, and release standards](docs/development-standards.md).
+- Label an issue `in progress` to start [test-first issue resolution and weekly reporting](docs/issue-automation.md).
 - Node `22.22.2` (`.nvmrc`), npm `>=10`.
 - Frontend (Vite):
   - Install: `npm install`

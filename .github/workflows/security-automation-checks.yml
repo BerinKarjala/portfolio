@@ -8,6 +8,8 @@ on:
       - ".github/workflows/weekly-security.yml"
       - ".github/workflows/security-automation-checks.yml"
       - "scripts/*dependabot*.cjs"
+      - ".github/workflows/weekly-issue-report.yml"
+      - "scripts/issue-automation*.cjs"
   workflow_dispatch:
 
 permissions:
@@ -22,7 +24,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-      - run: node --test scripts/*dependabot*.test.cjs
+      - run: node --test scripts/*dependabot*.test.cjs scripts/issue-automation.test.cjs
       - name: Check workflow syntax and shell scripts
         env:
           GOBIN: ${{ runner.temp }}/actionlint-bin
@@ -33,3 +35,5 @@ jobs:
             .github/workflows/dependabot-issue-sync.yml \
             .github/workflows/weekly-security.yml \
             .github/workflows/security-automation-checks.yml
+          "$GOBIN/actionlint" \
+            .github/workflows/weekly-issue-report.yml
