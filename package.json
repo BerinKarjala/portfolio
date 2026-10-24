@@ -45,6 +45,7 @@
     "preview": "vite preview",
     "test": "vitest --run --passWithNoTests",
     "test:e2e": "playwright test",
+    "test:e2e:full": "playwright test --config=playwright.full.config.js",
     "check:page-builder": "node scripts/check-page-builder-requirements.mjs",
     "check:page-builder:build": "node scripts/check-page-builder-build.mjs",
     "test:css-studio:server": "node --test server/css-studio/runtime/quota.runtime.mjs",

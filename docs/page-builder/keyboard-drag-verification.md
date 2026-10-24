@@ -38,6 +38,8 @@ gesture. The existing native-keyboard/Layers workflow remains covered.
 ## Verification
 
 The CI workflow runs keyboard cases across Chromium, Firefox, and WebKit with
-two workers and zero retries. Its full browser suite also uses zero retries.
+two workers and zero retries as part of the default browser matrix. These cases
+run once in that matrix rather than in a separate duplicate step. The optional
+complete matrix is available with `npm run test:e2e:full`.
 No sleep, assertion tolerance, or retry was added to accommodate this defect.
 The final run and results are recorded in the pull request.

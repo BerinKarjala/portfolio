@@ -1,5 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// Run every behavior in Chromium. Repeat browser-sensitive editor contracts in
+// Firefox/WebKit, while keeping viewport permutations in the primary browser.
+// playwright.full.config.js selects the complete matrix when needed.
+const crossBrowserCases = [
+  /page-builder(?:-acceptance|-canvas|-export)?\.spec\.js/,
+  /phone preview preserves drafts, traps focus/,
+  /autosave completion preserves an in-progress effect-control click/,
+];
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -26,8 +35,8 @@ export default defineConfig({
           : {},
       },
     },
-    { name: "firefox", use: { ...devices["Desktop Firefox"] } },
-    { name: "webkit", use: { ...devices["Desktop Safari"] } },
+    { name: "firefox", grep: crossBrowserCases, use: { ...devices["Desktop Firefox"] } },
+    { name: "webkit", grep: crossBrowserCases, use: { ...devices["Desktop Safari"] } },
   ],
   webServer: {
     command: "npm run preview -- --host 127.0.0.1 --port 4173",
