@@ -67,10 +67,9 @@ into one issue per alert. The four tracking/status labels are provisioned even
 when every open alert already has a matching issue; existing label definitions
 are preserved.
 
-For status-driven work, **add `in progress` while `todo` is still present**.
-The agent runner removes `todo` after accepting the transition. Removing `todo`
-first does not qualify for the trigger. See [Codex dependency fix setup](codex-dependabot-fixes.md)
-for runner configuration and validation gates. The sync itself only creates and
+For status-driven work, **add `in progress`**. The shared issue runner removes
+`todo` if present; it is no longer a prerequisite. See [issue automation](issue-automation.md)
+for runner configuration, test-first gates, weekly reports and retries. The sync itself only creates and
 reuses issues and never resets an existing issue's status.
 
 ## Weekly security checks

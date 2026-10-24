@@ -70,7 +70,7 @@ function payload(repository, alert) {
       '- [ ] Open a focused pull request only after the required checks pass; link this issue.',
       '- [ ] Confirm the Dependabot alert is resolved after the fix reaches the default branch.',
       '',
-      'Start work by adding `in progress` while `todo` is still present. The agent runner removes `todo` after accepting the transition.',
+      'Start work by adding `in progress`. The agent runner removes `todo`, if present, after accepting the issue. Follow docs/issue-automation.md for test gates and retries.',
     ].join('\n'),
     labels: INITIAL_ISSUE_LABELS,
   };

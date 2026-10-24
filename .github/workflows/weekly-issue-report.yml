@@ -1,0 +1,37 @@
+name: Weekly issue progress report
+on:
+  schedule:
+    # 09:00 New York is 13:00 UTC in summer and 14:00 UTC in winter.
+    - cron: '0 13 * * 1'
+    - cron: '0 14 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+  actions: read
+concurrency:
+  group: weekly-issue-progress-report
+  cancel-in-progress: false
+jobs:
+  report:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Select the Monday 9 a.m. America/New_York occurrence
+        id: time
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {reportDue} = require('./scripts/issue-automation.cjs');
+            core.setOutput('run', reportDue(context.eventName, context.payload.schedule));
+      - name: Report every issue ever labeled in progress, including closed and merged work
+        if: steps.time.outputs.run == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {weeklyReport} = require('./scripts/issue-automation.cjs');
+            await weeklyReport({github, context, core});
