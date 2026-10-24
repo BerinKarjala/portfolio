@@ -10,8 +10,8 @@ if present and is not required. Removing `in progress` prevents publication.
 
 Existing in-progress issues do not generate a retroactive label event. Start
 them through **Actions > Codex issue fix > Run workflow**, supplying the issue
-number. The older **Codex Dependabot fix** dispatch remains a compatibility
-entry point to the same workflow, without a second label-event listener.
+number. The existing `codex-dependabot-fix.yml` filename now holds the shared
+runner, keeping its registered dispatch endpoint and a single label listener.
 
 ## Credentials and activation
 

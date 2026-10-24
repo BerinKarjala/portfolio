@@ -90,7 +90,7 @@ test('preparation avoids duplicate PRs, modified branches, untrusted actors and 
 });
 
 test('both runners reference the approved credential and weekly schedule has a DST gate', () => {
-  const workflow = fs.readFileSync('.github/workflows/codex-issue-fix.yml', 'utf8');
+  const workflow = fs.readFileSync('.github/workflows/codex-dependabot-fix.yml', 'utf8');
   assert.match(workflow, /secrets\.PORTFOLIOCODEXACTIONS/);
   assert.doesNotMatch(workflow, /secrets\.OPENAI_API_KEY/);
   const weekly = fs.readFileSync('.github/workflows/weekly-issue-report.yml', 'utf8');

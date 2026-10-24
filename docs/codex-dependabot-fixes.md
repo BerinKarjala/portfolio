@@ -4,9 +4,9 @@ Dependabot tracking issues now use the shared [issue resolution and weekly
 reporting workflow](issue-automation.md). Add `in progress` to start; `todo` is
 optional. The branch remains `codex/dependabot-alert-<number>`.
 
-The existing **Codex Dependabot fix** manual dispatch delegates to that same
-runner for compatibility. It does not listen for label events, avoiding duplicate
-agent runs. Both entry points use the approved **PORTFOLIOCODEXACTIONS** OpenAI
+The existing `codex-dependabot-fix.yml` dispatch endpoint now holds that same
+runner, named **Codex issue fix**, with a single label-event listener. It uses
+the approved **PORTFOLIOCODEXACTIONS** OpenAI
 API secret and **DEPENDABOT_ALERTS_TOKEN** for live advisory reads.
 
 The shared runner adds independent test-first regression verification, retains
