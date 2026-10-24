@@ -137,3 +137,9 @@ test('closing-issue matching paginates and requires the exact repository', async
   assert.equal(linked.prs[0].closesIssue, true);
   assert.equal(pages, 2);
 });
+
+test('an ambiguous Dependabot identity cannot fall back to an ordinary issue fix', async () => {
+  const {args, writes} = mockPrepare({issue: issue({labels: ['in progress', 'dependabot'], body: '<!-- dependabot-alert:o/r:1 -->\n<!-- dependabot-alert:o/r:2 -->'})});
+  await assert.rejects(() => prepare(args), /Dependabot/);
+  assert.deepEqual(writes, []);
+});

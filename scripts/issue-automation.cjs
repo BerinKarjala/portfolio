@@ -101,6 +101,7 @@ async function prepare({github, alertGithub, context, core, issueNumber}) {
   const issue = (await github.rest.issues.get({...repo, issue_number: issueNumber})).data;
   if (!eligible(issue, permission)) { core.notice('Issue is not currently open and in progress.'); return null; }
   const alert = trackedAlert(issue, `${repo.owner}/${repo.repo}`);
+  if (labels(issue).has('dependabot') && !alert) throw new Error('Dependabot issue must identify exactly one alert in this repository.');
   const branch = alert ? `codex/dependabot-alert-${alert.number}` : `codex/issue-${issueNumber}`;
   const prs = await github.paginate(github.rest.pulls.list, {...repo, state: 'all', head: `${repo.owner}:${branch}`, per_page: 100});
   const linked = await linkedPRs(github, repo, issueNumber);
