@@ -75,7 +75,11 @@ export default function BuilderProvider({ children }) {
         expectedRevision: editor.project.revision,
         token,
       });
-      dispatch({ type: "SAVED", project: saved });
+      const savedAction = { type: "SAVED", project: saved };
+      // Storage is synchronous; another save or focus event can run before
+      // React renders the queued action. Keep its revision current immediately.
+      stateRef.current = builderReducer(stateRef.current, savedAction);
+      dispatch(savedAction);
       publish();
       return true;
     } catch (error) {
