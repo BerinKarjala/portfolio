@@ -3,7 +3,7 @@
 Add **in progress** to an open issue in `BerinKarjala/portfolio` to start the
 **Codex issue fix** workflow. A repository writer must add the label or manually
 dispatch the workflow. The runner reads live labels and permissions, skips
-existing open/merged linked PRs, and creates `codex/issue-<number>` from an
+existing open/merged closing PRs, and creates `codex/issue-<number>` from an
 immutable revision of main before starting work. Dependabot tracking issues
 use `codex/dependabot-alert-<alert number>` and the same runner. `todo` is removed
 if present and is not required. Removing `in progress` prevents publication.
@@ -91,8 +91,9 @@ Reports paginate all issue states and complete label timelines. They include
 every issue that has ever been labeled in progress, even after closure or label
 removal, and show current status, linked PRs, branch names, actual PR merge
 timestamps, and latest recorded automation status. A closed issue or deleted
-branch is never treated as proof of merge. Timeline references identify linked
-PRs; a reference alone does not prove that a PR resolves every acceptance item.
+branch is never treated as proof of merge. Timeline references are checked
+against GitHub's paginated closing-issue links; incidental mentions do not count
+as resolution PRs or block new work. Deterministic automation PRs also appear.
 The same report is available in the Actions run summary. Errors fetching state
 fail the report instead of presenting incomplete data as a clean status.
 

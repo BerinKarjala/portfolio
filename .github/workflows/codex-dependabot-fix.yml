@@ -290,7 +290,7 @@ jobs:
             if (branch !== base) throw new Error('The issue branch changed during validation.');
             const prs = await github.paginate(github.rest.pulls.list, {...repo, state: 'all', head: `${repo.owner}:${process.env.FIX_BRANCH}`, per_page: 100});
             const linked = await linkedPRs(github, repo, issue.number);
-            if (prs.length || linked.prs.some(pr => pr.state === 'open' || pr.merged_at)) throw new Error('An issue PR already exists.');
+            if (prs.length || linked.prs.some(pr => pr.closesIssue && (pr.state === 'open' || pr.merged_at))) throw new Error('An issue PR already exists.');
       - name: Commit and push only the validated patch
         env:
           BASE_SHA: ${{ needs.prepare.outputs.base_sha }}

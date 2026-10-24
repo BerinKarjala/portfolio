@@ -2,7 +2,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const { eligible, validateEntries, requireRed, weekKey, reportRows, publishReport, prepare, reportDue } = require('./issue-automation.cjs');
+const { eligible, validateEntries, requireRed, weekKey, reportRows, publishReport, prepare, reportDue, linkedPRs } = require('./issue-automation.cjs');
 
 const issue = (overrides = {}) => ({number: 42, title: 'Fix layout', state: 'open', body: '', labels: [{name: 'in progress'}], ...overrides});
 test('a writer can start any open in-progress issue without a todo prerequisite', () => {
@@ -112,4 +112,28 @@ test('weekly schedule selects the right UTC trigger even if Actions starts hours
   assert.equal(reportDue('schedule', '0 14 * * 1', new Date('2026-11-02T17:00:00Z')), true);
   assert.equal(reportDue('schedule', '0 13 * * 1', new Date('2026-11-02T17:00:00Z')), false);
   assert.equal(reportDue('workflow_dispatch', undefined, new Date()), true);
+});
+
+test('a PR mentioning an issue does not block it unless GitHub links it as closing that issue', async () => {
+  const events = [{event: 'cross-referenced', source: {issue: {number: 269, pull_request: {}, repository: {full_name: 'o/r'}}}}];
+  const {args, writes} = mockPrepare({events});
+  args.github.rest.pulls.get = async () => ({data: {number: 269, state: 'open', html_url: 'related'}});
+  args.github.graphql = async () => ({repository: {pullRequest: {closingIssuesReferences: {nodes: [], pageInfo: {hasNextPage: false}}}}});
+  assert.equal((await prepare(args)).branch, 'codex/issue-42');
+  assert.equal(writes[0][0], 'branch');
+});
+
+test('closing-issue matching paginates and requires the exact repository', async () => {
+  let pages = 0;
+  const github = {
+    rest: {issues: {listEventsForTimeline: 'events'}, pulls: {get: async () => ({data: {number: 5, state: 'open'}})}},
+    paginate: async () => [{event: 'cross-referenced', source: {issue: {number: 5, pull_request: {}, repository: {full_name: 'o/r'}}}}],
+    graphql: async () => ({repository: {pullRequest: {closingIssuesReferences: {
+      nodes: pages++ ? [{number: 42, repository: {nameWithOwner: 'o/r'}}] : [{number: 42, repository: {nameWithOwner: 'other/repo'}}],
+      pageInfo: {hasNextPage: pages === 1, endCursor: 'next'},
+    }}}}),
+  };
+  const linked = await linkedPRs(github, {owner: 'o', repo: 'r'}, 42);
+  assert.equal(linked.prs[0].closesIssue, true);
+  assert.equal(pages, 2);
 });

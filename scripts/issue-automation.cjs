@@ -76,7 +76,22 @@ async function linkedPRs(github, repo, issueNumber) {
   const events = await github.paginate(github.rest.issues.listEventsForTimeline, {...repo, issue_number: issueNumber, per_page: 100});
   const numbers = new Set(events.filter(event => event.event === 'cross-referenced' && event.source?.issue?.pull_request && event.source.issue.repository?.full_name?.toLowerCase() === `${repo.owner}/${repo.repo}`.toLowerCase()).map(event => event.source.issue.number));
   const prs = [];
-  for (const number of numbers) prs.push((await github.rest.pulls.get({...repo, pull_number: number})).data);
+  for (const number of numbers) {
+    const pr = (await github.rest.pulls.get({...repo, pull_number: number})).data;
+    let after = null;
+    pr.closesIssue = false;
+    do {
+      const result = await github.graphql(`query($owner:String!, $repo:String!, $number:Int!, $after:String) {
+        repository(owner:$owner, name:$repo) { pullRequest(number:$number) {
+          closingIssuesReferences(first:100, after:$after) { nodes { number repository { nameWithOwner } } pageInfo { hasNextPage endCursor } }
+        } }
+      }`, {...repo, number, after});
+      const connection = result.repository.pullRequest.closingIssuesReferences;
+      if (connection.nodes.some(issue => issue.number === issueNumber && issue.repository.nameWithOwner.toLowerCase() === `${repo.owner}/${repo.repo}`.toLowerCase())) pr.closesIssue = true;
+      after = connection.pageInfo.hasNextPage ? connection.pageInfo.endCursor : null;
+    } while (after);
+    prs.push(pr);
+  }
   return {events, prs};
 }
 async function prepare({github, alertGithub, context, core, issueNumber}) {
@@ -89,7 +104,7 @@ async function prepare({github, alertGithub, context, core, issueNumber}) {
   const branch = alert ? `codex/dependabot-alert-${alert.number}` : `codex/issue-${issueNumber}`;
   const prs = await github.paginate(github.rest.pulls.list, {...repo, state: 'all', head: `${repo.owner}:${branch}`, per_page: 100});
   const linked = await linkedPRs(github, repo, issueNumber);
-  const existing = [...prs, ...linked.prs].find(pr => pr.state === 'open' || pr.merged_at || prs.includes(pr));
+  const existing = prs[0] || linked.prs.find(pr => pr.closesIssue && (pr.state === 'open' || pr.merged_at));
   if (existing) {core.notice(`Existing issue PR: ${existing.html_url}; no duplicate work.`); return null;}
   const repository = (await github.rest.repos.get(repo)).data;
   const base = (await github.rest.repos.getBranch({...repo, branch: repository.default_branch})).data.commit.sha;
@@ -152,7 +167,7 @@ async function weeklyReport({github, context, core, now = new Date(), publish = 
     const alert = trackedAlert({...issue, state: 'open'}, `${repo.owner}/${repo.repo}`);
     const branchName = alert ? `codex/dependabot-alert-${alert.number}` : `codex/issue-${issue.number}`;
     const deterministic = await github.paginate(github.rest.pulls.list, {...repo, state: 'all', head: `${repo.owner}:${branchName}`, per_page: 100});
-    const allPRs = [...new Map([...prs, ...deterministic].map(pr => [pr.number, pr])).values()];
+    const allPRs = [...new Map([...prs.filter(pr => pr.closesIssue), ...deterministic].map(pr => [pr.number, pr])).values()];
     let branch;
     try {await github.rest.git.getRef({...repo, ref: `heads/${branchName}`}); branch = branchName;} catch (error) {if (error.status !== 404) throw error;}
     const comments = await github.paginate(github.rest.issues.listComments, {...repo, issue_number: issue.number, per_page: 100});
@@ -163,7 +178,7 @@ async function weeklyReport({github, context, core, now = new Date(), publish = 
     records.push({issue, events, prs: allPRs, run, branch});
   }
   const rows = reportRows(records);
-  const body = `Issues that currently have, or have ever had, the **in progress** label. Snapshot: ${now.toISOString()}.\n\n| Issue | Current status | Linked PRs / branch merge status | Latest automation |\n| --- | --- | --- | --- |\n${rows.join('\n') || '| None | No issues have been labeled in progress | - | - |'}\n\nIssue closure is reported separately from PR merge state. Linked PRs include timeline references and deterministic automation branches; a reference alone does not prove that a PR resolves the entire issue.\n\nScheduled Mondays at 9:00 a.m. America/New_York. [Report run](https://github.com/${repo.owner}/${repo.repo}/actions/runs/${context.runId}).`;
+  const body = `Issues that currently have, or have ever had, the **in progress** label. Snapshot: ${now.toISOString()}.\n\n| Issue | Current status | Linked PRs / branch merge status | Latest automation |\n| --- | --- | --- | --- |\n${rows.join('\n') || '| None | No issues have been labeled in progress | - | - |'}\n\nIssue closure is reported separately from PR merge state. PRs are matched by GitHub closing-issue links or deterministic automation branches. Incidental mentions are excluded.\n\nScheduled Mondays at 9:00 a.m. America/New_York. [Report run](https://github.com/${repo.owner}/${repo.repo}/actions/runs/${context.runId}).`;
   if (core?.summary) await core.summary.addRaw(body).write();
   if (publish) await publishReport({github, repo, issues, body, now});
   return {body, records};
