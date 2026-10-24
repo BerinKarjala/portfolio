@@ -125,6 +125,8 @@ test('staged worktree checks read actual modes and reject validator replacement 
     assert.equal(checkWorktree(base)[0].name, 'src/app.js');
     fs.chmodSync(path.join(directory, 'src', 'app.js'), 0o755);
     git('add', '--all');
+    // Windows chmod cannot set executable bits; preserve the same staged fixture.
+    git('update-index', '--chmod=+x', 'src/app.js');
     assert.throws(() => checkWorktree(base), /non-file/);
     git('reset', '--hard', base);
     fs.writeFileSync(path.join(directory, 'scripts', 'validator.cjs'), 'process.exit(0);\n');

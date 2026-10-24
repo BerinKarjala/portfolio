@@ -38,3 +38,12 @@ The portfolio project at `/projects/page-builder` uses the existing project layo
 See [requirements and milestones](docs/page-builder/progress.md), the [user guide](docs/page-builder/user-guide.md), [developer guide](docs/page-builder/developer-guide.md), [teaching tutorials](docs/page-builder/tutorials.md), and [130-decision implementation trace](docs/page-builder/requirements-trace.md).
 
 Run `npm run check:page-builder`, `npm test`, `npm run build` and `npm run check:page-builder:build` for the automated source/build checks. After building and installing Playwright browsers with `npx playwright install --with-deps chromium firefox webkit`, run `npm run test:e2e` for browser smoke tests.
+
+The default browser matrix contains 167 cases: all 105 behaviors in Chromium,
+plus 31 browser-sensitive editor cases each in Firefox and WebKit. It retains
+cross-browser storage ownership/recovery, import/export and sandbox boundaries,
+pointer/keyboard dragging, mobile focus, and wizard focus/reflow. Viewport
+permutations and the other feature cases run in Chromium; dedicated CSS Studio
+and image-storage workflows keep their full browser coverage. CI runs this
+matrix once with zero retries. Use `npm run test:e2e:full` for the complete
+315-case matrix, or append `-- --list` to either command to inspect its cases.

@@ -8,6 +8,8 @@ export default defineConfig({
   reporter: [["list"]],
   testDir: ".",
   testMatch: "css-studio-images.browser.js",
+  // This dedicated storage contract keeps its complete browser matrix.
+  projects: base.projects.map((project) => ({ ...project, grep: /.*/ })),
   use: { ...base.use, baseURL: "http://127.0.0.1:4174" },
   webServer: {
     command: "npm run dev -- --host 127.0.0.1 --port 4174 --strictPort",

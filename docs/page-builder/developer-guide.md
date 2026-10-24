@@ -50,6 +50,13 @@ npx playwright install --with-deps chromium firefox webkit
 npm run test:e2e
 ```
 
+The default matrix runs all cases in Chromium and selected browser-sensitive
+editor cases in Firefox/WebKit (167 cases total). Use `npm run test:e2e:full`
+for the complete 315-case matrix. Dedicated CSS Studio and image-storage
+workflows retain their full browser coverage. CI runs the default matrix once,
+with zero retries; keyboard, drag, storage, sandbox, and export contracts remain
+covered across engines.
+
 The browser tests use the production build through `vite preview`, desktop and 390px layouts, real downloads, reload recovery, quota failure injection, and two tabs sharing origin storage. Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` only when intentionally testing an installed Chromium binary. HTML reports, screenshots and failure traces live in ignored `playwright-report/` and `test-results/`; CI uploads them as artifacts. Two reviewed Chromium canvas regression baselines are committed; ordinary runs compare them without update mode. Other screenshot attachments are review evidence, not approved release screenshots. Automated axe scans cover the editor shell and rich-text tools; user-authored canvas styling is excluded. M5 adds calibrated visual/performance gates and manual mobile/assistive-technology evidence.
 
 The editing canvas is interactive and approximate. M4's final Preview and export share the same HTML AST and stylesheet. The outer preview iframe has an empty sandbox and restrictive CSP. Only isolation-specific navigation/form/style-link transformations distinguish `srcdoc` from the downloadable document. See [compiler, preflight, ZIP and recovery contracts](m4-export.md).
