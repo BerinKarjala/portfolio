@@ -2,7 +2,9 @@ import {expect, test} from '@playwright/test';
 
 // Keep video plus failure DOM/network traces. Concurrent trace screencasts
 // repeatedly repaint WebKit's 4K scene and distort the native timing sample.
-test.use({video: 'on', trace: {mode: 'retain-on-failure', screenshots: false, snapshots: true, sources: true}});
+// Normalize physical pixel density for timing comparisons; layout cases retain
+// their engine defaults, including WebKit's 2x density. 3840 CSS px is 4K here.
+test.use({deviceScaleFactor: 1, video: 'on', trace: {mode: 'retain-on-failure', screenshots: false, snapshots: true, sources: true}});
 test.describe.configure({mode: 'default'});
 test.beforeEach(async ({page}) => {
   await page.route('**/*sanity.io/**', route => route.fulfill({json: {result: []}}));
@@ -24,7 +26,8 @@ async function settle(page) {
       await page.emulateMedia({reducedMotion: 'no-preference'});
       await page.goto('/'); await settle(page);
       const first = page.locator('[data-card-key="/projects/SudokuSolver"]');
-      await first.evaluate(node => {
+      await first.focus();
+      const initialPose = await first.evaluate(node => {
         // Return immediately so WebKit can dispatch the click while RAF records.
         window.carouselMotion = {frames: [], done: false};
         document.addEventListener('click', () => {
@@ -36,6 +39,7 @@ async function settle(page) {
           };
           requestAnimationFrame(sample);
         }, {capture: true, once: true});
+        return getComputedStyle(node).transform;
       });
       await page.getByRole('button', {name: 'Previous project'}).click();
       // Hold the next idle cycle while slow 4K capture runs; current motion continues.
@@ -46,7 +50,9 @@ async function settle(page) {
       await info.attach(`motion-transforms-${width}`, {body: Buffer.from(JSON.stringify(frames)), contentType: 'application/json'});
       const poses = new Set(frames.map(frame => frame.transform));
       expect(poses.size).toBeGreaterThan(3);
-      const changing = frames.filter(frame => frame.transform !== frames[0].transform && frame.transform !== frames.at(-1).transform);
+      // The first RAF may already be an intermediate pose. Compare with the
+      // actual pre-click transform, retaining the full intermediate-span gate.
+      const changing = frames.filter(frame => frame.transform !== initialPose && frame.transform !== frames.at(-1).transform);
       expect(changing.at(-1).ms - changing[0].ms).toBeGreaterThan(700);
       expect(await first.evaluate(node => getComputedStyle(node).transitionDuration)).toContain('1.6s');
       // Replay the same adjacent direction for stills after the unimpeded sample.
