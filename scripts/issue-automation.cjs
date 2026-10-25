@@ -49,9 +49,30 @@ function checkWorktree(base) {
 }
 function requireRed(report, status) {
   const failures = (report.testResults || []).flatMap(result => result.assertionResults || []).filter(result => result.status === 'failed');
-  if (status !== 1 || !report.numFailedTests || report.numRuntimeErrorTestSuites || !failures.length || !failures.every(result => (result.failureMessages || []).some(message => /AssertionError|expected .* (?:to|not)/is.test(message)))) {
-    throw new Error('Regression must fail on a real assertion against the unmodified base; setup/import/runtime errors are not red evidence.');
+  const assertion = /AssertionError|expected .* (?:to|not)|promise rejected .* instead of resolving|promise resolved .* instead of rejecting/is;
+  const missingImport = /ERR_MODULE_NOT_FOUND|MODULE_NOT_FOUND|Cannot find (?:package|module)|Failed to resolve import/i;
+  const rejected = failures.filter(result => (result.failureMessages || []).some(message => missingImport.test(message)) || !(result.failureMessages || []).some(message => assertion.test(message)));
+  if (status !== 1 || !report.numFailedTests || report.numRuntimeErrorTestSuites || !failures.length || rejected.length) {
+    const details = {exitStatus: status, failedTests: report.numFailedTests || 0, runtimeErrorSuites: report.numRuntimeErrorTestSuites || 0, rejectedTests: rejected.map(result => result.fullName || result.title || 'unnamed test')};
+    throw new Error(`Regression must fail on a real assertion against the unmodified base; setup/import/runtime errors are not red evidence. ${JSON.stringify(details)}`);
   }
+}
+function verifyCandidateTask(current, previous) {
+  for (const key of ['repository', 'issue_number', 'base_sha', 'base_branch', 'branch', 'title', 'body', 'alert_number', 'ghsa_id', 'manifest_path', 'package', 'first_patched_version']) {
+    if (current[key] !== previous[key]) throw new Error(`Candidate task mismatch: ${key}. Generate a fresh candidate for the current issue/base.`);
+  }
+}
+function captureValidated(base, expectedTree) {
+  if (!/^[a-f0-9]{40}$/.test(base) || !/^[a-f0-9]{40}$/.test(expectedTree)) throw new Error('Invalid immutable base or frozen tree.');
+  // Studio commits generated assets; its build is a check, not part of an agent patch.
+  // Candidates cannot modify this protected directory in the first place.
+  if (git('ls-tree', '--name-only', base, '--', 'studio13/dist').trim()) {
+    git('restore', `--source=${base}`, '--staged', '--worktree', '--', 'studio13/dist');
+  }
+  git('add', '--update');
+  const regressions = checkWorktree(base);
+  if (git('write-tree').trim() !== expectedTree) throw new Error('Source/dependency tree changed during validation.');
+  return regressions;
 }
 function checkRed(base, evidenceDirectory) {
   const regressions = checkWorktree(base);
@@ -185,10 +206,11 @@ async function weeklyReport({github, context, core, now = new Date(), publish = 
   return {body, records};
 }
 
-module.exports = {eligible, validateEntries, checkWorktree, requireRed, checkRed, prepare, weekKey, reportDue, reportRows, publishReport, weeklyReport, linkedPRs};
+module.exports = {eligible, validateEntries, checkWorktree, requireRed, checkRed, prepare, weekKey, reportDue, reportRows, publishReport, weeklyReport, linkedPRs, verifyCandidateTask, captureValidated};
 if (require.main === module) {
   const [command, base, directory] = process.argv.slice(2);
   if (command === 'check-worktree') console.log(JSON.stringify(checkWorktree(base)));
   else if (command === 'check-red') checkRed(base, directory);
-  else throw new Error('Expected check-worktree <base> or check-red <base> <evidence-directory>.');
+  else if (command === 'capture-validated') console.log(JSON.stringify(captureValidated(base, directory)));
+  else throw new Error('Expected check-worktree <base>, check-red <base> <evidence-directory> or capture-validated <base> <tree>.');
 }

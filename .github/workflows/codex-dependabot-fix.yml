@@ -10,6 +10,11 @@ on:
         description: Open issue with the in progress label
         required: true
         type: number
+      candidate_run_id:
+        description: Optional run whose saved candidate should be revalidated without another API call
+        required: false
+        default: 0
+        type: number
 
 permissions:
   contents: read
@@ -78,6 +83,9 @@ jobs:
     timeout-minutes: 90
     permissions:
       contents: read
+      actions: read
+    env:
+      REUSE_CANDIDATE: ${{ github.event_name == 'workflow_dispatch' && inputs.candidate_run_id > 0 }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -91,10 +99,43 @@ jobs:
         with:
           name: issue-task
           path: ${{ runner.temp }}/issue-context
+      - uses: actions/download-artifact@v4
+        if: env.REUSE_CANDIDATE == 'true'
+        with:
+          name: issue-tools
+          path: ${{ runner.temp }}/trusted-issue
+      - uses: actions/download-artifact@v4
+        if: env.REUSE_CANDIDATE == 'true'
+        with:
+          name: issue-task
+          run-id: ${{ inputs.candidate_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/previous-task
+      - uses: actions/download-artifact@v4
+        if: env.REUSE_CANDIDATE == 'true'
+        with:
+          name: issue-candidate
+          run-id: ${{ inputs.candidate_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/previous-candidate
+      - name: Verify saved candidate belongs to the same current task and base
+        if: env.REUSE_CANDIDATE == 'true'
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const {verifyCandidateTask} = require(`${process.env.RUNNER_TEMP}/trusted-issue/issue-automation.cjs`);
+          const read = folder => JSON.parse(fs.readFileSync(`${process.env.RUNNER_TEMP}/${folder}/issue-task.json`, 'utf8'));
+          verifyCandidateTask(read('issue-context'), read('previous-task'));
+          for (const name of ['candidate.patch', 'codex-result.txt']) fs.copyFileSync(`${process.env.RUNNER_TEMP}/previous-candidate/${name}`, `${process.env.RUNNER_TEMP}/${name}`);
+          NODE
       - run: npm ci
+        if: env.REUSE_CANDIDATE != 'true'
       - run: npm ci --prefix studio13
+        if: env.REUSE_CANDIDATE != 'true'
       - run: npx playwright install --with-deps chromium firefox webkit
+        if: env.REUSE_CANDIDATE != 'true'
       - name: Write task with project standards and test-first acceptance
+        if: env.REUSE_CANDIDATE != 'true'
         run: |
           node <<'NODE'
           const fs = require('node:fs');
@@ -105,7 +146,8 @@ jobs:
             JSON.stringify(task, null, 2),
             'First add a meaningful NEW Vitest regression file in src/ or server/ ending in .test.js, .test.jsx, .test.ts or .test.tsx. Assert observable behavior using existing public interfaces. Run it on the unchanged base and observe an assertion failure, not a missing import or setup error. Do not implement the fix first.',
             'Then implement the smallest fix, rerun tests, and continue correcting failures until all applicable checks pass. Preserve the regression and all existing tests. Never weaken assertions, skip tests, change scripts/configs or bypass validation.',
-            'Run npm run check:page-builder, npm test, npm run build, npm run check:page-builder:build, npm run test:e2e -- --retries=0, npm run test:dependencies --prefix studio13 and npm run build --prefix studio13. Run additional server/browser/contract checks where relevant. Review mobile/4K evidence for layout changes.',
+            'Dependencies and browsers are preinstalled for baseline tests. Do not run npm ci, npm install or remove/reinstall node_modules inside the restricted agent. Edit dependency manifests; the independent validator resolves lockfiles and installs the candidate with normal runner subprocess/network access.',
+            'Run applicable tests/builds with the preinstalled dependencies. If subprocess, local socket or registry access is blocked by the agent sandbox, record the exact blocker once and hand the candidate to independent validation. Do not change sandbox protections or claim blocked checks passed. The independent job runs all root, browser, server and Studio gates before publication.',
             'Allowed changes: source under src/, server/css-studio/, studio13 schemas/schemaTypes/components; dependency fields in existing package manifests and lockfiles; docs/*.md; NEW regression tests and NEW e2e/*.spec.js tests. Existing tests, package scripts/engines, configs, workflows, validators and instructions are protected. No deletions or executable/symlink files.',
             'For a dependency alert, use a registry version at or above first_patched_version and add a behavioral/security regression. Do not dismiss alerts.',
             'Do not access secrets, commit, push, create PRs or merge. Network access may be restricted. The independent validator regenerates lockfiles and installs dependencies.',
@@ -113,6 +155,7 @@ jobs:
           ].join('\n\n'));
           NODE
       - name: Test first, implement, and repair until green
+        if: env.REUSE_CANDIDATE != 'true'
         uses: openai/codex-action@bdf19a4a223ec2549a3e2274a0cf61556bc07675 # v1
         with:
           openai-api-key: ${{ secrets.PORTFOLIOCODEXACTIONS }}
@@ -123,6 +166,7 @@ jobs:
           prompt-file: ${{ runner.temp }}/issue-prompt.txt
           output-file: ${{ runner.temp }}/codex-result.txt
       - name: Capture candidate without publishing
+        if: env.REUSE_CANDIDATE != 'true'
         env:
           BASE_SHA: ${{ needs.prepare.outputs.base_sha }}
         run: |
@@ -225,9 +269,7 @@ jobs:
           BASE_SHA: ${{ needs.prepare.outputs.base_sha }}
           TESTED_TREE: ${{ steps.snapshot.outputs.tree }}
         run: |
-          git add --update
-          node "$RUNNER_TEMP/trusted-issue/issue-automation.cjs" check-worktree "$BASE_SHA"
-          test "$(git write-tree)" = "$TESTED_TREE"
+          node "$RUNNER_TEMP/trusted-issue/issue-automation.cjs" capture-validated "$BASE_SHA" "$TESTED_TREE"
           git diff --cached --binary "$BASE_SHA" > "$RUNNER_TEMP/validated.patch"
       - uses: actions/upload-artifact@v4
         with:
