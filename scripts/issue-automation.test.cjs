@@ -2,7 +2,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const { eligible, validateEntries, requireRed, weekKey, reportRows, publishReport, prepare, reportDue, linkedPRs } = require('./issue-automation.cjs');
+const os = require('node:os');
+const path = require('node:path');
+const cp = require('node:child_process');
+const { eligible, validateEntries, requireRed, weekKey, reportRows, publishReport, prepare, reportDue, linkedPRs, verifyCandidateTask, captureValidated } = require('./issue-automation.cjs');
 
 const issue = (overrides = {}) => ({number: 42, title: 'Fix layout', state: 'open', body: '', labels: [{name: 'in progress'}], ...overrides});
 test('a writer can start any open in-progress issue without a todo prerequisite', () => {
@@ -28,6 +31,58 @@ test('red evidence requires assertion failures, not missing imports, no tests or
   const report = {numFailedTests: 1, numRuntimeErrorTestSuites: 0, testResults: [{assertionResults: [{status: 'failed', failureMessages: ['AssertionError: expected true to be false']}]}]};
   requireRed(report, 1);
   for (const [result, status] of [[report, 0], [{numFailedTests: 0, testResults: []}, 1], [{...report, numRuntimeErrorTestSuites: 1}, 1], [{...report, testResults: []}, 1]]) assert.throws(() => requireRed(result, status), /assertion/);
+});
+
+test('red gate accepts Vitest promise assertion failures but still rejects raw runtime errors', () => {
+  for (const message of [
+    'Error: promise rejected "TypeError: output[key].concat is not a function" instead of resolving\n at _Assertion.__VITEST_RESOLVES__',
+    'Error: promise resolved "ok" instead of rejecting\n at _Assertion.__VITEST_REJECTS__',
+  ]) {
+    requireRed({numFailedTests: 1, testResults: [{assertionResults: [{status: 'failed', failureMessages: [message]}]}]}, 1);
+  }
+  for (const message of ['TypeError: output[key].concat is not a function', 'Error: Cannot find package undici', 'Error: promise rejected "Error: Cannot find package new-feature" instead of resolving']) {
+    assert.throws(() => requireRed({numFailedTests: 1, testResults: [{assertionResults: [{status: 'failed', failureMessages: [message]}]}]}, 1), /assertion/);
+  }
+});
+
+test('candidate reuse requires identical repository, issue, base, branch and acceptance data', () => {
+  const task = {repository: 'o/r', issue_number: 253, base_sha: 'a'.repeat(40), base_branch: 'main', branch: 'codex/issue-253', title: 'Fix cache', body: 'Keep private data isolated', alert_number: 458, ghsa_id: 'GHSA-4cwx-7wf7-3272', manifest_path: 'package-lock.json', first_patched_version: '7.29.0'};
+  verifyCandidateTask(task, {...task});
+  for (const [key, value] of Object.entries(task)) {
+    assert.throws(() => verifyCandidateTask(task, {...task, [key]: typeof value === 'number' ? value + 1 : `${value}-changed`}), /Candidate task mismatch/);
+  }
+});
+
+test('validated capture excludes rebuilt Studio assets and rejects any source drift', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'issue-validated-'));
+  const previous = process.cwd();
+  const git = (...args) => cp.execFileSync('git', args, {cwd: directory, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe']}).trim();
+  try {
+    git('init');
+    fs.mkdirSync(path.join(directory, 'src'));
+    fs.mkdirSync(path.join(directory, 'studio13/dist'), {recursive: true});
+    fs.writeFileSync(path.join(directory, 'src/app.js'), 'export const value = 1;\n');
+    fs.writeFileSync(path.join(directory, 'studio13/dist/index.html'), 'base build');
+    git('add', '--all');
+    git('-c', 'core.hooksPath=/dev/null', '-c', 'user.name=test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'base');
+    const base = git('rev-parse', 'HEAD');
+    fs.writeFileSync(path.join(directory, 'src/issue-253.test.js'), 'test("cache", () => {});\n');
+    fs.writeFileSync(path.join(directory, 'src/app.js'), 'export const value = 2;\n');
+    git('add', '--all');
+    const frozenTree = git('write-tree');
+    fs.writeFileSync(path.join(directory, 'studio13/dist/index.html'), 'rebuilt output');
+    process.chdir(directory);
+    captureValidated(base, frozenTree);
+    assert.equal(git('write-tree'), frozenTree);
+    assert.equal(fs.readFileSync('studio13/dist/index.html', 'utf8'), 'base build');
+    fs.writeFileSync('src/app.js', 'export const value = 3;\n');
+    assert.throws(() => captureValidated(base, frozenTree), /changed during validation/);
+  } finally {
+    process.chdir(previous);
+    const absolute = path.resolve(directory);
+    if (!absolute.startsWith(path.resolve(os.tmpdir()) + path.sep)) throw new Error('Unsafe fixture cleanup path.');
+    fs.rmSync(absolute, {recursive: true, force: true});
+  }
 });
 
 test('report week follows New York calendar through both DST offsets and Sunday boundary', () => {

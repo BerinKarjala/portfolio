@@ -45,6 +45,9 @@ runtime check programs, package scripts/engines and existing security overrides.
 The validator copies only the new regressions onto an unchanged base worktree
 with its original dependencies and independently requires assertion failures.
 Missing imports, setup crashes and tests that already pass do not qualify.
+Vitest promise assertions (`resolves`/`rejects`) count as assertion failures;
+an unexpected promise rejection in such an assertion is meaningful evidence of
+the behavior under test. Raw runtime errors outside assertions still fail the gate.
 It then installs the candidate and runs:
 
 - Root requirements, unit/integration tests, production build and build checks.
@@ -55,6 +58,9 @@ It then installs the candidate and runs:
 - Automation regression tests and a target-advisory audit for Dependabot fixes.
 
 Source/dependency changes made during testing invalidate the frozen candidate.
+The tracked `studio13/dist` output is restored to the base after the Studio
+build check, because generated build assets are outside the allowed candidate
+scope. All application/dependency changes must still match the frozen tree.
 Only the tested tree reaches a fresh publisher job. It rechecks the issue,
 unchanged main revision, PR duplicates and unchanged issue branch, then commits
 and opens a focused PR with the issue closing reference, exact commit and run
@@ -78,6 +84,18 @@ the issue again. The agent can iterate within a run; failed independent gates
 never publish a PR. Retries reuse only an unchanged branch at current main.
 If main or the branch moved, inspect and advance the untouched branch to current
 main before retrying. A partially pushed fix or an existing PR is never replaced.
+
+For a validator/infrastructure retry, supply the original **candidate_run_id**
+along with **issue_number** in Run workflow. This downloads the saved task and
+candidate from that run in this repository and requires identical issue,
+acceptance text, advisory, branch and base revision before reuse. It makes no
+OpenAI API call and repeats all independent red/green, scope, audit and publication
+gates. If main or acceptance changed, generate a fresh candidate instead.
+
+The agent receives preinstalled baseline dependencies. It must not reinstall
+them inside its restricted sandbox: failed subprocess/network operations can
+remove working dependencies without establishing a candidate failure. Record
+such limitations once; normal runner jobs install and test the candidate.
 
 ## Monday report
 
