@@ -53,7 +53,7 @@ export default function TextEditor({ onClose }) {
   }}>
     <input className="writing-title" aria-label="Document title" maxLength={160} value={model.title} onChange={event => writing.change({ ...model, title: event.target.value }, 'title')} />
     <RichTextEditor
-      document={model.body} inlineToolbar autoFocus={false} hideHelp plainTextDrop
+      document={model.body} inlineToolbar autoFocus={false} hideHelp plainTextDrop preserveSelectionOnBlur
       disabled={!writing.initialized} surfaceLabel="Writing area" placeholder="Start writing…"
       initialSelection={writing.selection.current}
       onSelectionChange={range => { writing.selection.current = range; setSelectionStart(range.start); }}

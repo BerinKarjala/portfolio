@@ -44,6 +44,9 @@ async function viewportCard(page, name) {
 }
 for (const [width, height] of sizes) {
   test(`carousel layout and all six card presentations at ${width}px`, async ({page}, info) => {
+    // Six complete, lossless captures at 4K can take >30s in WebKit. This is an
+    // artifact budget for this new case; existing UI/test deadlines are intact.
+    test.setTimeout(90000);
     await page.setViewportSize({width, height});
     await page.emulateMedia({reducedMotion: 'reduce'});
     await page.goto('/');
@@ -107,6 +110,7 @@ for (const [width, height] of sizes) {
     await sheet.fill('A quiet forest draft');
     await sheet.press('End');
     await sheet.press('Shift+ArrowLeft');
+    await expect.poll(() => sheet.evaluate(() => window.getSelection().toString())).toBe('t');
     await page.evaluate(() => {window.carouselEditorNode = document.querySelector('[aria-label="Writing area"]');});
     await capture('editor');
     await page.getByRole('button', {name: 'Expand Text Editor'}).click();
@@ -152,7 +156,7 @@ test('selection latches, arrow hover resumes the chosen direction, and utilities
   await expect(page.getByRole('link', {name: 'Open HTML Page Builder'})).toBeVisible();
 });
 
-test('card gestures expand only eligible chrome and reject cancelled, multiple-contact and nested controls', async ({page}) => {
+test('card gestures expand only eligible chrome and reject cancelled, multiple-contact and nested controls', async ({page, browser, browserName}) => {
   await page.emulateMedia({reducedMotion: 'reduce'});
   await page.goto('/'); await settle(page);
   const preview = page.locator('.landing-card--center .landing-preview');
@@ -183,6 +187,39 @@ test('card gestures expand only eligible chrome and reject cancelled, multiple-c
   await page.getByRole('textbox', {name: 'Writing area'}).fill('Select these words');
   await page.getByRole('textbox', {name: 'Writing area'}).dblclick();
   await expect(page.locator('dialog[aria-modal="true"]')).toHaveCount(0);
+  // Firefox lacks Playwright's native touchscreen context. Its pointer paths
+  // above still run; Chromium/WebKit also exercise trusted touchscreen input.
+  if (browserName !== 'firefox') {
+    const touch = await browser.newContext({hasTouch: true, viewport: {width: 390, height: 844}, reducedMotion: 'reduce', baseURL: 'http://127.0.0.1:4173', timezoneId: 'America/New_York'});
+    try {
+      await touch.route('**/*sanity.io/**', route => route.fulfill({json: {result: []}}));
+      const mobile = await touch.newPage();
+      await mobile.goto('/'); await settle(mobile);
+      const surface = mobile.locator('.landing-card--center .landing-preview');
+      await surface.scrollIntoViewIfNeeded();
+      const box = await surface.boundingBox();
+      const x = box.x + box.width / 2, y = box.y + box.height / 2;
+      await mobile.touchscreen.tap(x, y);
+      await mobile.waitForTimeout(100);
+      await mobile.touchscreen.tap(x, y);
+      await viewportCard(mobile, 'Sudoku Solver');
+      await mobile.keyboard.press('Escape');
+      if (browserName === 'chromium') {
+        await surface.scrollIntoViewIfNeeded();
+        const rect = await surface.boundingBox();
+        const px = rect.x + rect.width / 2, py = rect.y + rect.height - 10;
+        const session = await touch.newCDPSession(mobile);
+        await session.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [{x: px, y: py}]});
+        for (let step = 1; step <= 5; step++) {
+          await session.send('Input.dispatchTouchEvent', {type: 'touchMove', touchPoints: [{x: px, y: py - step * 16}]});
+          await mobile.waitForTimeout(30);
+        }
+        await session.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []});
+        await viewportCard(mobile, 'Sudoku Solver');
+        await session.detach();
+      }
+    } finally {await touch.close();}
+  }
 });
 
 test('expanded tools inherit light/dark high contrast and keep Exit reachable in short viewports', async ({page}) => {

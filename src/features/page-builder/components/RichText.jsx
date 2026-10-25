@@ -142,6 +142,7 @@ export function RichTextEditor({
   hideHelp = false,
   plainTextDrop = false,
   onSelectionChange,
+  preserveSelectionOnBlur = false,
 }) {
   const root = useRef(null),
     saved = useRef(initialSelection || { start: 0, end: 0 }),
@@ -155,6 +156,7 @@ export function RichTextEditor({
     [icon, setIcon] = useState("star"),
     [error, setError] = useState("");
   function capture() {
+    if (preserveSelectionOnBlur && window.document.activeElement !== root.current) return;
     const s = window.getSelection();
     if (
       !s?.rangeCount ||

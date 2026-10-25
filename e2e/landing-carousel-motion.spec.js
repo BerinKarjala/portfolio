@@ -1,9 +1,18 @@
 import {expect, test} from '@playwright/test';
 
 test.use({video: 'on'});
+test.describe.configure({mode: 'default'});
 test.beforeEach(async ({page}) => {
   await page.route('**/*sanity.io/**', route => route.fulfill({json: {result: []}}));
-  await page.clock.setFixedTime(new Date('2026-10-25T16:00:00-04:00'));
+  // Keep animation timestamps and RAF native: they must share the CSS clock.
+  await page.addInitScript(now => {
+    const NativeDate = Date;
+    window.Date = new Proxy(NativeDate, {
+      construct(target, args) {return Reflect.construct(target, args.length ? args : [now]);},
+      apply() {return new NativeDate(now).toString();},
+      get(target, name) {return name === 'now' ? () => now : Reflect.get(target, name);},
+    });
+  }, new Date('2026-10-25T16:00:00-04:00').getTime());
 });
 async function settle(page) {
   await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
