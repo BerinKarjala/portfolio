@@ -5,9 +5,18 @@ export default function CardPresentation({expanded, title, onExpand, onExit, chi
   const dialog = useRef(null);
   const expandButton = useRef(null);
   const exitButton = useRef(null);
+  const restore = useRef(null);
   useLayoutEffect(() => {
     const element = dialog.current;
-    if (!expanded) return;
+    if (!expanded) {
+      if (restore.current) {
+        element.scrollTop = restore.current.contentScroll;
+        expandButton.current?.focus({preventScroll: true});
+        window.scrollTo(restore.current.position);
+        restore.current = null;
+      }
+      return;
+    }
     const overflow = document.body.style.overflow;
     const position = {left: window.scrollX, top: window.scrollY};
     const contentScroll = element.scrollTop;
@@ -19,11 +28,9 @@ export default function CardPresentation({expanded, title, onExpand, onExit, chi
       element.close();
       element.setAttribute('open', '');
       document.body.style.overflow = overflow;
-      element.scrollTop = contentScroll;
-      if (element.isConnected) {
-        expandButton.current?.focus({preventScroll: true});
-        window.scrollTo(position);
-      }
+      // Focus only in the next setup, after React has unhidden Expand. A layout
+      // cleanup may run while it is still hidden (notably in Firefox).
+      restore.current = {position, contentScroll};
     };
   }, [expanded]);
   const exit = () => {dialog.current.close(); onExit();};
