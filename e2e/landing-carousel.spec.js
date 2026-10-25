@@ -108,7 +108,8 @@ for (const [width, height] of sizes) {
     await page.getByRole('button', {name: 'Open text editor with the quill'}).click();
     await page.getByRole('textbox', {name: 'Document title'}).fill('Retained forest draft');
     const sheet = page.getByRole('textbox', {name: 'Writing area'});
-    await sheet.fill('A quiet forest draft');
+    // Use real beforeinput typing, preserving the controlled rich-text DOM.
+    await sheet.pressSequentially('A quiet forest draft');
     await sheet.press('End');
     await sheet.press('Shift+ArrowLeft');
     await expect.poll(() => sheet.evaluate(() => window.getSelection().toString())).toBe('t');
@@ -202,7 +203,7 @@ test('card gestures expand only eligible chrome and reject cancelled, multiple-c
   await expect(page.locator('dialog[aria-modal="true"]')).toHaveCount(0);
   await page.getByRole('button', {name: 'Close calendar'}).click();
   await page.getByRole('button', {name: 'Open text editor with the quill'}).click();
-  await page.getByRole('textbox', {name: 'Writing area'}).fill('Select these words');
+  await page.getByRole('textbox', {name: 'Writing area'}).pressSequentially('Select these words');
   await page.getByRole('textbox', {name: 'Writing area'}).dblclick();
   await expect(page.locator('dialog[aria-modal="true"]')).toHaveCount(0);
   // Firefox lacks Playwright's native touchscreen context. Its pointer paths

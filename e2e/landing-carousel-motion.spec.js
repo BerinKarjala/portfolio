@@ -21,20 +21,25 @@ async function settle(page) {
       await page.emulateMedia({reducedMotion: 'no-preference'});
       await page.goto('/'); await settle(page);
       const first = page.locator('[data-card-key="/projects/SudokuSolver"]');
-      const samplesPromise = first.evaluate(node => new Promise(resolve => {
-        const frames = [], started = performance.now();
-        const sample = now => {
-          frames.push({ms: now - started, transform: getComputedStyle(node).transform});
-          if (now - started < 2400) requestAnimationFrame(sample);
-          else resolve(frames);
-        };
-        requestAnimationFrame(sample);
-      }));
+      await first.evaluate(node => {
+        // Return immediately so WebKit can dispatch the click while RAF records.
+        window.carouselMotion = {frames: [], done: false};
+        document.addEventListener('click', () => {
+          const started = performance.now();
+          const sample = now => {
+            window.carouselMotion.frames.push({ms: now - started, transform: getComputedStyle(node).transform});
+            if (now - started < 2400) requestAnimationFrame(sample);
+            else window.carouselMotion.done = true;
+          };
+          requestAnimationFrame(sample);
+        }, {capture: true, once: true});
+      });
       await page.getByRole('button', {name: 'Previous project'}).click();
       // Hold the next idle cycle while slow 4K capture runs; current motion continues.
       await page.locator('.landing-card--center').focus();
       // Read native RAF without concurrent screenshot encoding blocking WebKit.
-      const frames = await samplesPromise;
+      await expect.poll(() => page.evaluate(() => window.carouselMotion.done)).toBe(true);
+      const frames = await page.evaluate(() => window.carouselMotion.frames);
       await info.attach(`motion-transforms-${width}`, {body: Buffer.from(JSON.stringify(frames)), contentType: 'application/json'});
       const poses = new Set(frames.map(frame => frame.transform));
       expect(poses.size).toBeGreaterThan(3);
@@ -43,17 +48,18 @@ async function settle(page) {
       expect(await first.evaluate(node => getComputedStyle(node).transitionDuration)).toContain('1.6s');
       // Replay the same adjacent direction for stills after the unimpeded sample.
       await page.getByRole('button', {name: 'Next project'}).click();
-      await page.waitForTimeout(1700);
+      await expect(page.locator('.landing-stage')).toHaveAttribute('data-moving', 'false');
       await page.getByRole('button', {name: 'Previous project'}).click();
       await page.locator('.landing-card--center').focus();
       await info.attach(`motion-start-${width}`, {body: await page.screenshot({scale: 'css'}), contentType: 'image/png'});
       await page.waitForTimeout(500);
       await info.attach(`motion-middle-${width}`, {body: await page.screenshot({scale: 'css'}), contentType: 'image/png'});
       await expect(page.getByRole('heading', {name: 'CSS Theme Studio', exact: true})).toBeVisible();
+      await expect(page.locator('.landing-stage')).toHaveAttribute('data-moving', 'false');
       await info.attach(`motion-settled-${width}`, {body: await page.screenshot({scale: 'css'}), contentType: 'image/png'});
       await page.getByRole('button', {name: 'Next project'}).click();
       await page.locator('.landing-card--center').focus();
-      await page.waitForTimeout(1700);
+      await expect(page.locator('.landing-stage')).toHaveAttribute('data-moving', 'false');
       await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
       await info.attach(`motion-wrap-return-${width}`, {body: await page.screenshot({scale: 'css'}), contentType: 'image/png'});
       if (width === 390) {
