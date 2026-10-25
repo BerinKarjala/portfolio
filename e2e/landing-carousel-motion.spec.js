@@ -44,5 +44,13 @@ async function settle(page) {
       await page.waitForTimeout(1700);
       await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
       await info.attach(`motion-wrap-return-${width}`, {body: await page.screenshot(), contentType: 'image/png'});
+      if (width === 390) {
+        await page.getByRole('button', {name: 'Next project'}).click();
+        await page.getByRole('button', {name: 'Next project'}).click();
+        await page.getByRole('button', {name: 'Previous project'}).click();
+        await page.waitForTimeout(3400);
+        await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
+        await expect(page.locator('.landing-card--center')).toHaveCount(1);
+      }
     });
   }

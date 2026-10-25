@@ -114,3 +114,13 @@ it('makes an outgoing edge inert immediately, before its animation finishes', as
   act(() => vi.advanceTimersByTime(1600));
   expect(edge.classList.contains('landing-card--hidden')).toBe(true);
 });
+it('leaves modified Tab shortcuts to the browser while a card is expanded', async () => {
+  await scene();
+  fireEvent.click(screen.getByRole('button', {name: 'Expand Sudoku Solver'}));
+  const dialog = modal('Sudoku Solver');
+  const exit = screen.getByRole('button', {name: 'Exit full screen'});
+  exit.focus();
+  const shortcut = new KeyboardEvent('keydown', {key: 'Tab', ctrlKey: true, shiftKey: true, bubbles: true, cancelable: true});
+  dialog.dispatchEvent(shortcut);
+  expect(shortcut.defaultPrevented).toBe(false);
+});

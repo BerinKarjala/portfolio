@@ -43,7 +43,7 @@ export default function CardPresentation({expanded, title, onExpand, onExit, chi
     }}
     onKeyDown={event => {
       if (!expanded) return;
-      if (event.key === 'Tab') {
+      if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey && !event.altKey) {
         const controls = [...dialog.current.querySelectorAll('a[href],button,input,select,textarea,[tabindex="0"],[contenteditable="true"]')]
           .filter(node => !node.disabled && !node.closest('[inert]') && !node.hidden && node.tabIndex >= 0
             && getComputedStyle(node).display !== 'none' && getComputedStyle(node).visibility !== 'hidden');
