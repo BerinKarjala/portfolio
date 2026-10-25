@@ -10,6 +10,8 @@ on:
       - "scripts/*dependabot*.cjs"
       - ".github/workflows/weekly-issue-report.yml"
       - "scripts/issue-automation*.cjs"
+      - ".github/workflows/page-builder.yml"
+      - ".github/workflows/css-studio-browser.yml"
   workflow_dispatch:
 
 permissions:
@@ -36,4 +38,6 @@ jobs:
             .github/workflows/weekly-security.yml \
             .github/workflows/security-automation-checks.yml
           "$GOBIN/actionlint" \
-            .github/workflows/weekly-issue-report.yml
+            .github/workflows/weekly-issue-report.yml \
+            .github/workflows/page-builder.yml \
+            .github/workflows/css-studio-browser.yml

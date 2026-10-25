@@ -11,6 +11,7 @@ studio13/.sanity/
 /playwright-report
 /test-results
 /test-results-images
+/test-results-local/
 
 # production
 /build

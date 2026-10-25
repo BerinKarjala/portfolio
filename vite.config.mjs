@@ -8,8 +8,11 @@ export default defineConfig({
       '**/node_modules/**',
       '**/.git/**',
       'e2e/**',
+      'e2e-local/**',
       // This metadata helper uses node:test in its standalone workflow.
       'scripts/check-css-studio-image-contract.test.mjs',
+      // Runs with node:test in the cloud smoke-contract job.
+      'scripts/run-browser-tests.test.cjs',
     ],
   },
   server: {

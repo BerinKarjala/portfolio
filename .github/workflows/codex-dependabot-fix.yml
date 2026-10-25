@@ -239,11 +239,11 @@ jobs:
       - run: npm run build
       - run: npm run check:page-builder:build
       - run: npx playwright install --with-deps chromium firefox webkit
-      - run: npm run test:e2e -- --retries=0
+      - run: npm run test:e2e:cloud
       - name: Preserve full CSS Studio and image storage browser coverage
         run: |
           npm run test:e2e:full -- e2e/css-studio.spec.js e2e/css-studio-acceptance.spec.js --workers=2 --retries=0 --output=test-results-css-studio --reporter=list,html
-          npm run test:e2e -- --config=e2e/playwright.images.config.js --workers=2 --retries=0 --output=test-results-css-studio-images --reporter=list,html
+          npm run test:e2e:cloud -- --config=e2e/playwright.images.config.js --workers=2 --retries=0 --output=test-results-css-studio-images --reporter=list,html
       - run: npm run test:css-studio:server
       - run: node --test server/css-studio/runtime/images.runtime.mjs
       - run: npm run test:css-studio:server:browser

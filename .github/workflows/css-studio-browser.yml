@@ -17,6 +17,7 @@ on:
       - "package*.json"
       - ".nvmrc"
       - "*config*"
+      - "scripts/run-browser-tests*.cjs"
       - "index.html"
       - ".github/workflows/css-studio-browser.yml"
 
@@ -57,7 +58,7 @@ jobs:
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-css-studio
       - name: Image storage browser regression without retries
         if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.browsers.outcome == 'success' }}
-        run: npm run test:e2e -- --config=e2e/playwright.images.config.js --project=${{ matrix.browser }} --workers=2 --retries=0 --output=test-results-css-studio-images --reporter=list,html
+        run: npm run test:e2e:cloud -- --config=e2e/playwright.images.config.js --project=${{ matrix.browser }} --workers=2 --retries=0 --output=test-results-css-studio-images --reporter=list,html
         env:
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-css-studio-images
       - name: Retain CSS Studio HTML report and failure evidence
