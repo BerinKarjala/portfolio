@@ -1,5 +1,9 @@
 # Landing redesign implementation
 
+The October 25 carousel refinements at the end of this document supersede the
+original carousel timing, bottom controls, and fullscreen behavior below. Earlier
+sections retain the original implementation and its historical evidence.
+
 Branch: `feat/landing-page-scene`, based on
 `c1f7645b1ac8488fc93a9b095ab47f839d011f62`. Evidence below applies to this
 branch's implementation, not a production release. The user requested a commit
@@ -220,3 +224,71 @@ These are focused results. Broader local attempts hit test deadlines, including
 the 4K responsive route workflow; a complete local suite pass is not established.
 No test deadlines or visual snapshots were changed. Full PR CI must run against
 the stabilization commit, and the physical-device review gaps above remain open.
+
+## Carousel refinements (October 25, 2026)
+
+Source brief: `Landing_Page_Carousel_Handover_2026-10-25.zip`, beginning with
+`CODEX_PROMPT.md`; all nine manifest-listed files matched their SHA256 hashes.
+Baseline: `98fafc9039858018ba8f5526a241214f08b7aff6`. Branch:
+`feat/landing-carousel-refinements`. The handover's `after.png` governs arrow
+placement and the desk boundary; its pasted arrow backgrounds are not UI assets.
+
+Reviewable defaults are 12,000 ms between slide starts, a 1,600 ms transform
+transition, and immediate adjacent arrow stepping followed by slow rotation in
+that direction. A selected/focused card holds persistently until an arrow
+command. Rapid commands keep only the latest pending direction. Reduced-motion
+users retain immediate manual stepping without an automatic timer. Utility,
+Studio, visibility, pointer and object-gesture protections remain independent.
+
+The gallery owns two real side gutters. Its final flow child is the desk, with
+spare viewport height added above it and real scrolling when content needs it.
+Loading/status text lives in a stable gallery overlay; the bottom utility,
+rotation and counter groups are removed. Header height is measured rather than
+assumed. Quill and header Calendar refs provide connected utility return targets.
+
+Each card keeps one inline nonmodal dialog. Expansion calls native `showModal`
+to promote that same DOM into the browser top layer, outside ancestor clipping
+and perspective. This preserves editor DOM/selection/history and calendar local
+state without duplicate tools or remounting. The native modal makes the
+background inert; Exit/Escape restore scroll/body styles and focus. Escape is
+captured before the editor's own Close shortcut. Inherited Studio selectors and
+tokens remain available in the top layer. Project/Studio actions first exit
+the modal, and exiting fullscreen does not close an open utility.
+
+Card gestures are separate from the weather/quill gesture hook: upward motion
+of at least 60 px, at least 1.5 times horizontal movement, within 500 ms; double
+taps within 300 ms and 24 px. Multi-contact, cancellation, drag-return, nested
+controls and editor/date text are excluded. The accessible Expand button is an
+additional route, and trailing synthetic clicks are suppressed.
+
+| Acceptance | Implementation and evidence |
+| --- | --- |
+| T01–T02: side controls and stable loading | Home, scene CSS; six-size geometry/hit/focus checks; retained loading-during-press regression |
+| T03–T04: cadence, wrap and bounded intent | useCarouselRotation units; motion file with intermediate transforms, PNGs and video |
+| T05–T07: real launchers and desk edge | Home, SceneContext, WritingSet, WeatherWidget; six-size document geometry and short-viewport cases |
+| T08–T12: selection, direction and blockers | rotation and Home units; browser directional/utility holds; existing visibility/reduced-motion tests |
+| T13–T16: gestures and exclusions | useCardGesture units; cross-engine gesture/nested-control browser cases |
+| T17–T20: viewport, state, focus and theme | CardPresentation/Home units; six-size project/editor/calendar expand/exit; short-viewport theme/axe checks |
+| T21: late CMS and safe identity | retained Home normalization, unsafe destination, and late Studio CMS tests |
+| T22: retained features | migrated landing-scene browser tests plus existing Page Builder, CSS Studio/image and server release workflows |
+
+Local targeted units passed 64 tests across 11 files with one worker before the
+final drag-return and focus-filter additions; final source validation is assigned
+to cloud CI. The local smoke command returned resource result **75 / deferred**
+with 171,589,632 bytes (163 MiB) available. No browser was launched; this is not
+a pass. Runner Node: 22.22.2. The existing React/Sanity listeners serve
+`C:/dev/portfolio/portfolio` at commit
+`6cf6150d8f44f251765c5579405d5e71654f0f7b`, with an unrelated modified lockfile.
+The test runner is this isolated worktree, not the server checkout. Neither
+existing server nor its checkout was changed. No local full matrix, build,
+native-image suite or extra server was run. Collection alone confirmed the
+unchanged three-smoke contract and the full cloud matrix's 351 cases.
+
+Cloud validation and exact tested commit will be recorded below when complete.
+The new cloud cases attach browsing, editor, calendar and expanded variants at
+320×740, 390×844, 768×1024, 1440×900, 1920×1080 and 3840×2160. Separate motion
+cases record non-reduced video/intermediate PNGs at mobile, desktop and 4K.
+These renders require visual review against the supplied arrangement. Physical
+phones/OS gestures, keyboard occlusion, zoom/assistive technology and target TV
+browsers remain unverified; physical TV remotes remain excluded. No merge,
+production publication or CMS mutation is authorized by this handover.

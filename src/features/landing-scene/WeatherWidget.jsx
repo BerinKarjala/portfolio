@@ -133,7 +133,7 @@ export default function WeatherWidget() {
       <div className="scene-weather-actions">
         <button onClick={useLocation} disabled={loading}>Use my location</button>
         {weather && <button aria-label={`Switch to ${unit === 'fahrenheit' ? 'Celsius' : 'Fahrenheit'}`} onClick={() => setUnitOverride(unit === 'fahrenheit' ? 'celsius' : 'fahrenheit')}>{unit === 'fahrenheit' ? '°C' : '°F'}</button>}
-        <button onClick={event => scene?.openCalendar(event.currentTarget)}>Calendar</button>
+        <button ref={scene?.calendarLauncher} onClick={event => scene?.openCalendar(event.currentTarget)}>Calendar</button>
         {(gesture.position.x !== 0 || gesture.position.y !== 0) && <button onClick={gesture.reset}>Reset weather position</button>}
       </div>
       <small>Weather by Open-Meteo</small>

@@ -5,7 +5,7 @@ import { useScene } from './SceneContext';
 import useObjectGesture from './useObjectGesture';
 
 export default function WritingSet({ deskRef }) {
-  const { openEditor, setWritingInteracting } = useScene();
+  const { openEditor, setWritingInteracting, editorLauncher } = useScene();
   const element = useRef(null);
   const description = useId();
   const gesture = useObjectGesture({
@@ -35,7 +35,7 @@ export default function WritingSet({ deskRef }) {
   const { onContextMenu: unusedContextMenu, ...handlers } = gesture.handlers;
   const moved = gesture.position.x !== 0 || gesture.position.y !== 0;
   return <>
-    <button ref={element} className="landing-writing-set" aria-label="Open text editor with the quill" aria-describedby={description}
+    <button ref={node => {element.current = node; editorLauncher.current = node;}} className="landing-writing-set" aria-label="Open text editor with the quill" aria-describedby={description}
       style={{ transform: `translateX(-50%) translate(${gesture.position.x}px, ${gesture.position.y}px)` }} {...handlers}
       onFocus={() => setWritingInteracting(true)} onBlur={() => setWritingInteracting(false)}
       onKeyDown={event => {

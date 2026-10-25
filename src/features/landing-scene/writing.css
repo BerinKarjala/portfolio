@@ -19,14 +19,13 @@
 .writing-footer span { flex: 1; font-size: .8rem; }
 .writing-footer button { padding: .4rem .75rem; }
 .writing-editor :is(.writing-help, .writing-save-status) { font-size: .75rem; line-height: 1.4; margin-top: .4rem; }
-.landing-card:has(.writing-editor) { width: min(calc(100vw - .75rem), 30rem); padding: 1rem; }
+.landing-card:has(.writing-editor) .landing-card-surface { padding: 1rem; }
 @media (max-width: 45rem) {
-  .landing-card:has(.writing-editor) { padding: .75rem; }
+  .landing-card:has(.writing-editor) .landing-card-surface { padding: .75rem; }
   .writing-toolbar { gap: 2px; }
   .writing-toolbar select { width: 76px; font-size: .75rem; }
   .writing-toolbar .writing-numbered { display: none; }
   .writing-editor .pb-rich-surface { min-height: 18rem; max-height: 48svh; }
-  .landing-stage:has(.writing-editor) :is(.landing-card--left, .landing-card--right) { top: -6rem; }
 }
 html[data-studio-theme] .studio-canvas .writing-title { color: var(--studio-text); background: var(--studio-surface); }
 html[data-studio-theme] .studio-canvas .writing-editor .pb-rich-surface { color: var(--studio-text); background: var(--studio-surface); }

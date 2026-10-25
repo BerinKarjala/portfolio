@@ -5,10 +5,12 @@ import { MemoryRouter } from 'react-router-dom';
 import { afterEach, expect, it, vi } from 'vitest';
 vi.mock('../client.js', () => ({ default: { fetch: vi.fn().mockRejectedValue(new Error('offline')) } }));
 import HomePage from './Home';
+import WeatherWidget from '../features/landing-scene/WeatherWidget';
 import { SceneProvider, useScene } from '../features/landing-scene/SceneContext';
-function Home() { return <SceneProvider><HomePage /></SceneProvider>; }
+function Home() { return <SceneProvider><WeatherWidget /><HomePage /></SceneProvider>; }
 import sanityClient from '../client.js';
-afterEach(cleanup);
+beforeEach(() => vi.stubGlobal('matchMedia', query => ({ matches: query.includes('reduced-motion'), addEventListener() {}, removeEventListener() {} })));
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 it('keeps bundled projects usable offline and exposes only the center destination', async () => {
   render(<HelmetProvider><MemoryRouter><Home /></MemoryRouter></HelmetProvider>);
   expect(screen.getByRole('heading', { level: 1, name: 'Berin Karjala' })).not.toBeNull();
@@ -38,7 +40,7 @@ it('normalizes local application URLs and rejects unsafe CMS destinations', asyn
 // Rotation runs only while the scene is idle. Studio is a real nonmodal utility.
 import { act } from '@testing-library/react';
 import { beforeEach, describe } from 'vitest';
-import { StudioProvider, MoonLauncher } from '../features/css-studio/Studio';
+import { StudioProvider } from '../features/css-studio/Studio';
 vi.mock('../utils/idleCallback', () => ({ runWhenIdle: callback => { callback(); return 1; }, cancelIdle: vi.fn() }));
 
 describe('idle carousel rotation', () => {
@@ -52,7 +54,7 @@ describe('idle carousel rotation', () => {
   });
   afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); });
   async function scene() {
-    render(<HelmetProvider><MemoryRouter><StudioProvider><MoonLauncher /><Home /><button>Outside scene</button></StudioProvider></MemoryRouter></HelmetProvider>);
+    render(<HelmetProvider><MemoryRouter><StudioProvider><Home /><button>Outside scene</button></StudioProvider></MemoryRouter></HelmetProvider>);
     await act(async () => {});
   }
   const advance = milliseconds => act(() => vi.advanceTimersByTime(milliseconds));
@@ -60,7 +62,7 @@ describe('idle carousel rotation', () => {
 
   it('advances while idle, keeps the center fixed throughout a Studio session, then waits a full interval', async () => {
     await scene();
-    advance(8000);
+    advance(12000);
     centered('Minesweeper');
     fireEvent.click(screen.getByRole('button', { name: 'Theme Studio' }));
     fireEvent.focus(screen.getByRole('button', { name: 'Outside scene' }));
@@ -68,7 +70,7 @@ describe('idle carousel rotation', () => {
     centered('Minesweeper');
     expect(screen.getByRole('button', { name: 'Next project' }).disabled).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Close tools' }));
-    advance(7999);
+    advance(11999);
     centered('Minesweeper');
     advance(1);
     centered('HTML Page Builder');
@@ -76,34 +78,33 @@ describe('idle carousel rotation', () => {
 
   it('supports an explicit pause and keeps keyboard interaction stable until rotation is restarted', async () => {
     await scene();
-    fireEvent.click(screen.getByRole('button', { name: 'Pause carousel' }));
-    advance(16000);
+    fireEvent.click(document.querySelector('.landing-card--center'));
+    advance(24000);
     centered('Sudoku Solver');
-    fireEvent.click(screen.getByRole('button', { name: 'Start carousel' }));
-    advance(8000);
+    fireEvent.click(screen.getByRole('button', { name: 'Next project' }));
     centered('Minesweeper');
     fireEvent.focus(screen.getByRole('link', { name: 'Open Minesweeper' }));
     fireEvent.blur(screen.getByRole('link', { name: 'Open Minesweeper' }));
-    advance(16000);
+    advance(24000);
     centered('Minesweeper');
   });
 
   it('pauses for hover and hidden tabs and restarts with a fresh delay', async () => {
     await scene();
     const gallery = screen.getByRole('region', { name: 'Project gallery' });
-    fireEvent.pointerEnter(gallery, { pointerType: 'mouse' });
-    advance(16000);
+    fireEvent.pointerOver(gallery.querySelector('.landing-card--center'), { pointerType: 'mouse' });
+    advance(24000);
     centered('Sudoku Solver');
-    fireEvent.pointerLeave(gallery, { pointerType: 'mouse' });
-    advance(8000);
+    fireEvent.pointerOut(gallery.querySelector('.landing-card--center'), { pointerType: 'mouse' });
+    advance(12000);
     centered('Minesweeper');
     const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
     fireEvent(document, new Event('visibilitychange'));
-    advance(16000);
+    advance(24000);
     centered('Minesweeper');
     visibility.mockReturnValue('visible');
     fireEvent(document, new Event('visibilitychange'));
-    advance(8000);
+    advance(12000);
     centered('HTML Page Builder');
     visibility.mockRestore();
   });
@@ -112,23 +113,23 @@ describe('idle carousel rotation', () => {
     await scene();
     motion.matches = true;
     act(() => motion.dispatchEvent(new Event('change')));
-    advance(16000);
+    advance(24000);
     centered('Sudoku Solver');
-    expect(screen.getByRole('button', { name: 'Start carousel' }).disabled).toBe(true);
+    expect(screen.queryByRole('button', { name: 'Start carousel' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Next project' }));
     centered('Minesweeper');
   });
 
   it('holds a calendar in the center until Close and restores its launcher focus', async () => {
     await scene();
-    fireEvent.click(screen.getByRole('button', { name: 'Open calendar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Calendar', exact: true }));
     expect(screen.getByRole('heading', { name: 'Calendar', exact: true })).not.toBeNull();
     advance(24000);
     expect(screen.getByRole('heading', { name: 'Calendar', exact: true })).not.toBeNull();
     expect(screen.getByRole('button', { name: 'Next project' }).disabled).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Close calendar' }));
     centered('Sudoku Solver');
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Open calendar' }));
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Calendar', exact: true }));
     expect(screen.queryByRole('heading', { name: 'Calendar', exact: true })).toBeNull();
   });
 
@@ -144,10 +145,10 @@ it('restores focus to the inline calendar launcher if the original launcher is g
     const scene = useScene();
     return <button onClick={() => scene.openCalendar(document.createElement('button'))}>Simulate removed launcher</button>;
   }
-  render(<HelmetProvider><MemoryRouter><SceneProvider><HomePage /><RemovedLauncher /></SceneProvider></MemoryRouter></HelmetProvider>);
+  render(<HelmetProvider><MemoryRouter><SceneProvider><WeatherWidget /><HomePage /><RemovedLauncher /></SceneProvider></MemoryRouter></HelmetProvider>);
   fireEvent.click(screen.getByRole('button', { name: 'Simulate removed launcher' }));
   fireEvent.click(screen.getByRole('button', { name: 'Close calendar' }));
-  expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Open calendar' }));
+  expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Calendar', exact: true }));
 });
 it('keeps the Studio card centered and its launcher reachable when late CMS projects arrive', async () => {
   let resolve;
@@ -163,12 +164,12 @@ it('keeps the Studio card centered and its launcher reachable when late CMS proj
 it('opens the text editor in the center and retains drafts while switching utilities', () => {
   localStorage.clear();
   render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);
-  const launcher = screen.getByRole('button', { name: 'Open text editor', exact: true });
+  const launcher = screen.getByRole('button', { name: 'Open text editor with the quill', exact: true });
   fireEvent.click(launcher);
   expect(screen.getByRole('heading', { name: 'Text Editor', exact: true })).not.toBeNull();
   fireEvent.change(screen.getByRole('textbox', { name: 'Document title' }), { target: { value: 'Keep my draft' } });
   fireEvent.paste(screen.getByRole('textbox', { name: 'Writing area' }), { clipboardData: { getData: () => 'A quiet forest' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Open calendar' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Calendar', exact: true }));
   expect(screen.queryByRole('textbox', { name: 'Writing area' })).toBeNull();
   fireEvent.click(launcher);
   expect(screen.getByRole('textbox', { name: 'Document title' }).value).toBe('Keep my draft');

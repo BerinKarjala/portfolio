@@ -1,63 +1,77 @@
 .landing-scene.forest-bg {
   --forest-overlay: linear-gradient(180deg, #031f0b25, #031f0b55);
-  min-height: calc(100svh - 6rem);
-  padding: clamp(3rem, 8vh, 7rem) 0 4rem;
+  min-height: calc(100svh - var(--landing-header-height, 0px));
+  padding: clamp(3rem, 8vh, 7rem) 0 0;
+  display: flex;
+  background-attachment: scroll;
 }
-.landing-gallery { width: 100%; margin: auto; }
-.landing-stage { position: relative; width: min(100%, 74rem); min-height: 31rem; margin: auto; perspective: 75rem; }
-.landing-card { position: absolute; top: 0; left: 50%; width: min(68vw, 25rem); min-height: 27rem; padding: 1.25rem; border: 1px solid #369466; border-radius: 1.5rem; background: linear-gradient(135deg, #005733f5, #003820fa); box-shadow: 0 1rem 3rem #001e1570, inset 0 1px 2px #a5f3c640; }
-.landing-card--center { z-index: 2; transform: translateX(-50%); }
+.landing-gallery { width: 100%; min-width: 0; display: flex; flex-direction: column; container-type: inline-size; }
+.landing-stage-frame { --landing-card-width: min(calc(100cqw - 8rem), 25rem); position: relative; width: min(100%, 74rem); margin: 0 auto 6rem; flex-shrink: 0; }
+.landing-stage { position: relative; width: 100%; min-height: 0; padding-block: .5rem; perspective: 75rem; overflow-x: clip; overflow-y: visible; }
+.landing-card { position: absolute; top: .5rem; left: 50%; width: var(--landing-card-width); border: 1px solid #369466; border-radius: 1.5rem; background: linear-gradient(135deg, #005733, #003820); box-shadow: 0 1rem 3rem #001e1570, inset 0 1px 2px #a5f3c640; overflow-wrap: anywhere; transition: transform var(--landing-slide-duration) ease-in-out, opacity var(--landing-slide-duration) ease-in-out; }
+.landing-card--center { position: relative; top: 0; z-index: 2; transform: translateX(-50%); }
 .landing-card--left { transform: translateX(-139%) translateZ(-9rem) rotateY(25deg); }
 .landing-card--right { transform: translateX(39%) translateZ(-9rem) rotateY(-25deg); }
-.landing-card--hidden { display: none; }
+.landing-card--exit-left { transform: translateX(-230%) translateZ(-18rem); opacity: 0; pointer-events: none; }
+.landing-card--exit-right { transform: translateX(130%) translateZ(-18rem); opacity: 0; pointer-events: none; }
+.landing-card--hidden { transform: translateX(var(--landing-hidden-x, 130%)) translateZ(-18rem); opacity: 0; visibility: hidden; pointer-events: none; transition: none; }
+.landing-card-surface { position: static; display: block; width: 100%; max-width: none; min-height: 27rem; margin: 0; padding: 1.25rem; border: 0; color: inherit; background: transparent; overflow: visible; }
 .landing-card h2 { font-size: 1.65rem; line-height: 1.25; margin: 1rem 0 .65rem; }
 .landing-card p { line-height: 1.6; }
-.landing-preview { display: grid; place-items: center; background: #00271a; border: 1px solid #256a47; border-radius: .75rem; aspect-ratio: 1.1; overflow: clip; }
-.landing-preview img { width: 100%; height: 100%; object-fit: contain; }
+.landing-preview { display: grid; place-items: center; background: #00271a; border: 1px solid #256a47; border-radius: .75rem; aspect-ratio: 1.1; overflow: clip; touch-action: pan-x pinch-zoom; }
+.landing-preview img { width: 100%; height: 100%; object-fit: cover; }
 .landing-card a { display: inline-flex; align-items: center; min-height: 44px; gap: 1rem; margin-top: .75rem; text-decoration: underline; text-underline-offset: .25rem; }
-.landing-controls { display: flex; justify-content: center; align-items: center; gap: 1.25rem; margin-top: 1rem; }
-.landing-controls button { min-width: 44px; min-height: 44px; border: 1px solid #8fd4a7; border-radius: .75rem; background: #003b27; font-size: 1.5rem; }
-.landing-controls p, .landing-status { background: #002e20; border-radius: .5rem; padding: .5rem 1rem; }
-.landing-status { width: fit-content; max-width: calc(100% - 2rem); margin: 1rem auto 0; text-align: center; font-size: .875rem; }
-/* Finishing CMS loading must not shift a launcher during its pointer press. */
-.landing-status-slot { display: flow-root; min-height: 5rem; }
+.landing-card-chrome { min-height: 44px; display: flex; justify-content: flex-end; touch-action: pan-x pinch-zoom; }
+.landing-expand, .landing-exit { min-width: 44px; min-height: 44px; border: 1px solid #8fd4a7; border-radius: .5rem; background: #003b27; padding: .35rem .6rem; font-size: .875rem; }
+.landing-select-preview { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit; background: transparent; border: 0; cursor: pointer; touch-action: pan-x pinch-zoom; }
+.landing-controls { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: calc(var(--landing-card-width) + 7rem); max-width: calc(100% - 1rem); display: flex; justify-content: space-between; pointer-events: none; z-index: 3; }
+.landing-controls button { pointer-events: auto; flex: 0 0 44px; min-width: 44px; min-height: 44px; border: 1px solid #8fd4a7; border-radius: .75rem; background: #003b27; color: #eff8e7; font-size: 1.5rem; }
+.landing-gallery-status { position: absolute; top: 100%; left: 0; width: 100%; min-height: 3rem; pointer-events: none; }
+.landing-status { background: #002e20; color: #eff8e7; border-radius: .5rem; padding: .5rem 1rem; width: fit-content; max-width: calc(100% - 2rem); margin: .5rem auto 0; text-align: center; font-size: .8rem; }
 .landing-scene :focus-visible { outline: 3px solid #fff5d5; outline-offset: 4px; }
-@media (max-width: 45rem) {
-  .landing-stage { min-height: 30rem; }
-  .landing-card { padding: .875rem; min-height: 28rem; }
-  .landing-card h2 { font-size: 1.4rem; }
-  .landing-card--left { transform: translateX(-88%) translateZ(-18rem) rotateY(34deg); }
-  .landing-card--right { transform: translateX(-12%) translateZ(-18rem) rotateY(-34deg); }
-}
-@media (forced-colors: active) { .landing-card { border: 2px solid CanvasText; } }
-@media (max-width: 70rem) {
-  .landing-card--left { transform: translateX(-75%) translateZ(-18rem) rotateY(25deg); }
-  .landing-card--right { transform: translateX(-25%) translateZ(-18rem) rotateY(-25deg); }
-}
-.landing-card { background: linear-gradient(135deg, #005733, #003820); }
-.landing-card { transition: transform 650ms ease, opacity 650ms ease; }
-.landing-card--hidden { display: block; opacity: 0; visibility: hidden; pointer-events: none; transform: translateX(-50%) translateZ(-25rem); }
-.landing-card--center { position: relative; }
-.landing-rotation { margin: .75rem auto; text-align: center; max-width: 32rem; padding: 0 1rem; }
-.landing-rotation button { min-height: 44px; padding: .5rem 1rem; border: 1px solid #8fd4a7; border-radius: .75rem; background: #003b27; }
-.landing-rotation p { font-size: .8rem; margin-top: .5rem; padding: .25rem .5rem; background: #002e20; border-radius: .5rem; }
 .landing-scene button:disabled { opacity: .65; cursor: default; }
-@media (prefers-reduced-motion: reduce) { .landing-card { transition: none; } }
-.landing-scene.forest-bg { padding-bottom: 0; }
-.landing-desk { position: relative; width: min(100%, 90rem); margin: 6rem auto 0; }
+.landing-desk { position: relative; width: min(100%, 90rem); margin: auto auto 0; pointer-events: none; }
 .landing-desk > img { display: block; width: 100%; height: auto; }
-@media (max-width: 45rem) {
-  .landing-desk { min-height: 15rem; }
-  .landing-desk > img { height: 15rem; object-fit: cover; }
-}
-.landing-writing-set { position: absolute; left: 50%; top: 25%; width: clamp(5rem, 9vw, 10rem); height: clamp(5rem, 9vw, 10rem); transform: translateX(-50%); }
-.landing-writing-set img { position: absolute; }
+.landing-writing-set { position: absolute; left: 50%; top: 25%; width: clamp(5rem, 9vw, 10rem); height: clamp(5rem, 9vw, 10rem); pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; }
+.landing-writing-set:active { cursor: grabbing; }
+.landing-writing-set img { position: absolute; user-select: none; }
 .landing-inkwell { width: 100%; bottom: 0; }
 .landing-quill { width: 160%; max-width: none; left: 21%; bottom: 40%; }
-.landing-utility-launchers { display: flex; justify-content: center; gap: .75rem; margin: .75rem 0; }
-.landing-utility-launchers button, .landing-utility button { min-height: 44px; min-width: 44px; padding: .3rem .5rem; border: 1px solid #398761; border-radius: .5rem; background: #004b30; }
-.landing-utility-heading { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.landing-writing-reset { pointer-events: auto; position: absolute; right: .5rem; bottom: .5rem; padding: .5rem; min-height: 44px; border: 1px solid #8fd4a7; border-radius: .5rem; background: #003b27; }
+.landing-stage-frame--utility { --landing-card-width: min(calc(100cqw - .5rem), 30rem); }
+.landing-stage-frame:has(.landing-calendar) { --landing-card-width: min(calc(100cqw - 2px), 28rem); }
+.landing-utility button { min-height: 44px; min-width: 44px; padding: .3rem .5rem; border: 1px solid #398761; border-radius: .5rem; background: #004b30; }
+.landing-utility-heading { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .25rem .5rem; }
 .landing-utility-heading h2 { margin: 0 0 .75rem; }
+.landing-card:has(.landing-calendar) .landing-card-surface { padding: .25rem; }
+.landing-calendar .calendar-month-controls { padding: .25rem .5rem; }
+.landing-card-surface--expanded:modal { position: fixed; inset: 0; margin: 0; width: 100%; height: 100dvh; max-width: none; max-height: none; min-height: 0; border: 0; border-radius: 0; padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); background: linear-gradient(135deg, #005733, #003820); color: #eff8e7; overflow: auto; overscroll-behavior: contain; }
+.landing-card-surface--expanded::backdrop { background: #001e15d9; }
+.landing-card-surface--expanded .landing-card-chrome { position: sticky; top: 0; z-index: 5; background: inherit; }
+.landing-card-surface--expanded > :not(.landing-card-chrome) { max-width: 70rem; margin-inline: auto; }
+.landing-card-surface--expanded .landing-preview { max-height: 45dvh; aspect-ratio: 16/9; }
+.landing-card-surface--expanded:has(.landing-calendar) { padding: .5rem; }
+.landing-card-surface--expanded .landing-calendar { max-width: 40rem; margin-inline: auto; }
+.landing-card-surface--expanded .writing-editor .pb-rich-surface { min-height: 12rem; max-height: 55dvh; }
+.studio-canvas:has(.landing-scene) { position: relative; }
+.studio-canvas:has(.landing-scene) > .studio-photo-attribution { position: absolute; bottom: .5rem; left: .5rem; margin: 0; max-width: 45%; }
+@media (max-width: 45rem) {
+  .landing-stage { min-height: 0; }
+  .landing-card-surface { padding: .875rem; min-height: 28rem; }
+  .landing-card h2 { font-size: 1.4rem; }
+  .landing-card--left { transform: translateX(-160%) translateZ(-18rem) rotateY(34deg); }
+  .landing-card--right { transform: translateX(60%) translateZ(-18rem) rotateY(-34deg); }
+  .landing-stage-frame--utility .landing-controls { visibility: hidden; }
+  .landing-desk > img { height: 15rem; object-fit: cover; }
+}
+@media (max-width: 30rem) { .calendar-dates { padding-left: 0; padding-right: 0; } }
+@media (min-width: 30rem) { .landing-card:has(.landing-calendar) .landing-card-surface { padding: 1rem; } }
+@media (prefers-reduced-motion: reduce) { .landing-card { transition: none; } }
+@media (forced-colors: active) { .landing-card { border: 2px solid CanvasText; } }
+html[data-studio-theme] .studio-canvas :is(.landing-card, .landing-card-surface--expanded:modal, .landing-status, .calendar-dates, .calendar-selected) { background: var(--studio-surface); color: var(--studio-text); }
+html[data-studio-theme] .studio-canvas .landing-calendar .calendar-dates button { background: transparent; color: var(--studio-text) !important; }
+html[data-studio-theme] .studio-canvas .calendar-dates button[aria-pressed="true"] { border-color: var(--studio-link); }
+html[data-studio-theme] .studio-canvas .calendar-dates button:focus-visible { outline-color: var(--studio-link); }
 .calendar-month-controls { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: .25rem; margin: .5rem 0; }
 .calendar-month-controls h3 { text-align: center; }
 .calendar-month-controls button:last-child { grid-column: 1 / -1; }
@@ -71,47 +85,3 @@
 .calendar-other-month { color: #5a6055; }
 .calendar-selected { margin-top: .75rem; padding: .75rem; border-radius: .65rem; background: #f5ebd4; color: #192d20; }
 .calendar-selected p { font-size: .8rem; margin-top: .5rem; }
-/* Seven 44px date targets plus the shell fit 320px screens. */
-.landing-card:has(.landing-calendar) { width: min(calc(100vw - .5rem), 28rem); padding: .25rem; }
-.landing-calendar .calendar-month-controls, .landing-utility-heading { padding: .25rem .5rem; }
-@media (min-width: 30rem) { .landing-card:has(.landing-calendar) { padding: 1rem; } }
-.landing-card { overflow-wrap: anywhere; }
-@media (max-width: 30rem) {
-  .landing-card:has(.landing-calendar) { width: calc(100vw - 2px); padding: 0; }
-  .calendar-dates { padding-left: 0; padding-right: 0; }
-}
-/* Adjacent cards intentionally extend beyond the scene's narrow viewing window. */
-.landing-stage { overflow-x: clip; overflow-y: visible; }
-@media (max-width: 45rem) {
-  .landing-card--left { transform: translateX(-160%) translateZ(-18rem) rotateY(34deg); }
-  .landing-card--right { transform: translateX(60%) translateZ(-18rem) rotateY(-34deg); }
-  .landing-stage:has(.writing-editor) :is(.landing-card--left, .landing-card--right) { top: 2rem; }
-}
-/* Decorative cutouts must never intercept the real scene controls. */
-.landing-desk { pointer-events: none; }
-.landing-writing-set { pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; }
-.landing-writing-set:active { cursor: grabbing; }
-.landing-writing-set img { user-select: none; }
-.landing-writing-reset { pointer-events: auto; position: absolute; right: .5rem; bottom: .5rem; padding: .5rem; min-height: 44px; border: 1px solid #8fd4a7; border-radius: .5rem; background: #003b27; }
-.landing-controls, .landing-rotation, .landing-utility-launchers { position: relative; z-index: 3; }
-.landing-preview img { object-fit: cover; }
-/* Paint the forest over the entire scrollable scene, including the desk. */
-.landing-scene.forest-bg { background-attachment: scroll; }
-/* Use Studio's existing readable tokens when a visitor applies a theme. */
-html[data-studio-theme] .studio-canvas :is(.landing-card, .landing-controls p, .landing-rotation p, .landing-status, .calendar-dates, .calendar-selected) {
-  background: var(--studio-surface);
-  color: var(--studio-text);
-}
-html[data-studio-theme] .studio-canvas .landing-calendar .calendar-dates button {
-  background: transparent;
-  color: var(--studio-text) !important;
-}
-html[data-studio-theme] .studio-canvas .calendar-dates button[aria-pressed="true"] {
-  border-color: var(--studio-link);
-}
-html[data-studio-theme] .studio-canvas .calendar-dates button:focus-visible { outline-color: var(--studio-link); }
-@media (max-width: 30rem) {
-  .landing-card:has(.landing-calendar) { width: min(calc(100vw - 2px), 20rem); }
-  /* Date targets need most of a narrow screen; reveal adjacent cards above it. */
-  .landing-stage:has(.landing-calendar) :is(.landing-card--left, .landing-card--right) { top: -6rem; }
-}
