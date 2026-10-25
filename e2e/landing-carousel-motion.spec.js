@@ -4,15 +4,7 @@ test.use({video: 'on'});
 test.describe.configure({mode: 'default'});
 test.beforeEach(async ({page}) => {
   await page.route('**/*sanity.io/**', route => route.fulfill({json: {result: []}}));
-  // Keep animation timestamps and RAF native: they must share the CSS clock.
-  await page.addInitScript(now => {
-    const NativeDate = Date;
-    window.Date = new Proxy(NativeDate, {
-      construct(target, args) {return Reflect.construct(target, args.length ? args : [now]);},
-      apply() {return new NativeDate(now).toString();},
-      get(target, name) {return name === 'now' ? () => now : Reflect.get(target, name);},
-    });
-  }, new Date('2026-10-25T16:00:00-04:00').getTime());
+  // Keep Date, animation timestamps, RAF and lazy-route scheduling native.
 });
 async function settle(page) {
   await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
@@ -23,6 +15,8 @@ async function settle(page) {
 }
   for (const width of [390, 1440, 3840]) {
     test(`gradual adjacent motion and wraparound at ${width}px`, async ({page}, info) => {
+      // Budget for four lossless captures/video at 4K; UI assertions are unchanged.
+      test.setTimeout(90000);
       await page.setViewportSize({width, height: width === 3840 ? 2160 : 900});
       await page.emulateMedia({reducedMotion: 'no-preference'});
       await page.goto('/'); await settle(page);
@@ -37,19 +31,22 @@ async function settle(page) {
         requestAnimationFrame(sample);
       }));
       await page.getByRole('button', {name: 'Previous project'}).click();
+      // Hold the next idle cycle while slow 4K capture runs; current motion continues.
+      await page.locator('.landing-card--center').focus();
       await info.attach(`motion-start-${width}`, {body: await page.screenshot(), contentType: 'image/png'});
       await page.waitForTimeout(500);
       await info.attach(`motion-middle-${width}`, {body: await page.screenshot(), contentType: 'image/png'});
       const frames = await samplesPromise;
+      await info.attach(`motion-transforms-${width}`, {body: Buffer.from(JSON.stringify(frames)), contentType: 'application/json'});
       const poses = new Set(frames.map(frame => frame.transform));
       expect(poses.size).toBeGreaterThan(3);
       const changing = frames.filter(frame => frame.transform !== frames[0].transform && frame.transform !== frames.at(-1).transform);
       expect(changing.at(-1).ms - changing[0].ms).toBeGreaterThan(700);
       expect(await first.evaluate(node => getComputedStyle(node).transitionDuration)).toContain('1.6s');
-      await info.attach(`motion-transforms-${width}`, {body: Buffer.from(JSON.stringify(frames)), contentType: 'application/json'});
       await expect(page.getByRole('heading', {name: 'CSS Theme Studio', exact: true})).toBeVisible();
       await info.attach(`motion-settled-${width}`, {body: await page.screenshot(), contentType: 'image/png'});
       await page.getByRole('button', {name: 'Next project'}).click();
+      await page.locator('.landing-card--center').focus();
       await page.waitForTimeout(1700);
       await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
       await info.attach(`motion-wrap-return-${width}`, {body: await page.screenshot(), contentType: 'image/png'});

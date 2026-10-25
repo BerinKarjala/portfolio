@@ -505,6 +505,8 @@ export function RichTextEditor({
         suppressContentEditableWarning
         spellCheck
         onInput={reconcile}
+        onKeyUp={preserveSelectionOnBlur ? capture : undefined}
+        onPointerUp={preserveSelectionOnBlur ? capture : undefined}
         onCompositionStart={() => {
           composing.current = true;
           capture();

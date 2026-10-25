@@ -270,4 +270,3 @@ test('short viewports and enlarged text scroll through long content to the desk'
   await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
   await deskEdge(page);
 });
-

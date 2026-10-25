@@ -261,6 +261,8 @@ test('an editor session holds the same project while idle and restores it on clo
   await page.clock.install();
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'Open Sudoku Solver' })).toBeVisible();
+  // Allow mount effects to register the cycle before advancing its clock.
+  await page.clock.runFor(100);
   await page.clock.fastForward(12000);
   await expect(page.getByRole('link', { name: 'Open Minesweeper' })).toBeVisible();
   await page.getByRole('button', { name: 'Open text editor with the quill', exact: true }).click();

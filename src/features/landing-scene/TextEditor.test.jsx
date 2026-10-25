@@ -45,7 +45,7 @@ it('preserves unreadable saved data and still permits draft editing/export', () 
   expect(screen.getByRole('button', { name: 'Download', exact: true }).disabled).toBe(false);
   expect(localStorage.getItem(DOCUMENT_KEY)).toBe('{corrupt');
 });
-it('retains the formatting selection when modal/toolbar focus collapses the inactive DOM selection', () => {
+it.each(['selectionchange', 'keyup', 'pointerup'])('retains the %s formatting selection when modal/toolbar focus collapses the inactive DOM selection', eventType => {
   render(<WritingProvider><TextEditor/><button>Outside editor</button></WritingProvider>);
   paste('A quiet forest');
   const sheet = screen.getByRole('textbox', {name: 'Writing area'});
@@ -54,7 +54,9 @@ it('retains the formatting selection when modal/toolbar focus collapses the inac
   const range = document.createRange();
   range.setStart(text, 8); range.setEnd(text, 14);
   const selection = window.getSelection();
-  act(() => {selection.removeAllRanges(); selection.addRange(range); document.dispatchEvent(new Event('selectionchange'));});
+  act(() => {selection.removeAllRanges(); selection.addRange(range);});
+  if (eventType === 'selectionchange') act(() => document.dispatchEvent(new Event('selectionchange')));
+  else fireEvent(sheet, new Event(eventType, {bubbles: true}));
   screen.getByRole('button', {name: 'Outside editor'}).focus();
   act(() => {selection.collapse(text, 14); document.dispatchEvent(new Event('selectionchange'));});
   fireEvent.click(screen.getByRole('button', {name: 'Bold', exact: true}));

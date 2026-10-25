@@ -36,9 +36,9 @@
 .landing-desk { position: relative; width: min(100%, 90rem); margin: auto auto 0; pointer-events: none; }
 /* The unchanged 2172×724 asset's alpha ends at row 679. Clip its transparent
    tail inside the art frame, preserving image ratio and writing-set overflow. */
-.landing-desk-art { aspect-ratio: 2172 / 680; overflow: clip; }
-.landing-desk-art > img { display: block; width: 100%; height: auto; }
-.landing-writing-set { position: absolute; left: 50%; top: 25%; width: clamp(5rem, 9vw, 10rem); height: clamp(5rem, 9vw, 10rem); pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; }
+.landing-desk-art { position: relative; aspect-ratio: 2172 / 680; overflow: clip; }
+.landing-desk-art > img { position: absolute; top: 0; left: 0; display: block; width: 100%; height: auto; }
+.landing-writing-set { position: absolute; left: 50%; top: 25%; width: min(clamp(5rem, 9vw, 10rem), 38vw); height: min(clamp(5rem, 9vw, 10rem), 38vw); pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; }
 .landing-writing-set:active { cursor: grabbing; }
 .landing-writing-set img { position: absolute; user-select: none; }
 .landing-inkwell { width: 100%; bottom: 0; }
