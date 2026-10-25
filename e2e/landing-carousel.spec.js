@@ -5,7 +5,7 @@ const sizes = [[320, 740], [390, 844], [768, 1024], [1440, 900], [1920, 1080], [
 const fixtureTime = new Date('2026-10-25T16:00:00-04:00');
 test.beforeEach(async ({page}) => {
   await page.route('**/*sanity.io/**', route => route.fulfill({json: {result: []}}));
-  await page.clock.setFixedTime(fixtureTime);
+  // Use native event/timer timestamps for the state-retention and gesture cases.
 });
 async function settle(page) {
   await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
@@ -69,7 +69,8 @@ for (const [width, height] of sizes) {
       expect(await arrow.evaluate(node => parseFloat(getComputedStyle(node).outlineWidth))).toBeGreaterThanOrEqual(2);
     }
     expect(await page.locator('.landing-utility-launchers,.landing-rotation,.landing-status-slot').count()).toBe(0);
-    const capture = async label => info.attach(`${label}-${width}-reduced`, {body: await page.screenshot({fullPage: (await page.locator('dialog[aria-modal="true"]').count()) === 0}), contentType: 'image/png'});
+    await card.focus(); // Keep capture/encoding time out of the idle-cadence test.
+    const capture = async label => info.attach(`${label}-${width}-reduced`, {body: await page.screenshot({scale: 'css', fullPage: (await page.locator('dialog[aria-modal="true"]').count()) === 0}), contentType: 'image/png'});
     await capture('browsing');
     await card.getByRole('heading', {name: 'Sudoku Solver'}).dblclick();
     let dialog = await viewportCard(page, 'Sudoku Solver');
@@ -119,8 +120,23 @@ for (const [width, height] of sizes) {
     await expect(page.getByRole('textbox', {name: 'Writing area'})).toHaveCount(1);
     await capture('expanded-editor');
     // The retained editor selection must still drive the formatting command.
+    await page.evaluate(() => {
+      window.carouselInputLog = [];
+      for (const type of ['click', 'keyup', 'selectionchange', 'focusin']) document.addEventListener(type, event => {
+        const selection = window.getSelection();
+        window.carouselInputLog.push({type, target: event.target.getAttribute?.('aria-label') || event.target.tagName,
+          active: document.activeElement?.getAttribute('aria-label'), selected: selection?.toString(), prevented: event.defaultPrevented});
+      });
+    });
     await dialog.getByRole('button', {name: 'Bold', exact: true}).click();
-    await expect(sheet.locator('strong')).toHaveText('t');
+    try {await expect(sheet.locator('strong')).toHaveText('t');}
+    catch (error) {
+      const diagnostic = await page.evaluate(() => ({events: window.carouselInputLog, html: document.querySelector('[aria-label="Writing area"]').innerHTML,
+        alerts: [...document.querySelectorAll('[role="alert"]')].map(node => node.textContent)}));
+      console.log('CAROUSEL_EDITOR_DIAGNOSTIC', info.project.name, width, JSON.stringify(diagnostic));
+      await info.attach('editor-input-diagnostic', {body: Buffer.from(JSON.stringify(diagnostic)), contentType: 'application/json'});
+      throw error;
+    }
     await sheet.focus();
     await sheet.press('Escape');
     await expect(page.locator('dialog[aria-modal="true"]')).toHaveCount(0);
@@ -144,8 +160,10 @@ test('selection latches, arrow hover resumes the chosen direction, and utilities
   const previous = page.getByRole('button', {name: 'Previous project'});
   await previous.hover(); await previous.click();
   await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
+  await page.clock.runFor(100); // Flush React's post-commit timer registration.
   await page.clock.fastForward(12000);
   await expect(page.getByRole('heading', {name: 'CSS Theme Studio', exact: true})).toBeVisible();
+  await page.clock.runFor(100); // Flush React's post-commit timer registration.
   await page.clock.fastForward(12000);
   await expect(page.getByRole('link', {name: 'Open HTML Page Builder'})).toBeVisible();
   await page.getByRole('button', {name: 'Calendar', exact: true}).click();

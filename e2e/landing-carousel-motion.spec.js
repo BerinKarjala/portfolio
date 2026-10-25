@@ -33,9 +33,7 @@ async function settle(page) {
       await page.getByRole('button', {name: 'Previous project'}).click();
       // Hold the next idle cycle while slow 4K capture runs; current motion continues.
       await page.locator('.landing-card--center').focus();
-      await info.attach(`motion-start-${width}`, {body: await page.screenshot(), contentType: 'image/png'});
-      await page.waitForTimeout(500);
-      await info.attach(`motion-middle-${width}`, {body: await page.screenshot(), contentType: 'image/png'});
+      // Read native RAF without concurrent screenshot encoding blocking WebKit.
       const frames = await samplesPromise;
       await info.attach(`motion-transforms-${width}`, {body: Buffer.from(JSON.stringify(frames)), contentType: 'application/json'});
       const poses = new Set(frames.map(frame => frame.transform));
@@ -43,13 +41,21 @@ async function settle(page) {
       const changing = frames.filter(frame => frame.transform !== frames[0].transform && frame.transform !== frames.at(-1).transform);
       expect(changing.at(-1).ms - changing[0].ms).toBeGreaterThan(700);
       expect(await first.evaluate(node => getComputedStyle(node).transitionDuration)).toContain('1.6s');
+      // Replay the same adjacent direction for stills after the unimpeded sample.
+      await page.getByRole('button', {name: 'Next project'}).click();
+      await page.waitForTimeout(1700);
+      await page.getByRole('button', {name: 'Previous project'}).click();
+      await page.locator('.landing-card--center').focus();
+      await info.attach(`motion-start-${width}`, {body: await page.screenshot({scale: 'css'}), contentType: 'image/png'});
+      await page.waitForTimeout(500);
+      await info.attach(`motion-middle-${width}`, {body: await page.screenshot({scale: 'css'}), contentType: 'image/png'});
       await expect(page.getByRole('heading', {name: 'CSS Theme Studio', exact: true})).toBeVisible();
-      await info.attach(`motion-settled-${width}`, {body: await page.screenshot(), contentType: 'image/png'});
+      await info.attach(`motion-settled-${width}`, {body: await page.screenshot({scale: 'css'}), contentType: 'image/png'});
       await page.getByRole('button', {name: 'Next project'}).click();
       await page.locator('.landing-card--center').focus();
       await page.waitForTimeout(1700);
       await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
-      await info.attach(`motion-wrap-return-${width}`, {body: await page.screenshot(), contentType: 'image/png'});
+      await info.attach(`motion-wrap-return-${width}`, {body: await page.screenshot({scale: 'css'}), contentType: 'image/png'});
       if (width === 390) {
         await page.getByRole('button', {name: 'Next project'}).click();
         await page.getByRole('button', {name: 'Next project'}).click();
