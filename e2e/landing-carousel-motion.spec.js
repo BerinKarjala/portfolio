@@ -9,7 +9,7 @@ async function settle(page) {
   await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
   await page.evaluate(async () => {
     await document.fonts.ready;
-    await Promise.all([...document.images].map(image => image.decode().catch(() => {})));
+    await Promise.all([...document.querySelectorAll('.landing-card--center img,.landing-desk img')].map(image => image.decode().catch(() => {})));
   });
 }
   for (const width of [390, 1440, 3840]) {

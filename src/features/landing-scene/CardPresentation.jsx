@@ -29,7 +29,7 @@ export default function CardPresentation({expanded, title, onExpand, onExit, chi
   const exit = () => {dialog.current.close(); onExit();};
   return <dialog ref={dialog} open={expanded ? undefined : true}
     className={`landing-card-surface${expanded ? ' landing-card-surface--expanded' : ''}`}
-    role={expanded ? 'dialog' : 'group'} aria-label={title} aria-modal={expanded ? true : undefined}
+    aria-label={title} aria-modal={expanded ? true : undefined}
     onCancel={event => {event.preventDefault(); exit();}}
     onKeyDownCapture={event => {
       if (expanded && event.key === 'Escape') {event.preventDefault(); event.stopPropagation(); exit();}

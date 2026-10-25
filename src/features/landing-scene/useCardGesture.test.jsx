@@ -13,7 +13,7 @@ function setup() {
   const select = vi.fn(), expand = vi.fn();
   function Card() {
     const handlers = useCardGesture({select, expand});
-    return <div data-testid="card" {...handlers}><h2 data-card-gesture>Card preview</h2><a href="/project">Project action</a><input aria-label="Title"/><div contentEditable suppressContentEditableWarning>Editor text</div><div className="landing-calendar"><button>Date</button></div></div>;
+    return <div data-testid="card" {...handlers}><h2 data-card-gesture>Card preview</h2><p>Project description</p><a href="/project">Project action</a><input aria-label="Title"/><div contentEditable suppressContentEditableWarning>Editor text</div><div className="landing-calendar"><button>Date</button></div></div>;
   }
   render(<Card/>);
   return {card: screen.getByTestId('card'), preview: screen.getByText('Card preview'), select, expand};
@@ -86,4 +86,18 @@ it('rejects double taps separated by too much time or spatial drift', () => {
   tap(preview); vi.advanceTimersByTime(301); tap(preview, 2);
   vi.advanceTimersByTime(100); tap(preview, 3, 60, 100);
   expect(expand).not.toHaveBeenCalled(); expect(select).toHaveBeenCalledTimes(3);
+});
+it('selects ordinary description text without commandeering double-click text selection', () => {
+  const {select, expand} = setup();
+  fireEvent.click(screen.getByText('Project description'));
+  fireEvent.doubleClick(screen.getByText('Project description'));
+  expect(select).toHaveBeenCalledOnce(); expect(expand).not.toHaveBeenCalled();
+});
+it('clears a lost touch contact when the browser loses focus', () => {
+  const {preview, expand} = setup();
+  fireEvent.pointerDown(preview, pointer(1, 20, 100));
+  fireEvent.blur(window);
+  fireEvent.pointerDown(preview, pointer(2, 20, 100));
+  fireEvent.pointerUp(preview, pointer(2, 20, 20));
+  expect(expand).toHaveBeenCalledOnce();
 });

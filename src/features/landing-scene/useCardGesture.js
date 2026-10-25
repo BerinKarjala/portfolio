@@ -2,10 +2,12 @@ import {useEffect, useRef} from 'react';
 
 export const CARD_GESTURES = {swipe: 60, dominance: 1.5, swipeMs: 500, tapMs: 300, tapDrift: 24, jitter: 8};
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const interactive = target => !target.closest('[data-card-select]')
+  && !!target.closest('a,button,input,select,textarea,[contenteditable],.writing-editor,.landing-calendar');
 function eligible(event) {
   const target = event.target;
   if (target.closest('[data-card-select]')) return true;
-  if (target.closest('a,button,input,select,textarea,[contenteditable],.writing-editor,.landing-calendar')) return false;
+  if (interactive(target)) return false;
   return target === event.currentTarget || !!target.closest('[data-card-gesture]');
 }
 export default function useCardGesture({select, expand, disabled = false}) {
@@ -26,15 +28,16 @@ export default function useCardGesture({select, expand, disabled = false}) {
       if (contact.current && event.pointerId !== contact.current.id) {contact.current.invalid = true; lastTap.current = null;}
     };
     const release = event => touches.current.delete(event.pointerId);
+    const blur = () => {cancel(); touches.current.clear();};
     window.addEventListener('pointerdown', secondContact, true);
     window.addEventListener('pointerup', release, true);
     window.addEventListener('pointercancel', release, true);
-    window.addEventListener('blur', cancel);
+    window.addEventListener('blur', blur);
     return () => {
       window.removeEventListener('pointerdown', secondContact, true);
       window.removeEventListener('pointerup', release, true);
       window.removeEventListener('pointercancel', release, true);
-      window.removeEventListener('blur', cancel);
+      window.removeEventListener('blur', blur);
     };
   }, []);
   return {
@@ -79,7 +82,7 @@ export default function useCardGesture({select, expand, disabled = false}) {
     onPointerCancel: cancel,
     onLostPointerCapture: () => {if (contact.current) cancel();},
     onClickCapture: event => {
-      if (!eligible(event)) return;
+      if (interactive(event.target)) return;
       if (Date.now() < suppress.current) {event.preventDefault(); event.stopPropagation(); return;}
       if (!actions.current.disabled) actions.current.select();
     },

@@ -11,7 +11,7 @@ async function settle(page) {
   await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
   await page.evaluate(async () => {
     await document.fonts.ready;
-    await Promise.all([...document.images].map(image => image.decode().catch(() => {})));
+    await Promise.all([...document.querySelectorAll('.landing-card--center img,.landing-desk img')].map(image => image.decode().catch(() => {})));
   });
 }
 async function deskEdge(page) {
@@ -27,6 +27,7 @@ async function deskEdge(page) {
 async function viewportCard(page, name) {
   const dialog = page.getByRole('dialog', {name, exact: true});
   await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveAttribute('aria-modal', 'true');
   const viewport = page.viewportSize();
   const box = await dialog.boundingBox();
   expect(box).toMatchObject({x: 0, y: 0, width: viewport.width, height: viewport.height});
@@ -62,7 +63,7 @@ for (const [width, height] of sizes) {
       expect(await arrow.evaluate(node => parseFloat(getComputedStyle(node).outlineWidth))).toBeGreaterThanOrEqual(2);
     }
     expect(await page.locator('.landing-utility-launchers,.landing-rotation,.landing-status-slot').count()).toBe(0);
-    const capture = async label => info.attach(`${label}-${width}-reduced`, {body: await page.screenshot({fullPage: (await page.getByRole('dialog').count()) === 0}), contentType: 'image/png'});
+    const capture = async label => info.attach(`${label}-${width}-reduced`, {body: await page.screenshot({fullPage: (await page.locator('dialog[aria-modal="true"]').count()) === 0}), contentType: 'image/png'});
     await capture('browsing');
     await card.getByRole('heading', {name: 'Sudoku Solver'}).dblclick();
     let dialog = await viewportCard(page, 'Sudoku Solver');
@@ -104,7 +105,7 @@ for (const [width, height] of sizes) {
     await capture('expanded-editor');
     await sheet.focus();
     await sheet.press('Escape');
-    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(page.locator('dialog[aria-modal="true"]')).toHaveCount(0);
     await expect(sheet).toHaveText('A quiet forest draft');
     await expect(page.getByRole('button', {name: 'Undo', exact: true})).toBeEnabled();
     await page.getByRole('button', {name: 'Close text editor'}).click();
@@ -141,24 +142,24 @@ test('card gestures expand only eligible chrome and reject cancelled, multiple-c
   const send = (target, type, id, x, y) => target.dispatchEvent(type, {pointerId: id, pointerType: 'touch', button: 0, clientX: x, clientY: y});
   await send(preview, 'pointerdown', 1, 30, 150);
   await send(preview, 'pointercancel', 1, 30, 50);
-  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.locator('dialog[aria-modal="true"]')).toHaveCount(0);
   await send(preview, 'pointerdown', 2, 30, 150);
   await send(preview, 'pointerdown', 3, 60, 150);
   await send(preview, 'pointerup', 2, 30, 50);
   await send(preview, 'pointerup', 3, 60, 150);
-  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.locator('dialog[aria-modal="true"]')).toHaveCount(0);
   await send(preview, 'pointerdown', 4, 30, 150);
   await send(preview, 'pointerup', 4, 30, 50);
   await viewportCard(page, 'Sudoku Solver');
   await page.keyboard.press('Escape');
   await page.getByRole('button', {name: 'Calendar', exact: true}).click();
   await page.getByRole('button', {name: 'Next month'}).dblclick();
-  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.locator('dialog[aria-modal="true"]')).toHaveCount(0);
   await page.getByRole('button', {name: 'Close calendar'}).click();
   await page.getByRole('button', {name: 'Open text editor with the quill'}).click();
   await page.getByRole('textbox', {name: 'Writing area'}).fill('Select these words');
   await page.getByRole('textbox', {name: 'Writing area'}).dblclick();
-  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.locator('dialog[aria-modal="true"]')).toHaveCount(0);
 });
 
 test('expanded tools inherit light/dark high contrast and keep Exit reachable in short viewports', async ({page}) => {
@@ -176,5 +177,33 @@ test('expanded tools inherit light/dark high contrast and keep Exit reachable in
     await page.keyboard.press('Escape');
     await page.getByRole('button', {name: 'Close text editor'}).click();
   }
+});
+
+test('expanded Studio actions leave the modal before opening the existing tools', async ({page}) => {
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.goto('/'); await settle(page);
+  await page.getByRole('button', {name: 'Previous project'}).click();
+  await page.getByRole('button', {name: 'Expand CSS Theme Studio'}).click();
+  const dialog = await viewportCard(page, 'CSS Theme Studio');
+  await dialog.getByRole('button', {name: 'Open Theme Studio'}).click();
+  await expect(page.locator('dialog[aria-modal="true"]')).toHaveCount(0);
+  await expect(page.getByRole('button', {name: 'Close tools'})).toBeVisible();
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe('');
+  await page.getByRole('button', {name: 'Close tools'}).click();
+  await expect(page.getByRole('heading', {name: 'CSS Theme Studio', exact: true})).toBeVisible();
+});
+
+test('short viewports and enlarged text scroll through long content to the desk', async ({page}) => {
+  await page.route('**/*sanity.io/**', route => route.fulfill({json: {result: [{name: 'Sudoku Solver', link: '/projects/SudokuSolver', description: 'Long readable project content. '.repeat(35)}]}}));
+  await page.setViewportSize({width: 390, height: 400});
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.goto('/'); await settle(page);
+  await page.evaluate(() => {document.documentElement.style.fontSize = '200%';});
+  const action = page.getByRole('link', {name: 'Open Sudoku Solver'});
+  await action.scrollIntoViewIfNeeded();
+  await expect(action).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeGreaterThan(400);
+  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+  await deskEdge(page);
 });
 
