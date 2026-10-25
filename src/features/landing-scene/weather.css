@@ -18,7 +18,7 @@
 .scene-weather-object svg { width: 4rem; height: 4rem; }
 html[data-studio-theme] .studio-canvas .scene-weather { color: var(--studio-text); }
 @media (max-width: 45rem) {
-  .portfolio-nav:has(.scene-weather) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .5rem; align-items: start; }
+  .portfolio-nav:has(.scene-weather) { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr)); gap: .5rem; align-items: start; }
   .portfolio-nav:has(.scene-weather) > div:first-child { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem .25rem; }
   .portfolio-nav:has(.scene-weather) a { padding: .25rem; font-size: .875rem; }
   .portfolio-nav:has(.scene-weather) a:first-child { grid-column: 1 / -1; font-size: 1rem; letter-spacing: .08em; }

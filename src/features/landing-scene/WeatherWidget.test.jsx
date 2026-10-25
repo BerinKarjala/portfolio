@@ -15,6 +15,33 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.useRealTimers(); });
 function widget() { render(<SceneProvider><StudioProvider><WeatherWidget /></StudioProvider></SceneProvider>); }
+it('does not turn normal page scroll into weather-object movement during a layout refit', () => {
+  let resized;
+  vi.stubGlobal('ResizeObserver', class {
+    constructor(callback) {resized = callback;}
+    observe() {}
+    disconnect() {}
+  });
+  vi.stubGlobal('scrollY', 200);
+  widget();
+  const weather = screen.getByRole('group', {name: 'Weather and time'});
+  weather.getBoundingClientRect = () => ({left: 10, right: 210, top: -100, bottom: 100, width: 200, height: 200});
+  act(() => resized());
+  expect(weather.style.transform).toBe('translate(0px, 0px)');
+});
+it('still bounds an on-screen weather object after its content resizes', () => {
+  let resized;
+  vi.stubGlobal('ResizeObserver', class {
+    constructor(callback) {resized = callback;}
+    observe() {}
+    disconnect() {}
+  });
+  widget();
+  const weather = screen.getByRole('group', {name: 'Weather and time'});
+  weather.getBoundingClientRect = () => ({left: -30, right: 170, top: 20, bottom: 220, width: 200, height: 200});
+  act(() => resized());
+  expect(weather.style.transform).toBe('translate(30px, 0px)');
+});
 it('asks for location only after the visitor chooses it and infers units from the returned zone', async () => {
   fetchWeather.mockResolvedValue({ temperature: 15, code: 61, timezone: 'America/New_York', observedAt: Date.now(), fetchedAt: Date.now() });
   widget();

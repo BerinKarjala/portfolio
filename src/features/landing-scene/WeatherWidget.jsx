@@ -27,7 +27,14 @@ export default function WeatherWidget() {
     },
   });
   const fitPosition = useRef(gesture.fit);
-  fitPosition.current = gesture.fit;
+  fitPosition.current = () => {
+    const rect = object.current?.getBoundingClientRect();
+    if (!rect) return;
+    const anchorTop = rect.top - gesture.position.y;
+    // Scrolling and short/zoomed headers are normal document flow. A modal
+    // resize must not pull that header down over the card to fit the viewport.
+    if (window.scrollY === 0 && anchorTop >= 0 && anchorTop + rect.height <= window.innerHeight) gesture.fit();
+  };
   useEffect(() => {
     if (!window.ResizeObserver) return;
     const observer = new ResizeObserver(() => fitPosition.current());
