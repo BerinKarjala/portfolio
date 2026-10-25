@@ -17,7 +17,7 @@ beforeEach(() => {
   HTMLDialogElement.prototype.showModal = function() {this.open = true;};
   HTMLDialogElement.prototype.close = function() {this.open = false;};
 });
-afterEach(() => {cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals();});
+afterEach(() => {cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals();});
 async function scene() {
   render(<HelmetProvider><MemoryRouter><SceneProvider><WeatherWidget/><Home/></SceneProvider></MemoryRouter></HelmetProvider>);
   await act(async () => {});
@@ -102,4 +102,15 @@ it('retains an expanded Studio identity when late CMS projects change its index'
   expect(modal('CSS Theme Studio')).toBe(dialog);
   expect(dialog.closest('[data-card-key]').dataset.cardKey).toBe('studio');
   fireEvent.click(screen.getByRole('button', {name: 'Exit full screen'}));
+});
+it('makes an outgoing edge inert immediately, before its animation finishes', async () => {
+  vi.useFakeTimers();
+  await scene();
+  fireEvent.click(screen.getByRole('button', {name: 'Next project'}));
+  const edge = document.querySelector('.landing-card--exit-left');
+  expect(edge).not.toBeNull();
+  expect(edge.hasAttribute('inert')).toBe(true);
+  expect(edge.querySelector('[data-card-select]')).toBeNull();
+  act(() => vi.advanceTimersByTime(1600));
+  expect(edge.classList.contains('landing-card--hidden')).toBe(true);
 });

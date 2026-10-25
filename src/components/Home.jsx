@@ -42,14 +42,15 @@ function gallery(data) {
 }
 function SceneCard({cardKey, position, active, title, blocked, expanded, onSelect, onExpand, onExit, children}) {
   const element = useRef(null);
+  const visible = ['center', 'left', 'right'].includes(position);
   const select = () => {onSelect(cardKey); element.current?.focus({preventScroll: true});};
-  const gesture = useCardGesture({select, expand: () => onExpand(cardKey), disabled: (!active && blocked) || expanded || position === 'hidden' || position.startsWith('exit-')});
+  const gesture = useCardGesture({select, expand: () => onExpand(cardKey), disabled: (!active && blocked) || expanded || !visible});
   return <div ref={element} className={`landing-card landing-card--${position}`} data-carousel-card data-card-key={cardKey}
-    tabIndex={-1} aria-hidden={position === 'hidden' ? true : undefined} inert={position === 'hidden' ? true : undefined} {...gesture}>
+    tabIndex={-1} aria-hidden={!visible ? true : undefined} inert={!visible ? true : undefined} {...gesture}>
     <div inert={!active ? true : undefined} aria-hidden={!active ? true : undefined}>
       <CardPresentation title={title} expanded={expanded} onExpand={() => onExpand(cardKey)} onExit={onExit}>{children}</CardPresentation>
     </div>
-    {!active && position !== 'hidden' && !blocked && <button className="landing-select-preview" data-card-select data-card-gesture aria-label={`Select ${title}`} onClick={select}/>}
+    {!active && visible && !blocked && <button className="landing-select-preview" data-card-select data-card-gesture aria-label={`Select ${title}`} onClick={select}/>}
   </div>;
 }
 export default function Home() {
