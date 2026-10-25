@@ -11,7 +11,12 @@ export function SceneProvider({ children }) {
   const editorLauncher = useRef(null);
   const openCalendar = element => { launcher.current = element; setUtility('calendar'); };
   const openEditor = element => { launcher.current = element; setUtility('editor'); };
-  const closeUtility = () => { setUtility(null); (launcher.current?.isConnected ? launcher.current : utility === 'editor' ? editorLauncher.current : calendarLauncher.current)?.focus(); };
+  const closeUtility = () => {
+    setUtility(null);
+    const usable = element => element?.isConnected && !element.closest('[inert],[hidden]') && !element.disabled;
+    const fallback = utility === 'editor' ? editorLauncher.current : calendarLauncher.current;
+    (usable(launcher.current) ? launcher.current : usable(fallback) ? fallback : null)?.focus({preventScroll: true});
+  };
   return <SceneContext.Provider value={{ utility, openCalendar, openEditor, closeUtility, interacting: interacting || writingInteracting, setInteracting, setWritingInteracting, timeZone, setTimeZone, calendarLauncher, editorLauncher }}><WritingProvider>{children}</WritingProvider></SceneContext.Provider>;
 }
 export const useScene = () => useContext(SceneContext);

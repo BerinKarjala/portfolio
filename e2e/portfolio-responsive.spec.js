@@ -57,7 +57,8 @@ for (const viewport of screens) {
         .toBeLessThanOrEqual(viewport.width + 1);
       if (path === "/project" || path === "/") {
         await testInfo.attach(`${path === "/" ? "landing" : "projects"}-${viewport.width}`, {
-          body: await page.screenshot(), contentType: "image/png",
+          // Keep native layout density; encode evidence at the CSS viewport size.
+          body: await page.screenshot({ scale: "css" }), contentType: "image/png",
         });
       }
     }

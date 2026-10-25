@@ -19,7 +19,7 @@ on:
       browser_matrix:
         description: Browser coverage to run on cloud workers
         type: choice
-        options: [default, full]
+        options: [default, full, landing]
         default: default
 
 permissions:
@@ -46,11 +46,14 @@ jobs:
       - run: npm run check:page-builder:build
       - run: npx playwright install --with-deps chromium firefox webkit
       - name: Browser regression matrix without retries
-        if: inputs.browser_matrix != 'full'
+        if: inputs.browser_matrix != 'full' && inputs.browser_matrix != 'landing'
         run: npm run test:e2e:cloud
       - name: Complete browser matrix when explicitly selected
         if: inputs.browser_matrix == 'full'
         run: npm run test:e2e:full
+      - name: Focused landing diagnostics (manual dispatch only)
+        if: github.event_name == 'workflow_dispatch' && inputs.browser_matrix == 'landing'
+        run: npm run test:e2e:full -- e2e/landing-carousel.spec.js e2e/landing-carousel-motion.spec.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:

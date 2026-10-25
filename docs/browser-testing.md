@@ -7,7 +7,7 @@ coverage or treating a deferred local run as a pass.
 | Tier | Work | Environment |
 | --- | --- | --- |
 | Local smoke | Mobile navigation, Page Builder route, Sanity login/workspace boot | Existing React at http://localhost:3000 and Sanity at http://localhost:3333; one headless Chromium worker |
-| Cloud regression | Default 167 cases; complete 315-case matrix when selected | Production build/preview in Chromium, Firefox and WebKit |
+| Cloud regression | Default 181 cases; complete 357-case matrix when selected | Production build/preview in Chromium, Firefox and WebKit |
 | Dedicated cloud checks | Full CSS Studio and image-storage matrices, server/native image/browser runtimes, accessibility/snapshots/performance, full units and builds | Existing GitHub Actions workflows |
 | Smoke contract rehearsal | The same three local smoke checks with isolated dev servers | Separate cloud job in Page Builder checks |
 
@@ -54,13 +54,19 @@ Push the feature branch, then dispatch the registered workflows against it:
 gh workflow run page-builder.yml --repo BerinKarjala/portfolio --ref BRANCH
 gh workflow run css-studio-browser.yml --repo BerinKarjala/portfolio --ref BRANCH
 gh workflow run css-studio-server.yml --repo BerinKarjala/portfolio --ref BRANCH
-# Optional complete 315-case matrix:
+# Complete 357-case release matrix:
 gh workflow run page-builder.yml --repo BerinKarjala/portfolio --ref BRANCH -f browser_matrix=full
+# Focused landing diagnostics only (42 cases; not a release gate):
+gh workflow run page-builder.yml --repo BerinKarjala/portfolio --ref BRANCH -f browser_matrix=landing
 ```
 
 Inside CI, `npm run test:e2e` and `npm run test:e2e:cloud` select the existing
 default matrix. `npm run test:e2e:full` selects the complete matrix. Execution
 of cloud/full tiers outside CI is rejected; `--list` is permitted for inspection.
+The manual `landing` choice runs only the two carousel refinement files through
+the full three-engine configuration. It retains units/build/bundle checks but
+does not replace the default/full release matrices or dedicated workflows.
+Pull requests continue to select the ordinary default matrix automatically.
 The cloud regression workers remain limited to two and all browser retries are
 zero. CSS Studio and image-storage workflows keep their full browser coverage.
 

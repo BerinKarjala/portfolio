@@ -9,7 +9,7 @@ for (const [width, height] of viewports) {
     await page.setViewportSize({ width, height });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
-    const launcher = page.getByRole('button', { name: 'Open calendar' });
+    const launcher = page.getByRole('button', { name: 'Calendar', exact: true });
     await launcher.click();
     const calendar = page.getByRole('region', { name: 'Calendar utility' });
     await expect(calendar.getByRole('heading', { name: 'Calendar', exact: true })).toBeFocused();
@@ -22,7 +22,7 @@ for (const [width, height] of viewports) {
       expect(target.width).toBeGreaterThanOrEqual(44);
       expect(target.height).toBeGreaterThanOrEqual(44);
     }
-    await expect(page.getByRole('button', { name: 'Next project' })).toBeDisabled();
+    await expect(page.locator('[aria-label="Next project"]')).toBeDisabled();
     await expect(page.getByRole('button', { name: /add event/i })).toHaveCount(0);
     expect((await new AxeBuilder({ page }).include('main').analyze()).violations).toEqual([]);
     await testInfo.attach(`calendar-${width}`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
@@ -35,15 +35,15 @@ test('Studio opening stops idle rotation even when focus leaves the tools', asyn
   await page.clock.install();
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'Open Sudoku Solver' })).toBeVisible();
-  await page.clock.fastForward(8000);
+  await page.clock.fastForward(12000);
   await expect(page.getByRole('link', { name: 'Open Minesweeper' })).toBeVisible();
   await page.getByRole('button', { name: 'Theme Studio', exact: true }).click();
   await page.getByRole('link', { name: 'Projects', exact: true }).focus();
   await page.clock.fastForward(60000);
   await expect(page.getByRole('link', { name: 'Open Minesweeper' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Next project' })).toBeDisabled();
+  await expect(page.locator('[aria-label="Next project"]')).toBeDisabled();
   await page.getByRole('button', { name: 'Close tools' }).click();
-  await page.clock.fastForward(8000);
+  await page.clock.fastForward(12000);
   await expect(page.getByRole('link', { name: 'Open HTML Page Builder' })).toBeVisible();
 });
 
@@ -93,10 +93,10 @@ test('landing cards and calendar keep readable colors in Studio light/dark high-
   for (const appearance of ['light', 'dark']) {
     await page.getByRole('combobox', { name: 'Appearance', exact: true }).selectOption(appearance);
     expect((await new AxeBuilder({ page }).include('main').include('header').analyze()).violations).toEqual([]);
-    await page.getByRole('button', { name: 'Open calendar', exact: true }).click();
+    await page.getByRole('button', { name: 'Calendar', exact: true }).click();
     expect((await new AxeBuilder({ page }).include('main').include('header').analyze()).violations).toEqual([]);
     await page.getByRole('button', { name: 'Close calendar' }).click();
-    await page.getByRole('button', { name: 'Open text editor', exact: true }).click();
+    await page.getByRole('button', { name: 'Open text editor with the quill', exact: true }).click();
     expect((await new AxeBuilder({ page }).include('main').include('header').analyze()).violations).toEqual([]);
     await page.getByRole('button', { name: 'Close text editor' }).click();
   }
@@ -114,11 +114,11 @@ for (const [width, height] of viewports) {
     await page.setViewportSize({ width, height });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
-    const launcher = page.getByRole('button', { name: 'Open text editor', exact: true });
+    const launcher = page.getByRole('button', { name: 'Open text editor with the quill', exact: true });
     await launcher.click();
     const editor = page.getByRole('region', { name: 'Text editor utility' });
     await expect(editor.getByRole('heading', { name: 'Text Editor', exact: true })).toBeFocused();
-    await expect(page.getByRole('button', { name: 'Next project' })).toBeDisabled();
+    await expect(page.locator('[aria-label="Next project"]')).toBeDisabled();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     const targets = await editor.locator('button:visible, select, input').evaluateAll(nodes => nodes.map(node => {
       const { width, height } = node.getBoundingClientRect(); return { width, height };
@@ -143,7 +143,7 @@ async function selectWriting(page, start, end) {
 }
 test('editor formats, undoes, saves across reload and downloads plain text', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Open text editor', exact: true }).click();
+  await page.getByRole('button', { name: 'Open text editor with the quill', exact: true }).click();
   await page.getByRole('textbox', { name: 'Document title' }).fill('Forest notes');
   const sheet = page.getByRole('textbox', { name: 'Writing area' });
   await sheet.pressSequentially('A quiet forest');
@@ -163,13 +163,13 @@ test('editor formats, undoes, saves across reload and downloads plain text', asy
   await page.getByRole('button', { name: 'Bulleted list', exact: true }).click();
   await expect(sheet.locator('ul li')).toHaveText('A quiet forest');
   await expect(page.getByRole('combobox', { name: 'Paragraph style' })).toHaveValue('bullet');
-  await page.getByRole('button', { name: 'Open calendar', exact: true }).click();
-  await page.getByRole('button', { name: 'Open text editor', exact: true }).click();
+  await page.getByRole('button', { name: 'Calendar', exact: true }).click();
+  await page.getByRole('button', { name: 'Open text editor with the quill', exact: true }).click();
   await expect(sheet.locator('strong')).toHaveText('quiet');
   await sheet.press('Control+s');
   await expect(page.getByText('Saved in this browser.', { exact: true })).toBeVisible();
   await page.reload();
-  await page.getByRole('button', { name: 'Open text editor', exact: true }).click();
+  await page.getByRole('button', { name: 'Open text editor with the quill', exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'Document title' })).toHaveValue('Forest notes');
   await expect(sheet.locator('ul li strong')).toHaveText('quiet');
   await expect(page.getByRole('combobox', { name: 'Paragraph style' })).toHaveValue('bullet');
@@ -186,7 +186,7 @@ test('editor formats, undoes, saves across reload and downloads plain text', asy
 test('editor accepts plain pasted text, retains an unsaved draft and reports save failure', async ({ page }) => {
   await page.addInitScript(() => { Storage.prototype.setItem = function () { throw new DOMException('Quota exceeded', 'QuotaExceededError'); }; });
   await page.goto('/');
-  await page.getByRole('button', { name: 'Open text editor', exact: true }).click();
+  await page.getByRole('button', { name: 'Open text editor with the quill', exact: true }).click();
   const sheet = page.getByRole('textbox', { name: 'Writing area' });
   const pasted = await sheet.evaluate(root => {
     root.focus(); const data = new DataTransfer();
@@ -201,7 +201,7 @@ test('editor accepts plain pasted text, retains an unsaved draft and reports sav
   await expect(sheet.locator('img')).toHaveCount(0);
   await expect(sheet).toContainText('<img src=x onerror=alert(1)>');
   await page.getByRole('button', { name: 'Close text editor' }).click();
-  await page.getByRole('button', { name: 'Open text editor', exact: true }).click();
+  await page.getByRole('button', { name: 'Open text editor with the quill', exact: true }).click();
   await expect(sheet).toContainText('Second line');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('Could not save in this browser.');
@@ -236,7 +236,7 @@ test('the writing set moves as one object without opening the editor and support
 test('paragraph formatting preserves the caret and multiline typing through viewport changes', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  await page.getByRole('button', { name: 'Open text editor', exact: true }).click();
+  await page.getByRole('button', { name: 'Open text editor with the quill', exact: true }).click();
   const sheet = page.getByRole('textbox', { name: 'Writing area' });
   await sheet.pressSequentially('First');
   await page.getByRole('combobox', { name: 'Paragraph style' }).selectOption('number');
@@ -254,16 +254,18 @@ test('paragraph formatting preserves the caret and multiline typing through view
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.getByText('Saved in this browser.', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Close text editor' }).click();
-  await expect(page.getByRole('button', { name: 'Open text editor', exact: true })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Open text editor with the quill', exact: true })).toBeFocused();
 });
 
 test('an editor session holds the same project while idle and restores it on close', async ({ page }) => {
   await page.clock.install();
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'Open Sudoku Solver' })).toBeVisible();
-  await page.clock.fastForward(8000);
+  // Allow mount effects to register the cycle before advancing its clock.
+  await page.clock.runFor(100);
+  await page.clock.fastForward(12000);
   await expect(page.getByRole('link', { name: 'Open Minesweeper' })).toBeVisible();
-  await page.getByRole('button', { name: 'Open text editor', exact: true }).click();
+  await page.getByRole('button', { name: 'Open text editor with the quill', exact: true }).click();
   await page.getByRole('link', { name: 'Projects', exact: true }).focus();
   await page.clock.fastForward(60000);
   await expect(page.getByRole('heading', { name: 'Text Editor', exact: true })).toBeVisible();
@@ -276,7 +278,7 @@ test('finishing project loading during a utility press does not move its launche
   await page.route('**/*sanity.io/**', route => new Promise(resolve => { finish = async () => { await route.fulfill({ json: { result: [] } }); resolve(); }; }));
   await page.goto('/');
   await expect(page.getByText('Loading latest project content…', { exact: true })).toBeVisible();
-  const launcher = page.getByRole('button', { name: 'Open text editor', exact: true });
+  const launcher = page.getByRole('button', { name: 'Open text editor with the quill', exact: true });
   await launcher.scrollIntoViewIfNeeded();
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   await expect.poll(() => typeof finish).toBe('function');

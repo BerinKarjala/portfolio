@@ -1,5 +1,9 @@
 # Landing redesign implementation
 
+The October 25 carousel refinements at the end of this document supersede the
+original carousel timing, bottom controls, and fullscreen behavior below. Earlier
+sections retain the original implementation and its historical evidence.
+
 Branch: `feat/landing-page-scene`, based on
 `c1f7645b1ac8488fc93a9b095ab47f839d011f62`. Evidence below applies to this
 branch's implementation, not a production release. The user requested a commit
@@ -220,3 +224,134 @@ These are focused results. Broader local attempts hit test deadlines, including
 the 4K responsive route workflow; a complete local suite pass is not established.
 No test deadlines or visual snapshots were changed. Full PR CI must run against
 the stabilization commit, and the physical-device review gaps above remain open.
+
+## Carousel refinements (October 25, 2026)
+
+Source brief: `Landing_Page_Carousel_Handover_2026-10-25.zip`, beginning with
+`CODEX_PROMPT.md`; all nine manifest-listed files matched their SHA256 hashes.
+Baseline: `98fafc9039858018ba8f5526a241214f08b7aff6`. Branch:
+`feat/landing-carousel-refinements`. The handover's `after.png` governs arrow
+placement and the desk boundary; its pasted arrow backgrounds are not UI assets.
+
+Reviewable defaults are 12,000 ms between slide starts, a 1,600 ms transform
+transition, and immediate adjacent arrow stepping followed by slow rotation in
+that direction. A selected/focused card holds persistently until an arrow
+command. Rapid commands keep only the latest pending direction. Reduced-motion
+users retain immediate manual stepping without an automatic timer. Utility,
+Studio, visibility, pointer and object-gesture protections remain independent.
+
+The gallery owns two real side gutters. Its final flow child is the desk, with
+spare viewport height added above it and real scrolling when content needs it.
+Loading/status text lives in a stable gallery overlay; the bottom utility,
+rotation and counter groups are removed. Header height is measured rather than
+assumed. Quill and header Calendar refs provide connected utility return targets.
+The desk art frame clips the unchanged WebP's 44 transparent bottom rows
+(680/724 of its natural height), so the painted desk reaches that boundary.
+Its image is positioned within the frame so intrinsic content cannot enlarge
+the crop. The quill keeps its ordinary rem-based size but is capped at 38vw
+to prevent horizontal overflow at 200% text sizing.
+
+Each card keeps one inline nonmodal dialog. Expansion calls native `showModal`
+to promote that same DOM into the browser top layer, outside ancestor clipping
+and perspective. This preserves editor DOM/selection/history and calendar local
+state without duplicate tools or remounting. The native modal makes the
+background inert; Exit/Escape restore scroll/body styles and focus. Escape is
+captured before the editor's own Close shortcut. Inherited Studio selectors and
+tokens remain available in the top layer. Project/Studio actions first exit
+the modal, and exiting fullscreen does not close an open utility.
+The landing editor opts into preserving its formatting selection while blurred;
+keyboard/pointer completion records it before focus moves. The shared rich-text
+component's default Page Builder behavior remains unchanged. Weather refitting
+respects the header's natural document position during scrolling/modal resizing,
+and the mobile header stacks its columns when enlarged text needs the width.
+
+Card gestures are separate from the weather/quill gesture hook: upward motion
+of at least 60 px, at least 1.5 times horizontal movement, within 500 ms; double
+taps within 300 ms and 24 px. Multi-contact, cancellation, drag-return, nested
+controls and editor/date text are excluded. The accessible Expand button is an
+additional route, and trailing synthetic clicks are suppressed.
+
+| Acceptance | Implementation and evidence |
+| --- | --- |
+| T01–T02: side controls and stable loading | Home, scene CSS; six-size geometry/hit/focus checks; retained loading-during-press regression |
+| T03–T04: cadence, wrap and bounded intent | useCarouselRotation units; motion file with intermediate transforms, PNGs and video |
+| T05–T07: real launchers and desk edge | Home, SceneContext, WritingSet, WeatherWidget; six-size document geometry and short-viewport cases |
+| T08–T12: selection, direction and blockers | rotation and Home units; browser directional/utility holds; existing visibility/reduced-motion tests |
+| T13–T16: gestures and exclusions | useCardGesture units; cross-engine gesture/nested-control browser cases |
+| T17–T20: viewport, state, focus and theme | CardPresentation/Home units; six-size project/editor/calendar expand/exit; short-viewport theme/axe checks |
+| T21: late CMS and safe identity | retained Home normalization, unsafe destination, and late Studio CMS tests |
+| T22: retained features | migrated landing-scene browser tests plus existing Page Builder, CSS Studio/image and server release workflows |
+
+Local targeted units passed 64 tests across 11 files with one worker before the
+final edge-case additions. Focused weather tests later passed 6/6; editor
+selection tests passed 7/7 after two new keyboard/pointer cases failed against
+the previous behavior. Full-source validation is assigned to cloud CI.
+The local smoke command returned resource result **75 / deferred**
+with 171,589,632 bytes (163 MiB) available. No browser was launched; this is not
+a pass. Runner Node: 22.22.2. The existing React/Sanity listeners serve
+`C:/dev/portfolio/portfolio` at commit
+`6cf6150d8f44f251765c5579405d5e71654f0f7b`, with an unrelated modified lockfile.
+The test runner is this isolated worktree, not the server checkout. Neither
+existing server nor its checkout was changed. No local full matrix, build,
+native-image suite or extra server was run. Collection alone confirmed the
+unchanged three-smoke contract and the full cloud matrix's 357 cases.
+
+Final release/test head: `d35808a1c352282530bc5bed345b4e715e0c0bb9`.
+Landing captures/dedicated checks: `da9c708d4d285c82f99e8ecedc34f31f1301328a`.
+Runtime, assets, server and dependency files are byte-identical between those
+commits. The only difference is CSS-pixel encoding for existing responsive
+route PNG attachments, retaining native layout density, all assertions and the
+30-second deadline. A prior passing 4K WebKit route case spent 17.1 of 29.1
+seconds producing two high-density PNGs; a later full run reached its final
+axe scan and exhausted that budget. No accessibility checks were removed. The final 4K WebKit route case
+completed in 15.4 seconds with its geometry and axe checks intact.
+Cloud runtime: Ubuntu 24.04, Node 22.22.2, Playwright 1.64.1; Chromium
+156.0.8078.4, Firefox 157.0, WebKit 27.2. No dependency or artwork files changed.
+
+| Validation on that commit | Result |
+| --- | --- |
+| [Complete release matrix, source/contracts, units, build and bundle gates](https://github.com/BerinKarjala/portfolio/actions/runs/40176793522) | 351 passed, 6 existing engine-specific skips; 631/631 units in 80 files; source/contracts, production build and both bundle budgets passed |
+| [Focused landing evidence](https://github.com/BerinKarjala/portfolio/actions/runs/40174553495) | 42/42 browser cases; 631/631 units across 80 files; build and source/bundle checks passed |
+| [Dedicated CSS Studio / image storage](https://github.com/BerinKarjala/portfolio/actions/runs/40174955819) | 21 CSS Studio + 5 image-storage cases per engine; 78/78 across three engines; focused units/build passed |
+| [Server and native runtimes](https://github.com/BerinKarjala/portfolio/actions/runs/40174959094) | 143 focused units and 8 admission/image/browser-fetch runtime checks passed |
+| Cloud rehearsal of the local smoke contract | Three smoke checks and eight launcher/resource-policy checks passed; this does not change the local deferral above |
+
+The six existing full-matrix skips come from three Chromium-only Page Builder
+cases in Firefox/WebKit. No new landing case is skipped.
+Browser workers remain capped at two, with zero retries. The default 181-case
+matrix remains enabled for PRs; the complete matrix contains 357 cases. A final
+documentation-only commit records this evidence without changing runtime/tests.
+
+The new cloud cases attach browsing, editor, calendar and expanded variants at
+320×740, 390×844, 768×1024, 1440×900, 1920×1080 and 3840×2160. Separate motion
+cases record non-reduced video and PNG stills at mobile, desktop and 4K.
+The timing cases normalize pixel density to 1 across engines (3840 CSS pixels
+therefore produce physical 4K), while layout tests retain engine defaults,
+including WebKit at 2x density. Native RAF samples begin at the actual click;
+PNG encoding runs afterward. These new motion cases retain video plus failure
+DOM/network/source traces without a second continuous trace screencast. Their
+gates still require more than three distinct poses, over 700 ms of observed
+intermediate movement, and the 1.6-second CSS duration. New six-state/motion
+cases have a 90-second capture budget; existing UI deadlines and retries are
+unchanged. The manual `landing` workflow option is diagnostic coverage only;
+full/default and dedicated release workflows remain required.
+Gesture evidence includes trusted touchscreen double taps in Chromium/WebKit
+and a trusted Chromium swipe; Firefox exercises synthetic pointer paths because
+Playwright does not expose a native Firefox touchscreen context. The motion
+sampler records native frames without a pending evaluation blocking WebKit
+input dispatch. Editor state cases type through normal `beforeinput` handling,
+rather than replacing the controlled editable DOM with a fixture.
+These renders require visual review against the supplied arrangement. Physical
+phones/OS gestures, keyboard occlusion, zoom/assistive technology and target TV
+browsers remain unverified; physical TV remotes remain excluded. No merge,
+production publication or CMS mutation is authorized by this handover.
+
+The focused run's `page-builder-browser-evidence` artifact contains 144 PNGs,
+nine native motion videos and nine transform streams. PNG widths were checked
+against their CSS viewports. Representative mobile/desktop/4K renders and
+extracted intermediate WebKit video frames were inspected against the supplied
+arrangement: side arrows, the painted desk edge, and expanded utility controls
+are visible. The full set remains a visual-review draft for the owner. A local
+index at `C:/dev/portfolio/.handover/review/da9c708/index.html` groups the same
+source artifacts by browser and viewport; its player only crops gray recorder
+padding for viewing and also links the original video bytes.

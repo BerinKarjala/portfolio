@@ -27,7 +27,14 @@ export default function WeatherWidget() {
     },
   });
   const fitPosition = useRef(gesture.fit);
-  fitPosition.current = gesture.fit;
+  fitPosition.current = () => {
+    const rect = object.current?.getBoundingClientRect();
+    if (!rect) return;
+    const anchorTop = rect.top - gesture.position.y;
+    // Scrolling and short/zoomed headers are normal document flow. A modal
+    // resize must not pull that header down over the card to fit the viewport.
+    if (window.scrollY === 0 && anchorTop >= 0 && anchorTop + rect.height <= window.innerHeight) gesture.fit();
+  };
   useEffect(() => {
     if (!window.ResizeObserver) return;
     const observer = new ResizeObserver(() => fitPosition.current());
@@ -133,7 +140,7 @@ export default function WeatherWidget() {
       <div className="scene-weather-actions">
         <button onClick={useLocation} disabled={loading}>Use my location</button>
         {weather && <button aria-label={`Switch to ${unit === 'fahrenheit' ? 'Celsius' : 'Fahrenheit'}`} onClick={() => setUnitOverride(unit === 'fahrenheit' ? 'celsius' : 'fahrenheit')}>{unit === 'fahrenheit' ? '°C' : '°F'}</button>}
-        <button onClick={event => scene?.openCalendar(event.currentTarget)}>Calendar</button>
+        <button ref={scene?.calendarLauncher} onClick={event => scene?.openCalendar(event.currentTarget)}>Calendar</button>
         {(gesture.position.x !== 0 || gesture.position.y !== 0) && <button onClick={gesture.reset}>Reset weather position</button>}
       </div>
       <small>Weather by Open-Meteo</small>
