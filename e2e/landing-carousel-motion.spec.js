@@ -1,6 +1,8 @@
 import {expect, test} from '@playwright/test';
 
-test.use({video: 'on'});
+// Keep video plus failure DOM/network traces. Concurrent trace screencasts
+// repeatedly repaint WebKit's 4K scene and distort the native timing sample.
+test.use({video: 'on', trace: {mode: 'retain-on-failure', screenshots: false, snapshots: true, sources: true}});
 test.describe.configure({mode: 'default'});
 test.beforeEach(async ({page}) => {
   await page.route('**/*sanity.io/**', route => route.fulfill({json: {result: []}}));
@@ -11,6 +13,7 @@ async function settle(page) {
   await page.evaluate(async () => {
     await document.fonts.ready;
     await Promise.all([...document.querySelectorAll('.landing-card--center img,.landing-desk img')].map(image => image.decode().catch(() => {})));
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   });
 }
   for (const width of [390, 1440, 3840]) {
