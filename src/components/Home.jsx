@@ -161,7 +161,7 @@ export default function Home() {
         </div>
         </div>
         <div className="landing-desk" ref={deskRef}>
-          <img src={desk} alt="" width="2172" height="724" decoding="async" />
+          <div className="landing-desk-art"><img src={desk} alt="" width="2172" height="724" decoding="async" /></div>
           <WritingSet deskRef={deskRef} />
         </div>
       </section>

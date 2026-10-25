@@ -20,9 +20,12 @@ async function deskEdge(page) {
     end: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight),
     width: document.documentElement.scrollWidth,
     viewport: innerWidth,
+    art: document.querySelector('.landing-desk-art').getBoundingClientRect().height,
+    image: document.querySelector('.landing-desk-art img').getBoundingClientRect().height,
   }));
   expect(Math.abs(dimensions.end - dimensions.desk)).toBeLessThanOrEqual(2);
   expect(dimensions.width).toBeLessThanOrEqual(dimensions.viewport + 1);
+  expect(dimensions.art / dimensions.image).toBeCloseTo(680 / 724, 3);
 }
 async function viewportCard(page, name) {
   const dialog = page.getByRole('dialog', {name, exact: true});
