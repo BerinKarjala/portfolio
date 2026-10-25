@@ -3,6 +3,14 @@ const assert = require('node:assert/strict');
 const {EventEmitter} = require('node:events');
 const policy = () => require('./run-browser-tests.cjs');
 
+test('clean cloud installs cannot reintroduce an older Miniflare Undici than the security floor', () => {
+  const manifest = require('../package.json');
+  const floor = manifest.overrides['undici@7'].split('.').map(Number);
+  const nested = manifest.overrides.miniflare.undici.split('.').map(Number);
+  const difference = nested.map((value, index) => value - floor[index]).find(value => value !== 0) || 0;
+  assert.ok(difference >= 0, 'Miniflare override undercuts the global patched Undici floor and conflicts with the committed lockfile');
+});
+
 test('the production config uses one worker locally and preserves all three cloud browsers', async () => {
   const previous = process.env.CI;
   try {
