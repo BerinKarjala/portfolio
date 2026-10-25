@@ -7,12 +7,20 @@ on:
       - "public/**"
       - "e2e/**"
       - "scripts/check-page-builder-*.mjs"
+      - "scripts/run-browser-tests*.cjs"
+      - "e2e-local/**"
       - "package*.json"
       - "*config*"
       - ".nvmrc"
       - "docs/page-builder/**"
       - ".github/workflows/page-builder.yml"
   workflow_dispatch:
+    inputs:
+      browser_matrix:
+        description: Browser coverage to run on cloud workers
+        type: choice
+        options: [default, full]
+        default: default
 
 permissions:
   contents: read
@@ -38,7 +46,11 @@ jobs:
       - run: npm run check:page-builder:build
       - run: npx playwright install --with-deps chromium firefox webkit
       - name: Browser regression matrix without retries
-        run: npm run test:e2e -- --retries=0
+        if: inputs.browser_matrix != 'full'
+        run: npm run test:e2e:cloud
+      - name: Complete browser matrix when explicitly selected
+        if: inputs.browser_matrix == 'full'
+        run: npm run test:e2e:full
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -84,5 +96,35 @@ jobs:
             test-results/page-builder-canvas-mouse-*/error-context.md
             test-results/page-builder-canvas-mouse-*/test-failed-*.png
             test-results/page-builder-canvas-mouse-*/trace.zip
+          if-no-files-found: ignore
+          retention-days: 14
+
+  local-smoke-contract:
+    name: Rehearse local smoke tier in cloud
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            studio13/package-lock.json
+      - run: npm ci
+      - name: Test browser routing and memory-pressure policy
+        run: node --test scripts/run-browser-tests.test.cjs
+      - run: npm ci --prefix studio13
+      - run: npx playwright install --with-deps chromium
+      - name: Exercise the same three smoke checks against isolated cloud dev servers
+        run: npm run test:e2e:local
+        env:
+          BROWSER_SMOKE_START_SERVERS: '1'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: local-smoke-contract-evidence
+          path: test-results-local/
           if-no-files-found: ignore
           retention-days: 14

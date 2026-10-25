@@ -42,6 +42,12 @@ They require at least one **new Vitest regression test in src/ or server/**,
 preserve existing tests, and protect workflows, configuration, instruction files,
 runtime check programs, package scripts/engines and existing security overrides.
 
+Use the [local/cloud working methods](browser-testing.md) for interactive work.
+The issue validator runs on cloud workers and explicitly selects `test:e2e:cloud`;
+the low-memory local smoke tier never replaces those release gates. The agent's
+restricted sandbox continues to hand socket/subprocess limitations to independent
+cloud validation, without reducing the browser matrix.
+
 The validator copies only the new regressions onto an unchanged base worktree
 with its original dependencies and independently requires assertion failures.
 Missing imports, setup crashes and tests that already pass do not qualify.

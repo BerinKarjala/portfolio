@@ -21,6 +21,21 @@ TV browsers. Native mobile and TV applications are outside this platform scope.
 
 Use the Node version in `.nvmrc` and `npm ci` with the committed lockfile.
 
+## Local and cloud working methods
+
+Follow the [browser testing split](browser-testing.md). The memory-constrained
+local machine uses the existing React `localhost:3000` and Sanity `localhost:3333`
+servers for three read-only smoke checks in one Chromium worker. Run
+`npm run test:e2e:local`; the ordinary `test:e2e` command selects this tier outside
+CI. Respect memory deferrals and do not start duplicate dev servers.
+
+Use targeted local unit tests with `--maxWorkers=1`. Full browser matrices,
+concurrent builds, Studio builds and native image/runtime checks run in cloud CI.
+The complete existing cloud release coverage remains required before merging.
+Run `npm run test:e2e:cloud` or `test:e2e:full` inside CI; use GitHub workflow
+dispatch from the local machine. A local memory deferral is not a pass and does
+not waive any release check. Record which checkout the existing servers serve.
+
 ## Responsive acceptance
 
 - Test CSS viewports at 320×740, 390×844, 768×1024, 1440×900, 1920×1080,
@@ -49,7 +64,7 @@ Use the Node version in `.nvmrc` and `npm ci` with the committed lockfile.
   responsive TV-browser layouts and other input/accessibility checks remain
   in scope.
 
-Run `npm run test:e2e -- e2e/portfolio-responsive.spec.js` after building for the
+In cloud CI, run `npm run test:e2e:cloud -- e2e/portfolio-responsive.spec.js` after building for the
 portfolio layout/navigation checks. The existing Page Builder CI workflow runs
 this file with the rest of `e2e/` in all three browser engines.
 
@@ -66,6 +81,6 @@ this file with the rest of `e2e/` in all three browser engines.
 - Do not treat a passing build, an accessibility scan, or a dependency check as a
   complete security audit. Report unavailable tools and unperformed checks.
 
-The baseline commands are `npm run check:page-builder`, `npm test`,
-`npm run build`, `npm run check:page-builder:build`, and `npm run test:e2e`.
+The cloud release baseline is `npm run check:page-builder`, `npm test`,
+`npm run build`, `npm run check:page-builder:build`, and `npm run test:e2e:cloud`.
 Run Studio checks as well when Studio code or dependencies change.

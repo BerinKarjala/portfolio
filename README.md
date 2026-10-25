@@ -4,6 +4,9 @@
 - Follow the [development, responsive design, security, and release standards](docs/development-standards.md).
 - Label an issue `in progress` to start [test-first issue resolution and weekly reporting](docs/issue-automation.md).
 - Node `22.22.2` (`.nvmrc`), npm `>=10`.
+- [Browser working methods](docs/browser-testing.md): `npm run test:e2e:local`
+  reuses React at `localhost:3000` and Sanity at `localhost:3333` in one Chromium
+  worker with memory guards. Full browser/build/runtime validation runs in cloud CI.
 - Frontend (Vite):
   - Install: `npm install`
   - Dev: `npm start` (http://localhost:3000, configured in `vite.config.mjs`)
@@ -38,13 +41,18 @@ The portfolio project at `/projects/page-builder` uses the existing project layo
 
 See [requirements and milestones](docs/page-builder/progress.md), the [user guide](docs/page-builder/user-guide.md), [developer guide](docs/page-builder/developer-guide.md), [teaching tutorials](docs/page-builder/tutorials.md), and [130-decision implementation trace](docs/page-builder/requirements-trace.md).
 
-Run `npm run check:page-builder`, `npm test`, `npm run build` and `npm run check:page-builder:build` for the automated source/build checks. After building and installing Playwright browsers with `npx playwright install --with-deps chromium firefox webkit`, run `npm run test:e2e` for browser smoke tests.
+Run the full source/build checks and browser installation in cloud CI. Locally,
+use targeted unit tests with one worker and `npm run test:e2e:local` against the
+existing dev servers. `npm run test:e2e` selects local smoke outside CI and the
+full default release matrix inside CI. A low-memory exit 75 is a deferral.
 
-The default browser matrix contains 167 cases: all 105 behaviors in Chromium,
+The default cloud browser matrix contains 167 cases: all 105 behaviors in Chromium,
 plus 31 browser-sensitive editor cases each in Firefox and WebKit. It retains
 cross-browser storage ownership/recovery, import/export and sandbox boundaries,
 pointer/keyboard dragging, mobile focus, and wizard focus/reflow. Viewport
 permutations and the other feature cases run in Chromium; dedicated CSS Studio
 and image-storage workflows keep their full browser coverage. CI runs this
-matrix once with zero retries. Use `npm run test:e2e:full` for the complete
-315-case matrix, or append `-- --list` to either command to inspect its cases.
+matrix once with zero retries. In CI, use `npm run test:e2e:full` for the complete
+315-case matrix, or select `browser_matrix=full` on the Page Builder workflow.
+`npm run test:e2e:cloud -- --list` and `npm run test:e2e:full -- --list` inspect
+those cases locally without launching browsers.
