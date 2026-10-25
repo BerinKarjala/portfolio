@@ -10,6 +10,8 @@
 .landing-stage { position: relative; width: 100%; min-height: 0; padding-block: .5rem; perspective: 75rem; overflow-x: clip; overflow-y: visible; }
 .landing-card { position: absolute; top: .5rem; left: 50%; width: var(--landing-card-width); border: 1px solid #369466; border-radius: 1.5rem; background: linear-gradient(135deg, #005733, #003820); box-shadow: 0 1rem 3rem #001e1570, inset 0 1px 2px #a5f3c640; overflow-wrap: anywhere; transition: transform var(--landing-slide-duration) ease-in-out, opacity var(--landing-slide-duration) ease-in-out; }
 .landing-card--center { position: relative; top: 0; z-index: 2; transform: translateX(-50%); }
+/* Decorative previews cannot extend the document past the active card/desk. */
+.landing-card:not(.landing-card--center) { max-height: 40rem; overflow: clip; }
 .landing-card--left { transform: translateX(-139%) translateZ(-9rem) rotateY(25deg); }
 .landing-card--right { transform: translateX(39%) translateZ(-9rem) rotateY(-25deg); }
 .landing-card--exit-left { transform: translateX(-230%) translateZ(-18rem); opacity: 0; pointer-events: none; }

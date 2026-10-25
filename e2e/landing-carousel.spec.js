@@ -215,7 +215,10 @@ test('expanded Studio actions leave the modal before opening the existing tools'
 });
 
 test('short viewports and enlarged text scroll through long content to the desk', async ({page}) => {
-  await page.route('**/*sanity.io/**', route => route.fulfill({json: {result: [{name: 'Sudoku Solver', link: '/projects/SudokuSolver', description: 'Long readable project content. '.repeat(35)}]}}));
+  await page.route('**/*sanity.io/**', route => route.fulfill({json: {result: [
+    {name: 'Sudoku Solver', link: '/projects/SudokuSolver', description: 'Long readable project content. '.repeat(35)},
+    {name: 'Hidden long description', link: 'https://example.com/hidden', description: 'A decorative preview must not extend the page. '.repeat(100)},
+  ]}}));
   await page.setViewportSize({width: 390, height: 400});
   await page.emulateMedia({reducedMotion: 'reduce'});
   await page.goto('/'); await settle(page);
