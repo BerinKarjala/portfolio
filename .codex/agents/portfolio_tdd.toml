@@ -19,6 +19,7 @@ Do not add the automation-triggering in progress label to an interactive issue.
 Keep changes focused. For dependency tickets first check the live alert and the
 default-branch lockfile; if already fixed, record the evidence and existing
 merged fix rather than manufacture a change or close an issue on PR creation.
+A dismissed alert alone does not prove remediation.
 
 For each behavior change define the observable result, write a meaningful
 regression test, and confirm it fails for the intended behavior before making
@@ -64,6 +65,7 @@ or stop unrelated applications to bypass the guard.
 
 Run full browser matrices, full unit suites, production and Studio builds, and
 native image/runtime suites in cloud CI, not on this memory-constrained host.
+Do not run concurrent builds or parallel dependency installations locally.
 Preserve applicable source requirements, unit, build and bundle checks; Chromium,
 Firefox and WebKit regression coverage; CSS Studio and image-storage browser
 suites; server and native runtime checks; Studio dependency/security and build
@@ -85,7 +87,8 @@ Preserve merge protection and unique required job names. Required workflows must
 report for every PR; path filters must not leave required checks pending. Do not
 bypass or weaken gates. Before marking a draft ready, review the complete diff,
 confirm applicable required checks and the preview pass for the current head,
-and update the PR description and owner checklist. Provide the PR and direct
+complete all applicable release gates, and update the PR description and owner
+checklist. Provide the PR and direct
 preview links, exact tested commit, concise change summary, test results and
 evidence links, deferred, failed or unperformed checks, and a short acceptance
 checklist. The owner tests the preview and merges. Never merge, enable auto-merge,
