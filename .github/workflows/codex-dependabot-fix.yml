@@ -358,9 +358,10 @@ jobs:
             const run = `https://github.com/${repo.owner}/${repo.repo}/actions/runs/${context.runId}`;
             const branch = (await github.rest.repos.getBranch({...repo, branch: process.env.FIX_BRANCH})).data;
             const summary = fs.readFileSync(`${process.env.RUNNER_TEMP}/issue-candidate/codex-result.txt`, 'utf8').slice(0, 18000);
-            const {data: pr} = await github.rest.pulls.create({...repo, base: process.env.BASE_BRANCH, head: process.env.FIX_BRANCH,
-              title: `fix: resolve issue #${process.env.ISSUE_NUMBER}`,
-              body: `Closes #${process.env.ISSUE_NUMBER}.\n\nIndependent validation reproduced new regression assertion failures on the original base, then passed the complete root requirements/unit/build/browser matrix (zero retries), CSS Studio server/browser runtime checks, Studio dependency tests/build, automation tests, and target advisory audit when applicable.\n\nTested commit: \`${branch.commit.sha}\`. [Validation and evidence](${run}).\n\nAgent implementation notes (review alongside the independent evidence):\n\n${summary}\n\nCreated with GITHUB_TOKEN; additional PR workflows may be suppressed. Dispatch any extra required CI explicitly before merge. No automatic merge or deployment.`});
+            const {createDraftIssuePR} = require('./scripts/pr-working-methods.cjs');
+            const pr = await createDraftIssuePR({github, repo, base: process.env.BASE_BRANCH,
+              head: process.env.FIX_BRANCH, issueNumber: Number(process.env.ISSUE_NUMBER),
+              testedSha: branch.commit.sha, evidenceUrl: run, notes: summary});
             await github.rest.issues.createComment({...repo, issue_number: Number(process.env.ISSUE_NUMBER), body: `Validation passed. PR: ${pr.html_url}\n\n[Evidence](${run})`});
 
   report_failure:

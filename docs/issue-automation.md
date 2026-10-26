@@ -1,5 +1,10 @@
 # Issue resolution and weekly reports
 
+Follow the [portfolio working methods](working-methods.md): an issue, task
+branch, tests, mandatory Netlify preview, owner acceptance and owner merge, then
+issue closure. For interactive chat tasks, create a missing issue without adding
+the `in progress` label: that label launches the separate cloud agent below.
+
 Add **in progress** to an open issue in `BerinKarjala/portfolio` to start the
 **Codex issue fix** workflow. A repository writer must add the label or manually
 dispatch the workflow. The runner reads live labels and permissions, skips
@@ -69,10 +74,18 @@ build check, because generated build assets are outside the allowed candidate
 scope. All application/dependency changes must still match the frozen tree.
 Only the tested tree reaches a fresh publisher job. It rechecks the issue,
 unchanged main revision, PR duplicates and unchanged issue branch, then commits
-and opens a focused PR with the issue closing reference, exact commit and run
+and opens a focused **draft PR** with the issue closing reference, exact commit and run
 evidence. Artifacts are retained for 14 days. PRs made using `GITHUB_TOKEN` may
-not start additional CI; dispatch required extra checks explicitly before merge.
-No PR is merged or deployed by this automation.
+not start additional CI; dispatch missing required checks explicitly against the
+same branch/head before acceptance. The independent validation-before-publication
+boundary is retained; the early-draft rule for interactive work does not publish
+unvalidated bot candidates. Successful current-head Netlify previews are always
+required. If a preview does not start, resolve the integration/credential problem;
+do not substitute a production deploy or waive the gate. Provide the direct
+preview link and acceptance checklist before marking the PR ready. The owner
+tests the preview and merges. This automation never merges or enables auto-merge.
+The issue stays open until the closing reference takes effect on merge, which
+automatically deploys main to production.
 
 Automatic changes cover application source, dependency fields/lockfiles,
 documentation and added regressions. Issues requiring protected test edits,
@@ -121,5 +134,5 @@ as resolution PRs or block new work. Deterministic automation PRs also appear.
 The same report is available in the Actions run summary. Errors fetching state
 fail the report instead of presenting incomplete data as a clean status.
 
-Run `node --test scripts/*dependabot*.test.cjs scripts/issue-automation.test.cjs`
+Run `node --test --test-concurrency=1 scripts/*dependabot*.test.cjs scripts/issue-automation.test.cjs scripts/pr-working-methods.test.cjs`
 and the pinned actionlint checks before changing these workflows.

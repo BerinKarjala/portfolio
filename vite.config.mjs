@@ -13,6 +13,8 @@ export default defineConfig({
       'scripts/check-css-studio-image-contract.test.mjs',
       // Runs with node:test in the cloud smoke-contract job.
       'scripts/run-browser-tests.test.cjs',
+      // Repository lifecycle helpers use node:test in dedicated PR workflows.
+      'scripts/pr-working-methods.test.cjs',
     ],
   },
   server: {

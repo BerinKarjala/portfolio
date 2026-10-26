@@ -70,6 +70,30 @@ GitHub must require successful tests and the Netlify preview before merging into
 changes, rather than leave required checks pending through path filters. Keep
 job names unique. No bypass actors are needed for ordinary development.
 
+The reviewable settings payload is
+[`portfolio-main-ruleset.json`](../.github/portfolio-main-ruleset.json). It applies
+only to `main`, requires a PR with resolved review conversations, forbids direct
+pushes/deletion/force pushes, and requires the named release, automation, smoke
+and Netlify checks against an up-to-date branch. GitHub Actions checks are bound
+to the Actions integration. There is no required second reviewer: the owner must
+be able to merge their own PR after preview acceptance. Owner acceptance remains
+a human step; checks cannot establish it or distinguish an agent using the
+owner's credentials from the owner.
+
+Required workflows deliberately have no path filters. GitHub documents that
+[filtered or skipped required workflows remain pending](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/skip-workflow-runs)
+and that [required job names must be unique](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches).
+Netlify documents [skip instructions in PR titles and commit messages](https://docs.netlify.com/deploy/manage-deploys/manage-deploys-overview/#skip-a-deploy).
+
+Repository settings are separate from merging files. Apply the payload through
+the repository rulesets API after reviewing it; if the named ruleset exists,
+update that exact ruleset rather than create duplicates. Preserve other existing
+rulesets. Verify the live rules and the PR's required checks after application.
+Do not weaken gates to work around a failed or missing check; investigate the
+workflow or integration instead. Missing PR events from a bot credential may
+require explicit dispatch of the registered workflows (including
+`working-methods.yml`, with `pr_number`) against the current task branch.
+
 Keep the PR description current, with the problem and resulting behavior first,
 then validation and a short acceptance checklist. Historical skip markers in
 already merged commits or documentation examples are not new skip instructions.

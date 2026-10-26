@@ -1,0 +1,49 @@
+name: Portfolio working methods
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review, converted_to_draft]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Open task PR to validate against the selected branch head
+        type: number
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+concurrency:
+  group: working-methods-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  policy:
+    name: Working methods
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Test working-method guard and draft publication
+        run: node --test --test-concurrency=1 scripts/pr-working-methods.test.cjs
+      - name: Check issue linkage and prohibit skip instructions
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        with:
+          script: |
+            const {inspectPR} = require('./scripts/pr-working-methods.cjs');
+            const result = await inspectPR({github, repo: context.repo,
+              number: Number(process.env.PR_NUMBER), expectedHead: process.env.EXPECTED_HEAD});
+            await core.summary.addHeading('Portfolio working methods')
+              .addRaw(`Checked ${result.commits} new commits at ${result.head}; closing issues: ${result.issues.join(', ')}.\n`)
+              .addRaw('Netlify preview and release checks are separate required checks. Owner acceptance and merge remain manual.\n')
+              .write();

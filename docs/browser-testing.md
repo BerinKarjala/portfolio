@@ -4,6 +4,12 @@ Localhost runs the fast development smoke tier. GitHub Actions runs the complete
 release evidence. The split bounds local resource use without dropping cloud
 coverage or treating a deferred local run as a pass.
 
+Follow the [issue-to-production workflow](working-methods.md). During development,
+localhost serves the active task branch. Open an early draft PR and always build
+a Netlify Deploy Preview. Focused checks support development iterations; all
+required cloud checks and a successful preview of the current PR head precede
+marking the PR ready for the owner's acceptance test and owner merge.
+
 | Tier | Work | Environment |
 | --- | --- | --- |
 | Local smoke | Mobile navigation, Page Builder route, Sanity login/workspace boot | Existing React at http://localhost:3000 and Sanity at http://localhost:3333; one headless Chromium worker |
@@ -13,7 +19,10 @@ coverage or treating a deferred local run as a pass.
 
 ## Local loop
 
-Use Node from `.nvmrc`. Leave the existing two dev servers running. Run:
+Use Node from `.nvmrc`. Reuse existing dev servers and identify their checkout.
+Keep the frontend on the active task branch. A controlled replacement of the
+identified frontend process is permitted when changing worktrees; preserve the
+Sanity process, unrelated apps and edits, and never start duplicates. Run:
 
 ```sh
 npm run test:e2e:local
@@ -67,6 +76,11 @@ The manual `landing` choice runs only the two carousel refinement files through
 the full three-engine configuration. It retains units/build/bundle checks but
 does not replace the default/full release matrices or dedicated workflows.
 Pull requests continue to select the ordinary default matrix automatically.
+Required release workflows run for every PR, including documentation changes;
+path filtering must not leave a required check permanently pending. Manual
+landing diagnostics have a separate check name and cannot satisfy the required
+Page Builder release check. Studio dependency/build checks also report on every
+PR, retaining their existing validation commands.
 The cloud regression workers remain limited to two and all browser retries are
 zero. CSS Studio and image-storage workflows keep their full browser coverage.
 
