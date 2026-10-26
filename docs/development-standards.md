@@ -6,6 +6,10 @@ TV browsers. Native mobile and TV applications are outside this platform scope.
 
 ## Development and quality control
 
+Follow the [portfolio working methods](working-methods.md) for issue creation,
+task branches, early draft PRs, mandatory Netlify previews, owner acceptance and
+owner merge. Linked issues close on merge; merges into main deploy automatically.
+
 1. Define observable acceptance criteria for each feature or fix.
 2. Write a meaningful failing test before changing the affected behavior.
 3. Implement the smallest change that satisfies the acceptance criteria.
@@ -14,10 +18,11 @@ TV browsers. Native mobile and TV applications are outside this platform scope.
 5. Run relevant unit/integration tests, browser workflows, accessibility checks,
    production builds, and performance gates. Record the exact tested commit and
    browser/runtime versions when reporting release evidence.
-6. Prepare a focused pull request with the problem, resulting behavior, test
-   evidence, and material limitations. Review the complete diff and current CI
-   results before merging and publishing. Verify important live routes after a
-   release.
+6. Keep the draft PR current with the problem, resulting behavior, exact tested
+   commit, test evidence, direct Netlify preview link, acceptance checklist and
+   material limitations. Review the complete diff, required CI results and preview
+   before marking it ready for the owner's acceptance test. The owner merges;
+   verify the automatic production deployment and important live routes afterward.
 
 Use the Node version in `.nvmrc` and `npm ci` with the committed lockfile.
 
@@ -25,13 +30,16 @@ Use the Node version in `.nvmrc` and `npm ci` with the committed lockfile.
 
 Follow the [browser testing split](browser-testing.md). The memory-constrained
 local machine uses the existing React `localhost:3000` and Sanity `localhost:3333`
-servers for three read-only smoke checks in one Chromium worker. Run
+servers for three read-only smoke checks in one Chromium worker. The frontend
+must serve the active task branch; identify its checkout before testing. Run
 `npm run test:e2e:local`; the ordinary `test:e2e` command selects this tier outside
 CI. Respect memory deferrals and do not start duplicate dev servers.
 
 Use targeted local unit tests with `--maxWorkers=1`. Full browser matrices,
 concurrent builds, Studio builds and native image/runtime checks run in cloud CI.
-The complete existing cloud release coverage remains required before merging.
+Use focused checks while iterating. The complete existing applicable cloud release
+coverage and current Netlify preview must pass before marking a PR ready for
+owner acceptance. Required GitHub checks block merging while pending or failing.
 Run `npm run test:e2e:cloud` or `test:e2e:full` inside CI; use GitHub workflow
 dispatch from the local machine. A local memory deferral is not a pass and does
 not waive any release check. Record which checkout the existing servers serve.

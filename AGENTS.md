@@ -1,6 +1,18 @@
 # Working methods
 
-Follow `docs/development-standards.md` and `docs/browser-testing.md`.
+Follow `docs/working-methods.md`, `docs/development-standards.md` and
+`docs/browser-testing.md`. These methods apply only to this portfolio repository.
+
+- Every task has a GitHub issue and its own branch. Open an early draft PR with
+  a closing reference; keep the issue open until the owner merges the PR.
+- Never skip Netlify previews. Required tests and a successful preview of the
+  current PR head precede owner acceptance. The owner tests the preview and
+  merges; agents never merge, enable auto-merge or push directly to main.
+- Every merge into main automatically deploys to production. When the owner's
+  merge is detected, verify production, sync local main and serve it locally.
+- Localhost must show the active task branch. Identify the serving checkout,
+  preserve unrelated edits and reuse the frontend process where safe; otherwise
+  replace only that identified frontend process without duplicate servers.
 
 - Use the existing React server at http://localhost:3000 and Sanity server at
   http://localhost:3333 for local smoke tests. Do not start duplicate servers.
@@ -17,9 +29,11 @@ Follow `docs/development-standards.md` and `docs/browser-testing.md`.
 - Preserve test-first development, existing assertions and zero browser retries.
   Record the exact tested commit/runtime and distinguish local dev-server
   checkout state from the test runner's worktree.
-- Keep unrelated working-tree edits and active dev servers intact. Use an
-  isolated branch/worktree for changes. Never write or publish CMS records as
+- Keep unrelated working-tree edits and unrelated dev servers intact. Use an
+  isolated branch/worktree; follow the controlled frontend switching rule above.
+  Never write or publish CMS records as
   part of the read-only environment smoke checks.
 - Before starting a dependency ticket, check its live alert and default-branch
-  lockfile. If already fixed, record that evidence and close the stale ticket;
-  a dismissed alert does not by itself prove remediation.
+  lockfile. If already fixed, record that evidence and the existing merged fix;
+  do not manufacture a new code change or close an issue merely on PR creation.
+  A dismissed alert does not by itself prove remediation.

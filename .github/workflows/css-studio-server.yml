@@ -1,11 +1,6 @@
 name: CSS Studio server boundary
 on:
   pull_request:
-    paths:
-      - "server/css-studio/**"
-      - "package*.json"
-      - ".nvmrc"
-      - ".github/workflows/css-studio-server.yml"
   workflow_dispatch:
 permissions:
   contents: read
@@ -14,6 +9,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   test:
+    name: CSS Studio server checks
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
