@@ -7,9 +7,10 @@
     "Source images are not optimized runtime assets.",
     "Weather layers have different intrinsic aspect ratios; use contain placement and review sizing.",
     "The review page uses a phase mask on the common moon master; actual runtime behavior remains unimplemented.",
-    "Partly cloudy preview composes the sun layer with the partly cloudy layer; scattered-showers and sleet overlays require verified provider mappings before runtime use."
+    "Partly cloudy preview composes the sun layer with the partly cloudy layer; scattered-showers and sleet overlays require verified provider mappings before runtime use.",
+    "Place the separate lightning overlay above rain and storm clouds when showing thunderstorms so the bolts remain visible."
   ],
-  "total_bytes": 16624214,
+  "total_bytes": 17276209,
   "assets": [
     {
       "file": "moon-master.png",
@@ -132,6 +133,17 @@
       "transparent_background": true,
       "reference_asset": "hail.png",
       "prompt": "Use case: lighting-weather. Asset type: transparent weather overlay for a 128px moon-and-weather website widget. Image 1 is the EDIT TARGET and style reference. Create a distinct SLEET companion overlay by preserving its cinematic softly luminous blue-gray winter cloud clusters, independent transparent alpha, and largely clear center for a separate moon, while changing the precipitation: replace the large round hailstones with a small number of fine silvery rain streaks interspersed with tiny translucent ice pellets. Use noticeably smaller pellets than hail and make both types of precipitation clear when scaled down; the mixture should read as sleet rather than fluffy snow or large hailstones. Preserve realistic dimensional textures, subtle highlights and the cool subdued palette. No moon, sun, large hailstones, snowflake symbols, lightning, sky, scenery, text, interface, or border. This is an independent overlay; it must not contain the moon."
+    },
+    {
+      "file": "lightning.png",
+      "role": "lightning-foreground",
+      "width": 1661,
+      "height": 947,
+      "bytes": 651995,
+      "sha256": "37c42c57888043b205fb069f9fa05d3c34c18988556801ddbce5e3b558213957",
+      "transparent_background": true,
+      "reference_asset": "thunderstorm.png",
+      "prompt": "Use case: precise-object-edit. Asset type: a separate transparent lightning overlay for a 128-pixel moon-and-weather website widget. Image 1 is the EDIT TARGET and lighting/style reference. Create a new independent LIGHTNING-ONLY layer: remove the entire cloud bank and all other scenery, retaining the storm's realistic pale blue-white branching lightning look. Show one or two distinct, luminous, naturally jagged lightning bolts near the lower outer left and/or lower outer right edges, descending from where the separately composited storm clouds will be. Make the main bolts bold and high-contrast enough to remain unmistakable at 128 pixels even when placed in front of rain and clouds, with a restrained cool-blue glow and finer realistic branches. Keep the central moon area and the upper middle transparent. This is an overlay that will be drawn above separate moon, storm-cloud and rain images: genuinely transparent alpha throughout the empty areas, no clouds, moon, sun, rain, snow, sky, scenery, text, interface, frame, or background."
     }
   ]
 }

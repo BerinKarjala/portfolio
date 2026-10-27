@@ -52,8 +52,8 @@
         ['No weather available', []], ['Sunny', ['sun']], ['Partly cloudy', ['sun', 'partly-cloudy']],
         ['Overcast', ['overcast']], ['Rain', ['rain']], ['Scattered showers', ['scattered-showers']],
         ['Hail', ['hail']], ['Snow', ['snow']], ['Sleet', ['sleet']], ['Fog', ['fog']],
-        ['Wind', ['wind']], ['Thunderstorm', ['thunderstorm']],
-        ['Rain and wind', ['rain', 'wind']], ['Thunderstorm and rain', ['thunderstorm', 'rain']],
+        ['Wind', ['wind']], ['Thunderstorm', ['thunderstorm', 'lightning']],
+        ['Rain and wind', ['rain', 'wind']], ['Thunderstorm and rain', ['thunderstorm', 'rain', 'lightning']],
       ];
       function moonPath(phase) {
         const waxing = phase < .5;
@@ -139,6 +139,7 @@
       for (const [name, layers] of [
         ['Partly cloudy', ['sun', 'partly-cloudy']], ['Scattered showers', ['scattered-showers']],
         ['Hail', ['hail']], ['Snow', ['snow']], ['Sleet', ['sleet']],
+        ['Thunderstorm and rain', ['thunderstorm', 'rain', 'lightning']],
         ['Rain and wind', ['rain', 'wind']], ['Fog', ['fog']],
       ]) {
         document.getElementById('large-gallery').append(card(name, .25, layers, true));

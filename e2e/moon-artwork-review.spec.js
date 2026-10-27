@@ -66,7 +66,7 @@ test('moon phases have a softened terminator and neutral shaded texture', async 
   expect(metrics[0].shadowGreenExcess).toBeLessThan(12);
 });
 
-test('weather previews include partly cloudy sunshine and distinct precipitation', async ({ page }, testInfo) => {
+test('weather previews include sunshine, precipitation, and visible storm lightning layers', async ({ page }, testInfo) => {
   await page.goto('/artwork-review/');
   const gallery = page.locator('#weather-gallery');
   const partlyCloudy = gallery.getByRole('img', { name: 'Partly cloudy', exact: true });
@@ -86,5 +86,14 @@ test('weather previews include partly cloudy sunshine and distinct precipitation
     await expect(layer).toBeVisible();
     await expect.poll(() => layer.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   }
+  const stormAndRain = gallery.getByRole('img', { name: 'Thunderstorm and rain', exact: true });
+  await expect(stormAndRain.locator('svg.moon')).toBeVisible();
+  for (const file of ['thunderstorm.png', 'rain.png', 'lightning.png']) {
+    const layer = stormAndRain.locator(`img[src$="/${file}"]`);
+    await expect(layer).toBeVisible();
+    await expect.poll(() => layer.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+  }
+  const stormLayers = await stormAndRain.locator('img').evaluateAll(images => images.map(image => new URL(image.src).pathname.split('/').pop()));
+  expect(stormLayers.indexOf('lightning.png')).toBeGreaterThan(stormLayers.indexOf('rain.png'));
   await testInfo.attach('weather-layers', { body: await gallery.screenshot(), contentType: 'image/png' });
 });
