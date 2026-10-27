@@ -5,6 +5,7 @@ import { defineConfig, devices } from "@playwright/test";
 // playwright.full.config.js selects the complete matrix when needed.
 const crossBrowserCases = [
   /page-builder(?:-acceptance|-canvas|-export)?\.spec\.js/,
+  /moon-artwork-review\.spec\.js/,
   /phone preview preserves drafts, traps focus/,
   /autosave completion preserves an in-progress effect-control click/,
 ];
