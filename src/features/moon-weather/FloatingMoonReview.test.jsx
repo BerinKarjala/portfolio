@@ -36,3 +36,18 @@ it('opens the calendar and returns focus to the moon after closing it', () => {
   expect(screen.queryByRole('dialog', { name: 'Calendar' })).toBeNull();
   expect(document.activeElement).toBe(moon);
 });
+
+it('lets Escape reach an open calendar before dismissing the underlying moon callout', () => {
+  render(<FloatingMoonReview />);
+  const moon = screen.getByRole('button', { name: 'Moon and weather' });
+  fireEvent.click(moon);
+  fireEvent.click(screen.getByRole('button', { name: 'Calendar', exact: true }));
+  const dialog = screen.getByRole('dialog', { name: 'Calendar' });
+  const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+  fireEvent(within(dialog).getByRole('button', { name: 'Close calendar' }), escape);
+  expect(escape.defaultPrevented).toBe(false);
+  fireEvent(dialog, new Event('cancel', { bubbles: false, cancelable: true }));
+  expect(screen.queryByRole('dialog', { name: 'Calendar' })).toBeNull();
+  expect(screen.getByRole('region', { name: 'Moon and weather details' })).toBeTruthy();
+  expect(document.activeElement).toBe(moon);
+});
