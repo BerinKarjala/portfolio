@@ -1,0 +1,49 @@
+.floating-moon {
+  --moon-safe-left: env(safe-area-inset-left, 0px);
+  --moon-safe-right: env(safe-area-inset-right, 0px);
+  --moon-safe-top: env(safe-area-inset-top, 0px);
+  --moon-safe-bottom: env(safe-area-inset-bottom, 0px);
+  position: fixed;
+  top: max(8px, var(--moon-safe-top));
+  right: max(8px, var(--moon-safe-right));
+  width: min(clamp(112px, 32vw, 160px), calc(100vw - max(8px, var(--moon-safe-left)) - max(8px, var(--moon-safe-right))), calc(100dvh - max(8px, var(--moon-safe-top)) - max(8px, var(--moon-safe-bottom))));
+  aspect-ratio: 1;
+  z-index: 40;
+  pointer-events: none;
+}
+.floating-moon__button {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: pinch-zoom;
+}
+.floating-moon__button:active { cursor: grabbing; }
+.floating-moon__button:focus-visible,
+.floating-moon__panel button:focus-visible { outline: 3px solid #fff2ba; outline-offset: 3px; }
+.floating-moon__panel {
+  position: absolute;
+  z-index: 1;
+  width: min(18rem, calc(100vw - max(8px, var(--moon-safe-left)) - max(8px, var(--moon-safe-right))));
+  max-height: calc(100dvh - max(8px, var(--moon-safe-top)) - max(8px, var(--moon-safe-bottom)));
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 1rem;
+  border: 1px solid #4e8062;
+  border-radius: .8rem;
+  color: #f1f8ee;
+  background: #102d20;
+  box-shadow: 0 .45rem 1.5rem #0008;
+  pointer-events: auto;
+}
+.floating-moon__panel p { margin: .35rem 0 .65rem; }
+.floating-moon__close { float: right; min-width: 44px; min-height: 44px; }
+.floating-moon__actions, .floating-moon__directions { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .65rem; }
+.floating-moon__panel button { min-height: 44px; padding: .4rem .6rem; border: 1px solid #79a989; border-radius: .4rem; color: inherit; background: #17412b; }
+.floating-moon__directions button { min-width: 44px; }

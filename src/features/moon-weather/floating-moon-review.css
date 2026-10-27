@@ -1,0 +1,33 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #071c12; color: #f0f8ed; font-family: system-ui, sans-serif; }
+button, select, input { font: inherit; }
+.floating-review__header { min-height: 5rem; padding: 1rem max(1rem, env(safe-area-inset-right)) 1rem max(1rem, env(safe-area-inset-left)); background: #174d2d; box-shadow: 0 4px 16px #0005; }
+.floating-review__header nav { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem 1rem; margin-right: clamp(120px, 34vw, 168px); }
+.floating-review__header a { display: inline-flex; align-items: center; min-height: 44px; color: #f0f8ed; font-weight: 600; text-decoration: none; }
+.floating-review__header a:first-child { font-size: 1.1rem; }
+@media (max-width: 220px) {
+  .floating-review__header nav { margin-right: 0; padding-top: 120px; }
+}
+.floating-review { max-width: 42rem; min-height: calc(100dvh - 5rem); margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+.floating-review h1 { margin: 0 0 .75rem; font-size: clamp(1.5rem, 5vw, 2rem); }
+.floating-review p { line-height: 1.5; }
+.floating-review__controls { display: grid; gap: .65rem; margin-top: 1rem; padding: 1rem; border: 1px solid #396748; border-radius: .7rem; background: #102d20; }
+.floating-review__controls select { width: 100%; min-height: 44px; padding: .4rem; border: 1px solid #86ad90; border-radius: .25rem; color: inherit; background: #071c12; }
+.floating-review__controls input { margin-right: .35rem; }
+.floating-review__calendar:modal { position: fixed; inset: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); overflow: auto; color: #f0f8ed; background: #073d25; }
+.floating-review__calendar::backdrop { background: #000b; }
+.floating-review__calendar-content { max-width: 40rem; margin: 0 auto; }
+.floating-review__calendar-heading { display: flex; align-items: center; justify-content: space-between; }
+.floating-review__calendar button { min-width: 44px; min-height: 44px; border: 1px solid #6da67d; border-radius: .35rem; color: inherit; background: #174d2d; }
+.floating-review__calendar button:focus-visible, .floating-review a:focus-visible, .floating-review__header a:focus-visible { outline: 3px solid #fff2ba; outline-offset: 3px; }
+.calendar-month-controls { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: .25rem; margin: .5rem 0; }
+.calendar-month-controls h3 { text-align: center; }
+.calendar-month-controls button:last-child { grid-column: 1 / -1; }
+.calendar-dates { border-radius: .65rem; background: #f5ebd4; color: #192d20; padding: .5rem .25rem; }
+.calendar-dates table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+.calendar-dates th { font-size: .75rem; font-weight: 400; padding: .4rem 0; }
+.calendar-dates td { text-align: center; border: 1px solid #b5b59d; }
+.floating-review__calendar .calendar-dates button { width: 100%; min-width: 0; padding: 0; border: 1px solid transparent; color: #192d20; background: transparent; }
+.floating-review__calendar .calendar-dates button[aria-pressed="true"] { border: 2px solid #004b30; background: #bedbc0; font-weight: 700; }
+.calendar-other-month { opacity: .65; }
+.calendar-selected { margin-top: .75rem; padding: .75rem; border-radius: .65rem; background: #f5ebd4; color: #192d20; }
