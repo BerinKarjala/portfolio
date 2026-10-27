@@ -3,6 +3,7 @@ import { clampPoint, dragBounds, returnPoint, safeInsets } from './floatingMotio
 
 const THRESHOLD = 8;
 const RETURN_DURATION = 8000;
+const KEY_MOVEMENT = { ArrowLeft: [-40, 0], ArrowRight: [40, 0], ArrowUp: [0, -40], ArrowDown: [0, 40] };
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
@@ -23,6 +24,7 @@ export default function useFloatingMoon({ element, onActivate, onCalendar, onInt
   const returning = useRef(null);
   const suppressClick = useRef(false);
   const lastPointer = useRef('');
+  const movementKeys = useRef(new Set());
   const reduced = useReducedMotion();
   const callbacks = useRef({ onActivate, onCalendar, onInteraction, reduced });
   callbacks.current = { onActivate, onCalendar, onInteraction, reduced };
@@ -67,6 +69,11 @@ export default function useFloatingMoon({ element, onActivate, onCalendar, onInt
     callbacks.current.onInteraction?.(false);
     if (state.dragged && shouldReturn) startReturn();
   }
+  function finishKeyboardMove() {
+    if (!movementKeys.current.size) return;
+    movementKeys.current.clear();
+    startReturn();
+  }
   function move(event) {
     const state = session.current;
     const contact = state?.contacts.get(event.pointerId);
@@ -92,12 +99,13 @@ export default function useFloatingMoon({ element, onActivate, onCalendar, onInt
     };
     const hidden = () => {
       if (document.visibilityState === 'hidden') {
+        movementKeys.current.clear();
         endSession(false);
         stopReturn();
         if (!callbacks.current.reduced) place({ x: 0, y: 0 });
       }
     };
-    const blur = () => endSession();
+    const blur = () => { endSession(); finishKeyboardMove(); };
     window.addEventListener('resize', resize);
     window.addEventListener('blur', blur);
     document.addEventListener('visibilitychange', hidden);
@@ -115,6 +123,7 @@ export default function useFloatingMoon({ element, onActivate, onCalendar, onInt
     onPointerDown: event => {
       lastPointer.current = event.pointerType;
       if (event.button !== 0) { suppressClick.current = true; return; }
+      finishKeyboardMove();
       let state = session.current;
       if (!state) {
         suppressClick.current = false;
@@ -167,18 +176,33 @@ export default function useFloatingMoon({ element, onActivate, onCalendar, onInt
       if (lastPointer.current !== 'touch') callbacks.current.onCalendar?.();
     },
     onKeyDown: event => {
-      if (event.key === 'Escape') endSession();
+      if (event.key === 'Escape') { endSession(); finishKeyboardMove(); }
       if (event.key === 'Enter' || event.key === ' ') suppressClick.current = false;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      if (event.key === 'Home') {
+        event.preventDefault();
+        movementKeys.current.clear();
+        endSession(false);
+        stopReturn();
+        place({ x: 0, y: 0 });
+      } else if (Object.hasOwn(KEY_MOVEMENT, event.key) && !session.current) {
+        event.preventDefault();
+        movementKeys.current.add(event.key);
+        stopReturn();
+        const [x, y] = KEY_MOVEMENT[event.key];
+        place(clampPoint({ x: current.current.x + x, y: current.current.y + y }, limits()));
+      }
     },
+    onKeyUp: event => {
+      if (!movementKeys.current.delete(event.key)) return;
+      event.preventDefault();
+      if (!movementKeys.current.size) startReturn();
+    },
+    onBlur: finishKeyboardMove,
     onClick: event => {
       if (suppressClick.current || session.current) { event.preventDefault(); return; }
       callbacks.current.onActivate?.();
     },
   };
-  return {
-    position, reduced, handlers,
-    moveBy: (x, y) => { stopReturn(); place(clampPoint({ x: current.current.x + x, y: current.current.y + y }, limits())); },
-    finishMove: startReturn,
-    reset: () => { endSession(false); stopReturn(); place({ x: 0, y: 0 }); },
-  };
+  return { position, reduced, handlers };
 }

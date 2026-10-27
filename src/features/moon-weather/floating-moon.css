@@ -25,6 +25,15 @@
   touch-action: pinch-zoom;
 }
 .floating-moon__button:active { cursor: grabbing; }
+.floating-moon__instructions {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 .floating-moon__button:focus-visible,
 .floating-moon__panel button:focus-visible { outline: 3px solid #fff2ba; outline-offset: 3px; }
 .floating-moon__panel {
@@ -44,6 +53,5 @@
 }
 .floating-moon__panel p { margin: .35rem 0 .65rem; }
 .floating-moon__close { float: right; min-width: 44px; min-height: 44px; }
-.floating-moon__actions, .floating-moon__directions { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .65rem; }
+.floating-moon__actions { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .65rem; }
 .floating-moon__panel button { min-height: 44px; padding: .4rem .6rem; border: 1px solid #79a989; border-radius: .4rem; color: inherit; background: #17412b; }
-.floating-moon__directions button { min-width: 44px; }

@@ -150,6 +150,17 @@ it('starts returning if focus leaves during keyboard movement and preserves modi
   expect(position(box)).toEqual([0, 0]);
 });
 
+it('continues returning when a pointer tap interrupts a held arrow key', () => {
+  const { moon, box } = show();
+  moon.focus();
+  fireEvent.keyDown(moon, { key: 'ArrowLeft' });
+  fireEvent.pointerDown(moon, pointer(1, 210, 60));
+  fireEvent.pointerUp(moon, pointer(1, 210, 60));
+  fireEvent.keyUp(moon, { key: 'ArrowLeft' });
+  tick(8000);
+  expect(position(box)).toEqual([0, 0]);
+});
+
 it('refits the moon when the viewport narrows during its return', () => {
   const { moon, box } = show();
   drag(moon, -100, 200);
