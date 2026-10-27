@@ -1,6 +1,6 @@
-# Moon and weather artwork: draft source set
+# Moon and weather artwork: accepted source set
 
-This artwork task is tracked in [#291](https://github.com/BerinKarjala/portfolio/issues/291) and belongs to [epic #290](https://github.com/BerinKarjala/portfolio/issues/290). The images are drafts for owner review; they do not implement the new moon component.
+This artwork task is tracked in [#291](https://github.com/BerinKarjala/portfolio/issues/291) and belongs to [epic #290](https://github.com/BerinKarjala/portfolio/issues/290). The owner accepted the artwork shown at commit `a8261d4d762a13cd900413e56afa77dc8f111fca` on October 27, 2026. These source images do not implement the new moon component.
 
 The source set contains a full moon master and separate transparent sun, partly cloudy, overcast, rain, scattered showers, snow, sleet, fog, wind, thunderstorm, lightning, and hail layers. The common master is intended to support continuously varying phase masks; weather layers can be composed together. `manifest.json` records each source image's dimensions, checksum, byte size, and complete generation prompt.
 
@@ -14,10 +14,11 @@ The weather gallery includes distinct scattered-showers, hail, snow, and sleet e
 
 The lightning layer sits in front of the rain and storm clouds in both thunderstorm examples. In the original combined sample, the rain artwork covered the lightning in the storm layer. The separate bolts keep both lightning and rain visible without hiding the moon.
 
+The noindex review page is deliberately retained as a visual reference for the upcoming integration and device review. It is not linked from the portfolio's normal navigation or used by the live component. Reassess its removal when the production component replaces it.
+
 ## Remaining work
 
 - The source PNGs total 17,276,209 bytes and have different intrinsic aspect ratios. They are deliberately retained at generated resolution; optimize and normalize delivery before using them in the live component. The review page loads the full-size source files and is not a performance benchmark.
 - Review fog, hail, and dense combined effects on real phones and at large display sizes. Check other phases, especially dark crescents, and adjust layer placement or regenerate artwork if the moon becomes obscured.
-- Confirm the owner accepts the art direction. The account-scoped reference image must be available to anyone revising the artwork.
+- Ensure the account-scoped reference image is available to anyone revising the artwork.
 - Implement and test the actual phase calculation, hemisphere orientation, weather mapping, reduced-motion behavior, compositing, lazy loading, and the other epic requirements separately. Verify whether the weather provider can distinguish scattered showers and sleet before mapping those illustrations; do not invent a condition the data cannot support.
-- The review page is a draft review aid. Decide whether to remove it before this artwork change is marked ready to merge.
