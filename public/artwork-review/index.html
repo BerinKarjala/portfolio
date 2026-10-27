@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Moon and weather artwork review</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #091b12; color: #edf7eb; }
+    body { margin: 0; }
+    main { width: min(100% - 2rem, 76rem); margin: 0 auto; padding: 2rem 0 4rem; }
+    h1 { margin: 0; font-size: clamp(1.6rem, 4vw, 2.5rem); }
+    h2 { margin: 2.5rem 0 .4rem; font-size: 1.25rem; }
+    p { max-width: 64rem; line-height: 1.5; color: #c8dbcb; }
+    .note { border-left: .25rem solid #9fcca1; padding-left: 1rem; }
+    .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .gallery--large { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    figure { margin: 0; padding: 1rem; background: #123222; border: 1px solid #365b40; border-radius: .75rem; }
+    figcaption { margin-top: .75rem; font-size: .95rem; }
+    .scene { position: relative; width: 128px; height: 128px; margin: auto; overflow: hidden; background: #03361c; }
+    .scene--large { width: 256px; height: 256px; max-width: 100%; }
+    .moon, .layer { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .layer { object-fit: contain; pointer-events: none; }
+    .layer--sun { inset: 0 0 auto auto; width: 56%; height: 56%; }
+    @media (max-width: 380px) { .gallery { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Moon and weather artwork</h1>
+    <p>Draft artwork review for the floating moon component. The examples show the same moon master with separate weather layers on the reference green background.</p>
+    <p class="note">These are full-size source images for visual review. Optimized delivery, live weather, drag behavior, and the final component remain future work. Phase shapes use the existing approximate geometry.</p>
+    <h2>Moon phases</h2>
+    <p>Each preview is 128 pixels across, the selected phone-size target.</p>
+    <div id="phase-gallery" class="gallery"></div>
+    <h2>Weather layers</h2>
+    <p>The weather examples use a first-quarter moon to make the overlays easier to compare.</p>
+    <div id="weather-gallery" class="gallery"></div>
+    <h2>Closer look</h2>
+    <div id="large-gallery" class="gallery gallery--large"></div>
+  </main>
+  <script>
+    (() => {
+      const NS = 'http://www.w3.org/2000/svg';
+      const root = '../assets/moon-weather/';
+      let nextId = 0;
+      const phases = [
+        ['New moon', 0], ['Waxing crescent', .125], ['First quarter', .25], ['Waxing gibbous', .375],
+        ['Full moon', .5], ['Waning gibbous', .625], ['Last quarter', .75], ['Waning crescent', .875],
+      ];
+      const weather = [
+        ['No weather available', []], ['Sunny', ['sun']], ['Partly cloudy', ['sun', 'partly-cloudy']],
+        ['Overcast', ['overcast']], ['Rain', ['rain']], ['Scattered showers', ['scattered-showers']],
+        ['Hail', ['hail']], ['Snow', ['snow']], ['Sleet', ['sleet']], ['Fog', ['fog']],
+        ['Wind', ['wind']], ['Thunderstorm', ['thunderstorm', 'lightning']],
+        ['Rain and wind', ['rain', 'wind']], ['Thunderstorm and rain', ['thunderstorm', 'rain', 'lightning']],
+      ];
+      function moonPath(phase) {
+        const waxing = phase < .5;
+        const x = Math.abs(Math.cos(2 * Math.PI * phase)) * 12;
+        const outer = waxing ? 1 : 0;
+        const inner = phase < .25 || phase >= .75 ? 1 - outer : outer;
+        return `M 16 4 A 12 12 0 0 ${outer} 16 28 A ${Math.max(x, .001)} 12 0 0 ${inner} 16 4 Z`;
+      }
+      function moon(phase) {
+        const svg = document.createElementNS(NS, 'svg');
+        svg.setAttribute('viewBox', '0 0 32 32');
+        svg.setAttribute('aria-hidden', 'true');
+        svg.classList.add('moon');
+        const defs = document.createElementNS(NS, 'defs');
+        const id = nextId++;
+        const softEdge = document.createElementNS(NS, 'filter');
+        softEdge.id = `phase-soft-edge-${id}`;
+        softEdge.setAttribute('filterUnits', 'userSpaceOnUse');
+        softEdge.setAttribute('x', '0');
+        softEdge.setAttribute('y', '0');
+        softEdge.setAttribute('width', '32');
+        softEdge.setAttribute('height', '32');
+        const blur = document.createElementNS(NS, 'feGaussianBlur');
+        blur.setAttribute('stdDeviation', '.55');
+        softEdge.append(blur);
+        const shadow = document.createElementNS(NS, 'filter');
+        shadow.id = `phase-earthshine-${id}`;
+        shadow.setAttribute('filterUnits', 'userSpaceOnUse');
+        shadow.setAttribute('x', '0');
+        shadow.setAttribute('y', '0');
+        shadow.setAttribute('width', '32');
+        shadow.setAttribute('height', '32');
+        const shade = document.createElementNS(NS, 'feColorMatrix');
+        shade.setAttribute('type', 'matrix');
+        shade.setAttribute('values', '.18 0 0 0 0  0 .18 0 0 0  0 0 .18 0 0  0 0 0 1 0');
+        shadow.append(shade);
+        const mask = document.createElementNS(NS, 'mask');
+        mask.id = `phase-illumination-${id}`;
+        mask.setAttribute('maskUnits', 'userSpaceOnUse');
+        mask.setAttribute('x', '0');
+        mask.setAttribute('y', '0');
+        mask.setAttribute('width', '32');
+        mask.setAttribute('height', '32');
+        const path = document.createElementNS(NS, 'path');
+        path.setAttribute('d', moonPath(phase));
+        path.setAttribute('fill', 'white');
+        path.setAttribute('filter', `url(#phase-soft-edge-${id})`);
+        mask.append(path);
+        defs.append(softEdge, shadow, mask);
+        svg.append(defs);
+        for (const bright of [false, true]) {
+          const image = document.createElementNS(NS, 'image');
+          image.setAttribute('href', root + 'moon-master.png');
+          image.setAttribute('width', '32');
+          image.setAttribute('height', '32');
+          if (bright) image.setAttribute('mask', `url(#phase-illumination-${id})`);
+          else image.setAttribute('filter', `url(#phase-earthshine-${id})`);
+          svg.append(image);
+        }
+        return svg;
+      }
+      function card(label, phase, layers, large = false) {
+        const figure = document.createElement('figure');
+        const scene = document.createElement('div');
+        scene.className = large ? 'scene scene--large' : 'scene';
+        scene.setAttribute('role', 'img');
+        scene.setAttribute('aria-label', label);
+        scene.append(moon(phase));
+        for (const layer of layers) {
+          const image = document.createElement('img');
+          image.alt = '';
+          image.className = layer === 'sun' ? 'layer layer--sun' : 'layer';
+          image.src = root + layer + '.png';
+          scene.append(image);
+        }
+        const caption = document.createElement('figcaption');
+        caption.textContent = label;
+        figure.append(scene, caption);
+        return figure;
+      }
+      for (const [name, phase] of phases) document.getElementById('phase-gallery').append(card(name, phase, []));
+      for (const [name, layers] of weather) document.getElementById('weather-gallery').append(card(name, .25, layers));
+      for (const [name, layers] of [
+        ['Partly cloudy', ['sun', 'partly-cloudy']], ['Scattered showers', ['scattered-showers']],
+        ['Hail', ['hail']], ['Snow', ['snow']], ['Sleet', ['sleet']],
+        ['Thunderstorm and rain', ['thunderstorm', 'rain', 'lightning']],
+        ['Rain and wind', ['rain', 'wind']], ['Fog', ['fog']],
+      ]) {
+        document.getElementById('large-gallery').append(card(name, .25, layers, true));
+      }
+    })();
+  </script>
+</body>
+</html>

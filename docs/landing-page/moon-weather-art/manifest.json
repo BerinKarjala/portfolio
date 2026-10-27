@@ -1,0 +1,149 @@
+{
+  "version": 1,
+  "status": "accepted-source-artwork",
+  "generation_method": "built-in image generation",
+  "reference": "https://chatgpt.com/library?file_id=libfile_02a8c6dd34f08191a22f32fee7586308&account_id=personal",
+  "notes": [
+    "Source images are not optimized runtime assets.",
+    "Weather layers have different intrinsic aspect ratios; use contain placement and review sizing.",
+    "The review page uses a phase mask on the common moon master; actual runtime behavior remains unimplemented.",
+    "Partly cloudy preview composes the sun layer with the partly cloudy layer; scattered-showers and sleet overlays require verified provider mappings before runtime use.",
+    "Place the separate lightning overlay above rain and storm clouds when showing thunderstorms so the bolts remain visible."
+  ],
+  "total_bytes": 17276209,
+  "assets": [
+    {
+      "file": "moon-master.png",
+      "role": "moon-master",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 1818961,
+      "sha256": "74f4616f5b950a35b70cf4132be4bc1edd9f0f61f91e78c7da6f3c40bd61dc12",
+      "transparent_background": true,
+      "prompt": "Use case: stylized-concept. Asset type: a reusable, standalone transparent moon texture layer for a mobile-first website component. Input image 1 is the approved STYLE REFERENCE: match its softly glowing, luminous pale ivory-gray cratered moon and dimensional, cinematic realism, not its crescent geometry or its clouds. Create ONE centered, straight-on, full circular moon, illuminated across its entire disk, with recognizable lunar craters, refined surface texture and subtle pearly highlights. The disk should occupy roughly 70% of a square transparent canvas, centered precisely, with enough clean margin for weather overlays to be composited separately later. This is the common master texture for programmatic phase masks, so the full disk must be present and fully lit, with a crisp round silhouette and consistent crater details. Genuinely transparent background with alpha. Do not include clouds, rain, a sun, weather, stars, sky, gradients outside the disk, text, a border, or interface elements."
+    },
+    {
+      "file": "sun.png",
+      "role": "sunny-day",
+      "width": 1402,
+      "height": 1122,
+      "bytes": 864973,
+      "sha256": "9c566f6d1ea24556f86917eaa6aa72f66514acb08b0b4690a794994f758ca6f6",
+      "transparent_background": true,
+      "prompt": "Use case: stylized-concept. Asset type: one separate transparent weather overlay for a mobile website moon/weather widget. Input image 1 is the approved style reference: match its dimensional, softly luminous cinematic rendering, muted blue-gray clouds, delicate detail and restrained highlights. The independent moon will be composited later at the center of this square canvas, so keep most of the central area open and DO NOT draw a moon, lunar disk, crescent, UI, words, labels, frame, stars, sky or solid background. Output genuinely transparent RGBA with clean edges. Keep the weather artwork within the outer edges so it fits a 128px widget. Draw ONE warm, softly radiant sun peeking in from the upper-right of the square, small enough to sit alongside the centered moon, with painterly golden-white glow and gentle rays. Isolated sun only; no clouds or rain."
+    },
+    {
+      "file": "partly-cloudy.png",
+      "role": "partly-cloudy",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1423473,
+      "sha256": "2f59e25c86691be076302b1e1edc7f4414e23ef6b5d9af0a525f477e01a371fe",
+      "transparent_background": true,
+      "prompt": "Use case: stylized-concept. Asset type: one separate transparent weather overlay for a mobile website moon/weather widget. Input image 1 is the approved style reference: match its dimensional, softly luminous cinematic rendering, muted blue-gray clouds, delicate detail and restrained highlights. The independent moon will be composited later at the center of this square canvas, so keep most of the central area open and DO NOT draw a moon, lunar disk, crescent, UI, words, labels, frame, stars, sky or solid background. Output genuinely transparent RGBA with clean edges. Keep the weather artwork within the outer edges so it fits a 128px widget. Draw a few softly lit, dimensional blue-gray cumulus clouds drifting around the lower-left and lower-right outer margins. The middle must remain largely transparent for the separate centered moon. Show a partly cloudy condition: a few separated clouds, not a solid wall of cloud. No sun, no rain, no snow."
+    },
+    {
+      "file": "rain.png",
+      "role": "rain-and-drizzle",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 1086881,
+      "sha256": "8879e02394ed52cd12bb2137a182f93d26ba06f42fba28a20de035ef8bea1c16",
+      "transparent_background": true,
+      "prompt": "Use case: stylized-concept. Asset type: one separate transparent weather overlay for a mobile website moon/weather widget. Input image 1 is the approved style reference: match its dimensional, softly luminous cinematic rendering, muted blue-gray clouds, delicate detail and restrained highlights. The independent moon will be composited later at the center of this square canvas, so keep most of the central area open and DO NOT draw a moon, lunar disk, crescent, UI, words, labels, frame, stars, sky or solid background. Output genuinely transparent RGBA with clean edges. Keep the weather artwork within the outer edges so it fits a 128px widget. Draw a compact cluster of moody blue-gray rain clouds along the left and lower perimeter, with fine silver-blue rain streaks extending toward the lower edge. Leave the central moon area mostly open so the independent moon can be seen. No sun, no snow, no lightning."
+    },
+    {
+      "file": "snow.png",
+      "role": "snow",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1659883,
+      "sha256": "01081b5bbfba464c05f9afeee66196386b713b950dfe2ac2e96727341702b3a1",
+      "transparent_background": true,
+      "prompt": "Use case: stylized-concept. Asset type: one separate transparent weather overlay for a mobile website moon/weather widget. Input image 1 is the approved style reference: match its dimensional, softly luminous cinematic rendering, muted blue-gray atmospheric forms and restrained highlights. An independent moon will later occupy the center of the square canvas; keep most of that center open. Genuinely transparent background with alpha. Do not draw any moon, lunar disk, crescent, sun, stars, scenery, text, frame, sky or interface elements. Keep the overlay within the canvas edges and readable when composed as part of a 128px widget. Create a compact bank of soft blue-gray winter clouds across the left and lower outer margins, with clearly visible distinct pale-white snowflakes drifting below. Leave the center mostly empty for the separate moon. No lightning or rain."
+    },
+    {
+      "file": "fog.png",
+      "role": "fog",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1616961,
+      "sha256": "50a0cbee6df822502a5995732d1b20a9191fd5c1a2ebd4a6983c42fb669d95a3",
+      "transparent_background": true,
+      "prompt": "Use case: stylized-concept. Asset type: one separate transparent weather overlay for a mobile website moon/weather widget. Input image 1 is the approved style reference: match its dimensional, softly luminous cinematic rendering, muted blue-gray atmospheric forms and restrained highlights. An independent moon will later occupy the center of the square canvas; keep most of that center open. Genuinely transparent background with alpha. Do not draw any moon, lunar disk, crescent, sun, stars, scenery, text, frame, sky or interface elements. Keep the overlay within the canvas edges and readable when composed as part of a 128px widget. Create a few soft, layered silver-blue fog banks and low mist wisps flowing along the bottom and both outer sides, leaving the center largely transparent for the separate moon. The mist should look cool, ethereal and softly backlit, not like a solid background. No rain, snow, clouds shaped as icons, or lightning."
+    },
+    {
+      "file": "wind.png",
+      "role": "wind",
+      "width": 1660,
+      "height": 947,
+      "bytes": 1519468,
+      "sha256": "b1403f935151c7358028a4288dc3701b70278b451dcb5e3a7e4b4d7851227cfa",
+      "transparent_background": true,
+      "prompt": "Use case: stylized-concept. Asset type: one separate transparent weather overlay for a mobile website moon/weather widget. Input image 1 is the approved style reference: match its dimensional, softly luminous cinematic rendering, muted blue-gray atmospheric forms and restrained highlights. A separate moon will be composited at the center of this canvas; keep most of the center clear. Genuinely transparent background with alpha. No moon, lunar disk, crescent, sun, stars, landscape, words, frame, solid sky, or interface elements. Keep the weather layer visually legible when composited in a 128px widget. Draw three or four elegant wisps and sweeping wind-stream curves in soft translucent silver-blue, curling around the outer left, bottom and right edges of the empty moon area. Make the gusts recognizable and simple enough at small sizes, with subtle volumetric glow. Only wind effects; no clouds, precipitation, symbols or arrows."
+    },
+    {
+      "file": "thunderstorm.png",
+      "role": "thunderstorm",
+      "width": 1661,
+      "height": 947,
+      "bytes": 1394435,
+      "sha256": "824f1af6727813b836d831d456cf4414c97596fffbdfe6c3a404f58e71242b36",
+      "transparent_background": true,
+      "prompt": "Use case: stylized-concept. Asset type: one separate transparent weather overlay for a mobile website moon/weather widget. Input image 1 is the approved style reference: match its dimensional, softly luminous cinematic rendering, muted blue-gray atmospheric forms and restrained highlights. A separate moon will be composited at the center of this canvas; keep most of the center clear. Genuinely transparent background with alpha. No moon, lunar disk, crescent, sun, stars, landscape, words, frame, solid sky, or interface elements. Keep the weather layer visually legible when composited in a 128px widget. Draw dark blue-gray storm clouds along the side and lower perimeter, with one or two clear pale-blue lightning bolts descending along the outer edge. Leave the central moon area mostly open. Do not include rain, snow or hail because those are independently composited layers."
+    },
+    {
+      "file": "overcast.png",
+      "role": "overcast",
+      "width": 1660,
+      "height": 947,
+      "bytes": 1285508,
+      "sha256": "ca667ada30680d5d6b416975676cf7c5a24c6d2894ca1fe05604cb10bb053b93",
+      "transparent_background": true,
+      "prompt": "Use case: stylized-concept. Asset type: one separate transparent weather overlay for a mobile website moon/weather widget. Input image 1 is the approved style reference: match its dimensional, softly luminous cinematic rendering, blue-gray clouds and restrained highlights. A separate moon will be composited in the center later; keep most of the center clear. Genuinely transparent background with alpha. No moon, lunar disk, crescent, sun, stars, landscape, words, frame, solid sky, or interface elements. Keep the weather layer recognizable when composited in a 128px widget. Draw a dense bank of softly lit blue-gray overcast clouds across the outer left, bottom and outer right, heavier and more continuous than a partly cloudy design. Leave enough central transparent space for the separate moon to remain recognizable. No rain, snow, lightning or ice."
+    },
+    {
+      "file": "hail.png",
+      "role": "hail",
+      "width": 1660,
+      "height": 948,
+      "bytes": 1135860,
+      "sha256": "3d8e616004585cb7b90f99459aa1c09974b69768d21d1b35f5bc59366d4cc3b1",
+      "transparent_background": true,
+      "prompt": "Use case: stylized-concept. Asset type: one separate transparent weather overlay for a mobile website moon/weather widget. Input image 1 is the approved style reference: match its dimensional, softly luminous cinematic rendering, blue-gray clouds and restrained highlights. A separate moon will be composited in the center later; keep most of the center clear. Genuinely transparent background with alpha. No moon, lunar disk, crescent, sun, stars, landscape, words, frame, solid sky, or interface elements. Keep the weather layer recognizable when composited in a 128px widget. Draw a compact dark blue-gray cloud bank along the lower left and lower right edges with a small number of distinct round pale ice pellets falling below. Make the round hail pellets legible at small sizes and visually distinct from snowflakes or rain. Keep the central moon area open. No lightning or snowflakes."
+    },
+    {
+      "file": "scattered-showers.png",
+      "role": "scattered-showers",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1671216,
+      "sha256": "17e4b21bb33106ea7d4c82a47816e4b5842b57f0a683313082ba22bee20abf55",
+      "transparent_background": true,
+      "reference_asset": "partly-cloudy.png",
+      "prompt": "Use case: lighting-weather. Asset type: transparent weather overlay for a 128px moon-and-weather website widget. Image 1 is the EDIT TARGET and style reference. Make a new companion overlay for SCATTERED SHOWERS by keeping its cinematic, softly luminous blue-gray cumulus clouds, transparent alpha, and open center for a separately composited moon, while changing only the weather details: separate the clouds into small patchy clusters and add a few visibly spaced silver-blue short falling rain streaks beneath the individual clouds, readable at small size. It should look noticeably lighter and more intermittent than a continuous rainstorm. Preserve the overall naturalistic lighting, high-quality volumetric cloud texture, and transparent background. No moon, sun, snowflakes, ice pellets, lightning, sky, scenery, text, interface, or border. This is an independent overlay; it must not contain the moon."
+    },
+    {
+      "file": "sleet.png",
+      "role": "sleet",
+      "width": 1660,
+      "height": 948,
+      "bytes": 1146595,
+      "sha256": "477b8c4958c923c7f44f576bbc463e4bfd54dc0c4c3d858e3fc740f389e619b6",
+      "transparent_background": true,
+      "reference_asset": "hail.png",
+      "prompt": "Use case: lighting-weather. Asset type: transparent weather overlay for a 128px moon-and-weather website widget. Image 1 is the EDIT TARGET and style reference. Create a distinct SLEET companion overlay by preserving its cinematic softly luminous blue-gray winter cloud clusters, independent transparent alpha, and largely clear center for a separate moon, while changing the precipitation: replace the large round hailstones with a small number of fine silvery rain streaks interspersed with tiny translucent ice pellets. Use noticeably smaller pellets than hail and make both types of precipitation clear when scaled down; the mixture should read as sleet rather than fluffy snow or large hailstones. Preserve realistic dimensional textures, subtle highlights and the cool subdued palette. No moon, sun, large hailstones, snowflake symbols, lightning, sky, scenery, text, interface, or border. This is an independent overlay; it must not contain the moon."
+    },
+    {
+      "file": "lightning.png",
+      "role": "lightning-foreground",
+      "width": 1661,
+      "height": 947,
+      "bytes": 651995,
+      "sha256": "37c42c57888043b205fb069f9fa05d3c34c18988556801ddbce5e3b558213957",
+      "transparent_background": true,
+      "reference_asset": "thunderstorm.png",
+      "prompt": "Use case: precise-object-edit. Asset type: a separate transparent lightning overlay for a 128-pixel moon-and-weather website widget. Image 1 is the EDIT TARGET and lighting/style reference. Create a new independent LIGHTNING-ONLY layer: remove the entire cloud bank and all other scenery, retaining the storm's realistic pale blue-white branching lightning look. Show one or two distinct, luminous, naturally jagged lightning bolts near the lower outer left and/or lower outer right edges, descending from where the separately composited storm clouds will be. Make the main bolts bold and high-contrast enough to remain unmistakable at 128 pixels even when placed in front of rain and clouds, with a restrained cool-blue glow and finer realistic branches. Keep the central moon area and the upper middle transparent. This is an overlay that will be drawn above separate moon, storm-cloud and rain images: genuinely transparent alpha throughout the empty areas, no clouds, moon, sun, rain, snow, sky, scenery, text, interface, frame, or background."
+    }
+  ]
+}
