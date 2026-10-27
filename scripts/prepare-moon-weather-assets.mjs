@@ -5,8 +5,12 @@ import sharp from 'sharp';
 
 const sourceDirectory = resolve('public/assets/moon-weather');
 const runtimeDirectory = resolve(sourceDirectory, 'runtime');
-const sourceManifest = JSON.parse(await readFile('docs/landing-page/moon-weather-art/manifest.json', 'utf8'));
-const runtimeManifest = { version: 1, sourceTotalBytes: sourceManifest.total_bytes, assets: {} };
+const sourceManifests = await Promise.all([
+  'docs/landing-page/moon-weather-art/manifest.json',
+  'docs/landing-page/moon-weather-art/sun-obstruction-manifest.json',
+].map(async path => JSON.parse(await readFile(path, 'utf8'))));
+const sourceAssets = sourceManifests.flatMap(manifest => manifest.assets);
+const runtimeManifest = { version: 1, sourceTotalBytes: sourceManifests.reduce((sum, manifest) => sum + manifest.total_bytes, 0), assets: {} };
 const variants = [
   { key: 'small', size: 384, format: 'webp' },
   { key: 'large', size: 768, format: 'webp' },
@@ -14,7 +18,7 @@ const variants = [
 ];
 
 await mkdir(runtimeDirectory, { recursive: true });
-for (const source of sourceManifest.assets) {
+for (const source of sourceAssets) {
   const input = await readFile(resolve(sourceDirectory, source.file));
   const hash = createHash('sha256').update(input).digest('hex');
   if (hash !== source.sha256 || input.length !== source.bytes) throw new Error(`Source artwork changed: ${source.file}`);

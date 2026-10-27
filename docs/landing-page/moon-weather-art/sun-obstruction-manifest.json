@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "status": "proposed-for-review",
+  "generation_method": "built-in image generation",
+  "notes": [
+    "These daytime overlays depict sunlight partially or fully obscured by the matching condition.",
+    "Existing accepted source artwork remains unchanged; these variants require owner review."
+  ],
+  "total_bytes": 8705901,
+  "assets": [
+    {
+      "file": "sun-overcast.png",
+      "role": "sun-overcast",
+      "width": 1402,
+      "height": 1122,
+      "bytes": 1017378,
+      "sha256": "181a123bf76bf22b3e0b4405d274789c45b6a825beb72276c58d30755e5c1d2a",
+      "transparent_background": true,
+      "reference_assets": [
+        "sun.png",
+        "overcast.png"
+      ],
+      "prompt": "Use case: stylized-concept. Create one separate transparent RGBA sun-obscuration overlay for an existing mobile moon/weather widget. Image 1 is the accepted isolated sun and Image 2 the accepted overcast cloud style; use them as visual references, not as images to reproduce wholesale. Depict FULLY OVERCAST DAYLIGHT: a compact thick dimensional blue-gray cloud completely hides the sun's disk, with only a subtle warm-white diffused backlight and softly lit cloud rim to indicate the sun behind it. Do not show a visible sun disk or starburst. Keep the entire cloud and glow localized in the upper-right area, comparable to the sun in Image 1; leave the rest of the canvas genuinely transparent and clear for a separate centered moon. Match the cinematic, softly luminous, almost photorealistic blue-gray weather art. Designed to remain legible when this layer is composited into a 128px widget. No moon, text, scenery, sky background, checkerboard, frame, precipitation or lightning."
+    },
+    {
+      "file": "sun-partly-cloudy.png",
+      "role": "sun-partly-cloudy",
+      "width": 1402,
+      "height": 1122,
+      "bytes": 883365,
+      "sha256": "51d91bba324ecee42294427de66498cdad68604b946ec7fc04b4809922752351",
+      "transparent_background": true,
+      "reference_assets": [
+        "sun.png",
+        "partly-cloudy.png"
+      ],
+      "prompt": "Use case: stylized-concept. Create one separate transparent RGBA daylight-sun overlay for an existing mobile moon/weather widget. Image 1 is the accepted isolated sun; Image 2 is the accepted weather artwork, both provided as STYLE REFERENCES only. Place the entire sun/cloud/mist subject in the upper-right area like Image 1, with the rest of the canvas genuinely transparent and clear for a separate centered moon. Match the cinematic, softly luminous, dimensional almost photorealistic blue-gray and warm-white art style. The layer must read clearly when composited into a 128px widget. No moon, text, scenery, sky background, checkerboard, frame, lightning, or giant central subject. Depict PARTLY CLOUDY DAYLIGHT: a warm sun is PARTIALLY covered by one small soft blue-gray cloud, so a clear arc and about half the disk remain visible. Let a few subtle rays peek around the cloud."
+    },
+    {
+      "file": "sun-fog.png",
+      "role": "sun-fog",
+      "width": 1402,
+      "height": 1122,
+      "bytes": 974423,
+      "sha256": "f4195ee2635f3285f518ba5003f09080f8ea2d383d2c5110ce6b85ad7e0619f5",
+      "transparent_background": true,
+      "reference_assets": [
+        "sun.png",
+        "fog.png"
+      ],
+      "prompt": "Use case: stylized-concept. Create one separate transparent RGBA daylight-sun overlay for an existing mobile moon/weather widget. Image 1 is the accepted isolated sun; Image 2 is the accepted weather artwork, both provided as STYLE REFERENCES only. Place the entire sun/cloud/mist subject in the upper-right area like Image 1, with the rest of the canvas genuinely transparent and clear for a separate centered moon. Match the cinematic, softly luminous, dimensional almost photorealistic blue-gray and warm-white art style. The layer must read clearly when composited into a 128px widget. No moon, text, scenery, sky background, checkerboard, frame, lightning, or giant central subject. Depict DENSE FOGGY DAYLIGHT: no visible defined sun disk and no sharp rays. A weak, soft, warm-white glow is completely veiled by thin, layered horizontal silver-blue fog and diffuse wisps. Make the fog visibly mist-like, not puffy cumulus clouds."
+    },
+    {
+      "file": "sun-rain.png",
+      "role": "sun-rain",
+      "width": 1402,
+      "height": 1122,
+      "bytes": 939879,
+      "sha256": "0f07cd723f097a8d1eec5bbdf779c78eb0ec898b80555cf499d10a654d04faec",
+      "transparent_background": true,
+      "reference_assets": [
+        "sun.png",
+        "rain.png"
+      ],
+      "prompt": "Use case: stylized-concept. Create one separate transparent RGBA daylight-sun overlay for an existing mobile moon/weather widget. Image 1 is the accepted isolated sun; Image 2 is the accepted weather artwork, both provided as STYLE REFERENCES only. Place the entire sun/cloud/mist subject in the upper-right area like Image 1, with the rest of the canvas genuinely transparent and clear for a separate centered moon. Match the cinematic, softly luminous, dimensional almost photorealistic blue-gray and warm-white art style. The layer must read clearly when composited into a 128px widget. No moon, text, scenery, sky background, checkerboard, frame, lightning, or giant central subject. Depict RAINY DAYLIGHT: a deep blue-gray rain cloud obscures most of the warm sun, leaving a subtle golden rim and only a small partial glint. A few fine silver-blue rain streaks beneath the cloud hint at rain."
+    },
+    {
+      "file": "sun-scattered-showers.png",
+      "role": "sun-scattered-showers",
+      "width": 1402,
+      "height": 1122,
+      "bytes": 1068513,
+      "sha256": "8f4db1d46a49a6c3ae14af16057a77b280379d01481592edc99941ba1ec0286c",
+      "transparent_background": true,
+      "reference_assets": [
+        "sun.png",
+        "scattered-showers.png"
+      ],
+      "prompt": "Use case: stylized-concept. Create one separate transparent RGBA daylight-sun overlay for an existing mobile moon/weather widget. Image 1 is the accepted isolated sun; Image 2 is the accepted weather artwork, both provided as STYLE REFERENCES only. Place the entire sun/cloud/mist subject in the upper-right area like Image 1, with the rest of the canvas genuinely transparent and clear for a separate centered moon. Match the cinematic, softly luminous, dimensional almost photorealistic blue-gray and warm-white art style. The layer must read clearly when composited into a 128px widget. No moon, text, scenery, sky background, checkerboard, frame, lightning, or giant central subject. Depict SCATTERED SHOWERS IN DAYLIGHT: a warm sun peeks partially between separate small blue-gray rain clouds; part of the disk is occluded, with restrained glow and a few delicate rain streaks."
+    },
+    {
+      "file": "sun-snow.png",
+      "role": "sun-snow",
+      "width": 1402,
+      "height": 1122,
+      "bytes": 866196,
+      "sha256": "9b8f80a7378709b7352bd8424f8b114cf88dc6e7dad897c4fcc09d6d9e301635",
+      "transparent_background": true,
+      "reference_assets": [
+        "sun.png",
+        "snow.png"
+      ],
+      "prompt": "Use case: stylized-concept. Create one separate transparent RGBA daylight-sun overlay for an existing mobile moon/weather widget. Image 1 is the accepted isolated sun; Image 2 is the accepted weather artwork, both provided as STYLE REFERENCES only. Place the entire sun/cloud/mist subject in the upper-right area like Image 1, with the rest of the canvas genuinely transparent and clear for a separate centered moon. Match the cinematic, softly luminous, dimensional almost photorealistic blue-gray and warm-white art style. The layer must read clearly when composited into a 128px widget. No moon, text, scenery, sky background, checkerboard, frame, lightning, or giant central subject. Depict SNOWY DAYLIGHT: a pale warm sun is mostly hidden behind a cool blue-gray winter cloud, with a small soft luminous arc and delicate rim light. Add a few distinct small snowflakes around the cloud."
+    },
+    {
+      "file": "sun-sleet.png",
+      "role": "sun-sleet",
+      "width": 1402,
+      "height": 1122,
+      "bytes": 969151,
+      "sha256": "5cf0144743fe3947db1614a23967f7038ed48ee3af9b43ffc8f1ed62322c9b33",
+      "transparent_background": true,
+      "reference_assets": [
+        "sun.png",
+        "sleet.png"
+      ],
+      "prompt": "Use case: stylized-concept. Create one separate transparent RGBA daylight-sun overlay for an existing mobile moon/weather widget. Image 1 is the accepted isolated sun; Image 2 is the accepted weather artwork, both provided as STYLE REFERENCES only. Place the entire sun/cloud/mist subject in the upper-right area like Image 1, with the rest of the canvas genuinely transparent and clear for a separate centered moon. Match the cinematic, softly luminous, dimensional almost photorealistic blue-gray and warm-white art style. The layer must read clearly when composited into a 128px widget. No moon, text, scenery, sky background, checkerboard, frame, lightning, or giant central subject. Depict SLEET DAYLIGHT: the sun is mostly hidden behind a dense cold blue-gray cloud, leaving a small muted warm glow. Add a few delicate ice pellets and thin rain streaks beneath the localized cloud, distinct from large snowflakes."
+    },
+    {
+      "file": "sun-hail.png",
+      "role": "sun-hail",
+      "width": 1402,
+      "height": 1122,
+      "bytes": 959189,
+      "sha256": "80f24f6c3ff716f5bfac8c63091f0b65bd9d4c5f82bcfcbccc68c4c3f6a46b18",
+      "transparent_background": true,
+      "reference_assets": [
+        "sun.png",
+        "hail.png"
+      ],
+      "prompt": "Use case: stylized-concept. Create one separate transparent RGBA daylight-sun overlay for an existing mobile moon/weather widget. Image 1 is the accepted isolated sun; Image 2 is the accepted weather artwork, both provided as STYLE REFERENCES only. Place the entire sun/cloud/mist subject in the upper-right area like Image 1, with the rest of the canvas genuinely transparent and clear for a separate centered moon. Match the cinematic, softly luminous, dimensional almost photorealistic blue-gray and warm-white art style. The layer must read clearly when composited into a 128px widget. No moon, text, scenery, sky background, checkerboard, frame, lightning, or giant central subject. Depict HAILSTORM DAYLIGHT: a thick dark blue-gray hail cloud completely hides the solar disk; show only faint diffuse warm backlighting around the cloud edge and a few small spherical hailstones."
+    },
+    {
+      "file": "sun-thunderstorm.png",
+      "role": "sun-thunderstorm",
+      "width": 1402,
+      "height": 1122,
+      "bytes": 1027807,
+      "sha256": "215d24e8878fb16578462f056f2ab8c78ef1072beb1affffa74d2a7faadaf7dc",
+      "transparent_background": true,
+      "reference_assets": [
+        "sun.png",
+        "thunderstorm.png"
+      ],
+      "prompt": "Use case: stylized-concept. Create one separate transparent RGBA daylight-sun overlay for an existing mobile moon/weather widget. Image 1 is the accepted isolated sun; Image 2 is the accepted weather artwork, both provided as STYLE REFERENCES only. Place the entire sun/cloud/mist subject in the upper-right area like Image 1, with the rest of the canvas genuinely transparent and clear for a separate centered moon. Match the cinematic, softly luminous, dimensional almost photorealistic blue-gray and warm-white art style. The layer must read clearly when composited into a 128px widget. No moon, text, scenery, sky background, checkerboard, frame, lightning, or giant central subject. Depict THUNDERSTORM DAYLIGHT: a dense dark charcoal-blue storm cloud completely hides the sun disk, with only a restrained diffuse warm-white glow behind the upper cloud rim. No visible solar disk, lightning, or rain in this layer; separate storm layers supply those effects."
+    }
+  ]
+}

@@ -54,6 +54,19 @@ describe('moon artwork rendering', () => {
     expect(container.querySelector('picture')).toBeNull();
   });
 
+  it('recovers a failed sun layer when the weather changes to a different sun variant', () => {
+    const { container, rerender } = render(<MoonArtwork date={date} weather={{ code: 3, daytime: true }} />);
+    let sun = container.querySelector('picture[data-weather-layer="sun"]');
+    expect(sun.dataset.artworkVariant).toBe('sun-overcast');
+    fireEvent.error(sun.querySelector('img'));
+    fireEvent.error(sun.querySelector('img'));
+    expect(container.querySelector('picture[data-weather-layer="sun"]')).toBeNull();
+    rerender(<MoonArtwork date={date} weather={{ code: 45, daytime: true }} />);
+    sun = container.querySelector('picture[data-weather-layer="sun"]');
+    expect(sun.dataset.artworkVariant).toBe('sun-fog');
+    expect(sun.querySelector('source')).not.toBeNull();
+  });
+
   it('omits the larger sources when the caller requests reduced data', () => {
     const { container } = render(<MoonArtwork date={date} weather={{ code: 3 }} reducedData />);
     expect(container.querySelector('picture source').getAttribute('srcset')).not.toMatch(/-768-[a-f0-9]{12}\.webp/);

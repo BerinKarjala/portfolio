@@ -18,14 +18,15 @@ it('shows the sun for partly cloudy daytime and removes it when daytime is unche
 });
 
 it.each([
-  ['3', 'overcast'], ['45', 'fog'], ['51', 'rain'], ['61', 'rain'],
-  ['80', 'scattered-showers'], ['71', 'snow'], ['sleet', 'sleet'],
-  ['95', 'thunderstorm'], ['96', 'hail'],
-])('shows daytime sun alongside weather sample %s and hides it at night', (value, layer) => {
+  ['3', 'overcast', 'sun-overcast'], ['45', 'fog', 'sun-fog'], ['51', 'rain', 'sun-rain'], ['61', 'rain', 'sun-rain'],
+  ['80', 'scattered-showers', 'sun-scattered-showers'], ['71', 'snow', 'sun-snow'], ['sleet', 'sleet', 'sun-sleet'],
+  ['95', 'thunderstorm', 'sun-thunderstorm'], ['96', 'hail', 'sun-hail'],
+])('shows the correct daytime sun for weather sample %s and hides it at night', (value, layer, variant) => {
   render(<MoonArtworkReview />);
   const phone = screen.getByRole('figure', { name: /phone-size artwork/i });
   fireEvent.change(screen.getByLabelText('Weather sample'), { target: { value } });
   expect(phone.querySelector('picture[data-weather-layer="sun"]')).not.toBeNull();
+  expect(phone.querySelector('picture[data-weather-layer="sun"]').dataset.artworkVariant).toBe(variant);
   expect(phone.querySelector(`picture[data-weather-layer="${layer}"]`)).not.toBeNull();
   fireEvent.click(screen.getByLabelText('Daytime'));
   expect(phone.querySelector('picture[data-weather-layer="sun"]')).toBeNull();

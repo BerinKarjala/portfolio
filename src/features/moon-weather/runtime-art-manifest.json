@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "sourceTotalBytes": 17276209,
+  "sourceTotalBytes": 25982110,
   "assets": {
     "moon-master": {
       "key": "moon-master",
@@ -325,6 +325,231 @@
         "height": 146,
         "bytes": 20911,
         "sha256": "eff048a4968bb4ecd3d51378acf8619f19c3abf399092bd87b31a6ec9116c029"
+      }
+    },
+    "sun-overcast": {
+      "key": "sun-overcast",
+      "source": "sun-overcast.png",
+      "small": {
+        "url": "/assets/moon-weather/runtime/sun-overcast-384-d8533d0c5142.webp",
+        "width": 384,
+        "height": 307,
+        "bytes": 25188,
+        "sha256": "d8533d0c5142694d1260abcb4e8274c78b60b12dca8a18cdc2922cc1ed481c7f"
+      },
+      "large": {
+        "url": "/assets/moon-weather/runtime/sun-overcast-768-e88ca88fb5d2.webp",
+        "width": 768,
+        "height": 615,
+        "bytes": 77526,
+        "sha256": "e88ca88fb5d215742aebe75206a43bbe1e6728a6b3195a3fe99b23fe1ed53676"
+      },
+      "fallback": {
+        "url": "/assets/moon-weather/runtime/sun-overcast-256-6880e6399c0f.png",
+        "width": 256,
+        "height": 205,
+        "bytes": 45177,
+        "sha256": "6880e6399c0f720216c6268b890c9742df16954ed26585b09d932e19b243d3a0"
+      }
+    },
+    "sun-partly-cloudy": {
+      "key": "sun-partly-cloudy",
+      "source": "sun-partly-cloudy.png",
+      "small": {
+        "url": "/assets/moon-weather/runtime/sun-partly-cloudy-384-2a2afac02c3b.webp",
+        "width": 384,
+        "height": 307,
+        "bytes": 21688,
+        "sha256": "2a2afac02c3b4b9dc0826b803e2efac6696aa077b00c866968b499ed3991ab67"
+      },
+      "large": {
+        "url": "/assets/moon-weather/runtime/sun-partly-cloudy-768-be916c8058cf.webp",
+        "width": 768,
+        "height": 615,
+        "bytes": 70196,
+        "sha256": "be916c8058cf8341db930238e84a5b8c98334eeadc9b8fc6a81341bf98de4c05"
+      },
+      "fallback": {
+        "url": "/assets/moon-weather/runtime/sun-partly-cloudy-256-fcf6a53b01e5.png",
+        "width": 256,
+        "height": 205,
+        "bytes": 37766,
+        "sha256": "fcf6a53b01e5caefafbf12c8ef548bdc8b0d6c0b31b131aca98381219311966a"
+      }
+    },
+    "sun-fog": {
+      "key": "sun-fog",
+      "source": "sun-fog.png",
+      "small": {
+        "url": "/assets/moon-weather/runtime/sun-fog-384-e417740787d3.webp",
+        "width": 384,
+        "height": 307,
+        "bytes": 19302,
+        "sha256": "e417740787d372d2e8395901e8a91ddb3d09971de33688785922bd0f108dc906"
+      },
+      "large": {
+        "url": "/assets/moon-weather/runtime/sun-fog-768-e3105b3c1040.webp",
+        "width": 768,
+        "height": 615,
+        "bytes": 61960,
+        "sha256": "e3105b3c10401acf1d9048e8e4b91f3669198f00131a1f7ba40ceac39e354ddf"
+      },
+      "fallback": {
+        "url": "/assets/moon-weather/runtime/sun-fog-256-46f841ece63e.png",
+        "width": 256,
+        "height": 205,
+        "bytes": 39637,
+        "sha256": "46f841ece63ebd9c8b9ca87d8cf31f7f60eaa791bc44caf86ef1b40e357dd08b"
+      }
+    },
+    "sun-rain": {
+      "key": "sun-rain",
+      "source": "sun-rain.png",
+      "small": {
+        "url": "/assets/moon-weather/runtime/sun-rain-384-dc8c417c959e.webp",
+        "width": 384,
+        "height": 307,
+        "bytes": 22686,
+        "sha256": "dc8c417c959ea0412a622c3359e83b9c6497ed7f4ac52c8910bace5f63d1cb38"
+      },
+      "large": {
+        "url": "/assets/moon-weather/runtime/sun-rain-768-e4febfb0da9a.webp",
+        "width": 768,
+        "height": 615,
+        "bytes": 71624,
+        "sha256": "e4febfb0da9a0cfee8939e87c38ae09b009a0f450ec2459a9818eca07e75050f"
+      },
+      "fallback": {
+        "url": "/assets/moon-weather/runtime/sun-rain-256-b90b68e5079f.png",
+        "width": 256,
+        "height": 205,
+        "bytes": 39032,
+        "sha256": "b90b68e5079f82b926ee030f2165ec41e08b792d08456bde702d3d258fcdf736"
+      }
+    },
+    "sun-scattered-showers": {
+      "key": "sun-scattered-showers",
+      "source": "sun-scattered-showers.png",
+      "small": {
+        "url": "/assets/moon-weather/runtime/sun-scattered-showers-384-0512bf8515f2.webp",
+        "width": 384,
+        "height": 307,
+        "bytes": 25338,
+        "sha256": "0512bf8515f21270a2361546b96173ddbf81db6b60f6c6a9933440cc1f1625af"
+      },
+      "large": {
+        "url": "/assets/moon-weather/runtime/sun-scattered-showers-768-face485d022f.webp",
+        "width": 768,
+        "height": 615,
+        "bytes": 82532,
+        "sha256": "face485d022f6c4528de53c6d80b3f7a06ffca9f005727495c595cddfc0cce63"
+      },
+      "fallback": {
+        "url": "/assets/moon-weather/runtime/sun-scattered-showers-256-4bcf82ae9e47.png",
+        "width": 256,
+        "height": 205,
+        "bytes": 44638,
+        "sha256": "4bcf82ae9e47b4932d5b10a46dcbe99246ac10729c4f6850742c56754db56fc4"
+      }
+    },
+    "sun-snow": {
+      "key": "sun-snow",
+      "source": "sun-snow.png",
+      "small": {
+        "url": "/assets/moon-weather/runtime/sun-snow-384-823b0bba935c.webp",
+        "width": 384,
+        "height": 307,
+        "bytes": 19954,
+        "sha256": "823b0bba935c7d8f45f8c08023e443f9940390c0db485b417f72cab0479a39ed"
+      },
+      "large": {
+        "url": "/assets/moon-weather/runtime/sun-snow-768-1abd5bd59eb3.webp",
+        "width": 768,
+        "height": 615,
+        "bytes": 63502,
+        "sha256": "1abd5bd59eb3c7ad356988a0cc696e9bf6a91d9c2c56b539d1120a339ef500b7"
+      },
+      "fallback": {
+        "url": "/assets/moon-weather/runtime/sun-snow-256-2d23b50e3d9b.png",
+        "width": 256,
+        "height": 205,
+        "bytes": 35949,
+        "sha256": "2d23b50e3d9bb926a5f38e1e947ac431638bb8a63035297d3b318fbbad2701d1"
+      }
+    },
+    "sun-sleet": {
+      "key": "sun-sleet",
+      "source": "sun-sleet.png",
+      "small": {
+        "url": "/assets/moon-weather/runtime/sun-sleet-384-d9ee4a3123d1.webp",
+        "width": 384,
+        "height": 307,
+        "bytes": 22388,
+        "sha256": "d9ee4a3123d157c8ef16f0c025ea42cd7387f5cc8598361ac9e4a91aff3ac9d6"
+      },
+      "large": {
+        "url": "/assets/moon-weather/runtime/sun-sleet-768-66386048081f.webp",
+        "width": 768,
+        "height": 615,
+        "bytes": 69000,
+        "sha256": "66386048081f26382873962155608dda66de0c5b007c0f3838f1df8535ccf0c4"
+      },
+      "fallback": {
+        "url": "/assets/moon-weather/runtime/sun-sleet-256-cc08c9f2e028.png",
+        "width": 256,
+        "height": 205,
+        "bytes": 40955,
+        "sha256": "cc08c9f2e02807e621a0d62038c52e8c27ef634eff983e80c5b2444b6811458e"
+      }
+    },
+    "sun-hail": {
+      "key": "sun-hail",
+      "source": "sun-hail.png",
+      "small": {
+        "url": "/assets/moon-weather/runtime/sun-hail-384-f4d196b57adb.webp",
+        "width": 384,
+        "height": 307,
+        "bytes": 23518,
+        "sha256": "f4d196b57adb2549855a26a4e1a25f69541963e8856248e8113bbe355e0a433f"
+      },
+      "large": {
+        "url": "/assets/moon-weather/runtime/sun-hail-768-4e93d10eb90b.webp",
+        "width": 768,
+        "height": 615,
+        "bytes": 68866,
+        "sha256": "4e93d10eb90b3a9b25d1c1e3b3330e380c36a0e8fdee7cf4bab565e119e1e210"
+      },
+      "fallback": {
+        "url": "/assets/moon-weather/runtime/sun-hail-256-c17796ddd51f.png",
+        "width": 256,
+        "height": 205,
+        "bytes": 42173,
+        "sha256": "c17796ddd51fdaeeabc637737013d79adb4cb14919f77f358fa81436347b4316"
+      }
+    },
+    "sun-thunderstorm": {
+      "key": "sun-thunderstorm",
+      "source": "sun-thunderstorm.png",
+      "small": {
+        "url": "/assets/moon-weather/runtime/sun-thunderstorm-384-f8eaeaf8979c.webp",
+        "width": 384,
+        "height": 307,
+        "bytes": 23964,
+        "sha256": "f8eaeaf8979ca393df132f10d2a4d7efbbc62f23d4daa211495740262cbe04a9"
+      },
+      "large": {
+        "url": "/assets/moon-weather/runtime/sun-thunderstorm-768-74fbc158246b.webp",
+        "width": 768,
+        "height": 615,
+        "bytes": 71636,
+        "sha256": "74fbc158246b611e03dd21d79537a111adce1e19f8b1c4e74b4b32d961ee1731"
+      },
+      "fallback": {
+        "url": "/assets/moon-weather/runtime/sun-thunderstorm-256-45ed69d2b70a.png",
+        "width": 256,
+        "height": 205,
+        "bytes": 43824,
+        "sha256": "45ed69d2b70a381e314ca4781a70bf4f4200987f303acb9c38dafac7db19bb63"
       }
     }
   }

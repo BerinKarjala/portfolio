@@ -8,6 +8,10 @@ const LAYER_LABELS = {
   thunderstorm: 'thunderstorm', rain: 'rain', 'scattered-showers': 'rain showers',
   snow: 'snow', sleet: 'sleet', hail: 'hail', wind: 'wind', lightning: 'lightning',
 };
+const SUN_VARIANT_LABELS = {
+  'sun-fog': 'sunlight through fog', 'sun-overcast': 'sunlight behind clouds',
+  'sun-hail': 'sunlight behind hail clouds', 'sun-thunderstorm': 'sunlight behind storm clouds',
+};
 
 function WeatherLayer({ asset, reducedData }) {
   const [fallback, setFallback] = useState(false);
@@ -17,7 +21,7 @@ function WeatherLayer({ asset, reducedData }) {
     ? `${asset.small.url} ${asset.small.width}w`
     : `${asset.small.url} ${asset.small.width}w, ${asset.large.url} ${asset.large.width}w`;
   return (
-    <picture className={`moon-artwork__layer${asset.key === 'sun' ? ' moon-artwork__layer--sun' : ''}`} data-weather-layer={asset.key}>
+    <picture className={`moon-artwork__layer${asset.key === 'sun' ? ' moon-artwork__layer--sun' : ''}`} data-weather-layer={asset.key} data-artwork-variant={asset.variant}>
       {!fallback && <source type="image/webp" srcSet={sourceSet} sizes={reducedData ? '128px' : '(max-width: 600px) 128px, 256px'} />}
       <img src={asset.fallback.url} alt="" loading="lazy" decoding="async" onError={() => fallback ? setFailed(true) : setFallback(true)} />
     </picture>
@@ -30,7 +34,9 @@ export default function MoonArtwork({ date = new Date(), latitude, weather, redu
   const { moon, layers } = getArtworkAssets(weather);
   const [moonSource, setMoonSource] = useState(moon.small.url);
   const phaseLabel = presentation ? `${presentation.name} (approximate)` : 'Moon phase unavailable';
-  const label = [phaseLabel, ...layers.map(asset => LAYER_LABELS[asset.key])].join(', ');
+  const label = [phaseLabel, ...layers.map(asset => asset.key === 'sun' && asset.variant !== 'sun'
+    ? (SUN_VARIANT_LABELS[asset.variant] ?? 'partially obscured sun')
+    : LAYER_LABELS[asset.key])].join(', ');
   const recoverMoon = () => setMoonSource(current => {
     if (current !== moonSource) return current;
     return current === moon.small.url ? moon.fallback.url : null;
@@ -59,7 +65,7 @@ export default function MoonArtwork({ date = new Date(), latitude, weather, redu
           </g>}
         </g>
       </svg>
-      {layers.map(asset => <WeatherLayer key={asset.key} asset={asset} reducedData={reducedData} />)}
+      {layers.map(asset => <WeatherLayer key={`${asset.key}:${asset.variant ?? asset.key}`} asset={asset} reducedData={reducedData} />)}
     </div>
   );
 }
