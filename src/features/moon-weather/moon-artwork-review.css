@@ -1,0 +1,17 @@
+body { margin: 0; font-family: system-ui, sans-serif; color-scheme: dark; background: #091b12; }
+@media (min-width: 160rem) { html { font-size: clamp(100%, 0.625vw, 150%); } }
+.moon-review { max-width: 70rem; margin: auto; padding: 2rem 1rem 4rem; color: #edf7eb; }
+.moon-review h1 { font-size: clamp(1.6rem, 4vw, 2.5rem); margin: 0; }
+.moon-review p { color: #c8dbcb; line-height: 1.5; }
+.moon-review__controls { display: grid; gap: .75rem; max-width: 36rem; padding: 1rem; border: 1px solid #365b40; border-radius: .75rem; background: #123222; }
+.moon-review__controls label { display: block; }
+.moon-review__controls input[type='checkbox'] { margin-right: .5rem; }
+.moon-review__controls input[type='range'] { width: 100%; }
+.moon-review__controls select { color: #edf7eb; background: #091b12; padding: .5rem; border: 1px solid #9fcca1; border-radius: .25rem; }
+.moon-review__controls :focus-visible { outline: 3px solid #c6f1c4; outline-offset: 3px; }
+.moon-review__examples { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; }
+.moon-review__examples figure { margin: 0; padding: 1rem; background: #123222; border: 1px solid #365b40; border-radius: .75rem; }
+.moon-review__examples figcaption { margin-top: .75rem; }
+.moon-review__scene { background: #03361c; }
+.moon-review__scene--phone { width: 128px; }
+.moon-review__scene--large { width: min(256px, calc(100vw - 5rem)); }

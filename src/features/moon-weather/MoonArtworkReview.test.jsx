@@ -1,0 +1,23 @@
+/* @vitest-environment jsdom */
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { afterEach, expect, it } from 'vitest';
+import MoonArtworkReview from './MoonArtworkReview';
+
+afterEach(cleanup);
+
+it('lets reviewers inspect the moon with supported weather and southern orientation', () => {
+  render(<MoonArtworkReview />);
+  expect(screen.getByText(/illustrated samples.*not live weather/i)).not.toBeNull();
+  const phone = screen.getByRole('group', { name: /phone-size artwork/i });
+  expect(within(phone).getByRole('img', { name: /first quarter/i })).not.toBeNull();
+  fireEvent.change(screen.getByLabelText('Preview background'), { target: { value: 'light' } });
+  expect(phone.querySelector('.moon-review__scene').style.backgroundColor).toBe('rgb(245, 242, 232)');
+  fireEvent.change(screen.getByLabelText('Weather sample'), { target: { value: 'sleet' } });
+  expect([...phone.querySelectorAll('picture')].map(el => el.dataset.weatherLayer)).toEqual(['sleet']);
+  fireEvent.change(screen.getByLabelText('Weather sample'), { target: { value: '95' } });
+  fireEvent.click(screen.getByLabelText('Add recent rain'));
+  fireEvent.click(screen.getByLabelText('Add wind'));
+  expect([...phone.querySelectorAll('picture')].map(el => el.dataset.weatherLayer)).toEqual(['thunderstorm', 'rain', 'wind', 'lightning']);
+  fireEvent.click(screen.getByLabelText('Southern Hemisphere'));
+  expect(phone.querySelector('[data-moon-orientation]').getAttribute('transform')).toBe('translate(32 0) scale(-1 1)');
+});
