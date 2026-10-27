@@ -23,7 +23,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     rollupOptions: {
-      input: ['index.html', 'artwork-review/runtime.html'],
+      input: ['index.html', 'artwork-review/runtime.html', 'artwork-review/floating.html'],
       output: {
         manualChunks(id) {
           const normalizedId = id.replaceAll('\\', '/')

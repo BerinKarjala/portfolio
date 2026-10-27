@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "status": "proposed-for-review",
+  "status": "accepted",
   "generation_method": "built-in image generation",
   "notes": [
     "These daytime overlays depict sunlight partially or fully obscured by the matching condition.",
-    "Existing accepted source artwork remains unchanged; these variants require owner review."
+    "Existing accepted source artwork remains unchanged; the owner accepted these nine variants on October 27, 2026."
   ],
   "total_bytes": 8705901,
   "assets": [

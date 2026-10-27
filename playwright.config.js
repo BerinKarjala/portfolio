@@ -7,6 +7,7 @@ const crossBrowserCases = [
   /page-builder(?:-acceptance|-canvas|-export)?\.spec\.js/,
   /moon-artwork-review\.spec\.js/,
   /moon-runtime-review\.spec\.js/,
+  /floating-moon-review\.spec\.js/,
   /phone preview preserves drafts, traps focus/,
   /autosave completion preserves an in-progress effect-control click/,
 ];

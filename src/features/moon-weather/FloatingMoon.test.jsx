@@ -27,7 +27,7 @@ function show() {
   moon.setPointerCapture = vi.fn(); moon.releasePointerCapture = vi.fn(); moon.hasPointerCapture = () => true;
   box.getBoundingClientRect = () => {
     const [x, y] = position(box);
-    return { left: 184 + x, top: 8 + y, right: 312 + x, bottom: 136 + y, width: 128, height: 128 };
+    return { left: window.innerWidth - 136 + x, top: 8 + y, right: window.innerWidth - 8 + x, bottom: 136 + y, width: 128, height: 128 };
   };
   return { moon, box, calendar };
 }
@@ -106,4 +106,49 @@ it('distinguishes a two-finger calendar shortcut from pinch movement', () => {
   fireEvent.pointerUp(moon, pointer(1, 180, 20, 'touch'));
   fireEvent.pointerUp(moon, pointer(2, 240, 20, 'touch'));
   expect(calendar).toHaveBeenCalledOnce();
+});
+
+it('starts a return after closing the keyboard movement controls', () => {
+  const { moon, box } = show();
+  fireEvent.click(moon);
+  fireEvent.click(screen.getByRole('button', { name: 'Move moon' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Move moon left' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Move moon down' }));
+  expect(position(box)).toEqual([-40, 40]);
+  fireEvent.click(screen.getByRole('button', { name: 'Close moon details' }));
+  tick(8000);
+  expect(position(box)).toEqual([0, 0]);
+  expect(document.activeElement).toBe(moon);
+});
+
+it('refits the moon when the viewport narrows during its return', () => {
+  const { moon, box } = show();
+  drag(moon, -100, 200);
+  vi.stubGlobal('innerWidth', 200);
+  fireEvent(window, new Event('resize'));
+  expect(position(box)).toEqual([-56, 200]);
+  tick(8000);
+  expect(position(box)).toEqual([0, 0]);
+});
+
+it('ends an interrupted drag and returns without activating the callout', () => {
+  const { moon, box } = show();
+  fireEvent.pointerDown(moon, pointer(1, 250, 60));
+  fireEvent.pointerMove(moon, pointer(1, 150, 160));
+  fireEvent.pointerCancel(moon, pointer(1, 150, 160));
+  fireEvent.click(moon);
+  expect(screen.queryByText('Weather unavailable')).toBeNull();
+  expect(position(box)).toEqual([-100, 100]);
+  tick(8000);
+  expect(position(box)).toEqual([0, 0]);
+});
+
+it('opens the calendar on right click and dismisses the callout with Escape', () => {
+  const { moon, calendar } = show();
+  fireEvent.contextMenu(moon);
+  expect(calendar).toHaveBeenCalledOnce();
+  fireEvent.keyDown(moon, { key: 'Enter' }); fireEvent.click(moon);
+  fireEvent.keyDown(document, { key: 'Escape' });
+  expect(screen.queryByText('Weather unavailable')).toBeNull();
+  expect(document.activeElement).toBe(moon);
 });
