@@ -13,7 +13,8 @@ describe('weather artwork selection', () => {
     expect(selectWeatherLayers({ code: 1, daytime: true })).toEqual(['sun', 'partly-cloudy']);
     expect(selectWeatherLayers({ code: 1, daytime: false })).toEqual(['partly-cloudy']);
     expect(selectWeatherLayers({ code: 2, daytime: true })).toEqual(['sun', 'partly-cloudy']);
-    expect(selectWeatherLayers({ code: 2, daytime: false })).toEqual(['sun', 'partly-cloudy']);
+    expect(selectWeatherLayers({ code: 2, daytime: false })).toEqual(['partly-cloudy']);
+    expect(selectWeatherLayers({ code: 2, daytime: undefined })).toEqual(['partly-cloudy']);
     expect(selectWeatherLayers({ code: 3, daytime: true })).toEqual(['overcast']);
   });
 

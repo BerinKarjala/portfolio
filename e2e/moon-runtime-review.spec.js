@@ -13,6 +13,16 @@ test('runtime artwork loads only selected effects and follows sample controls', 
   await expect.poll(() => requested.some(url => /moon-master-384-.*\.webp/.test(url))).toBe(true);
   expect(requested.some(url => /\/(sun|rain|wind|thunderstorm)-/.test(url))).toBe(false);
 
+  await page.getByLabel('Weather sample').selectOption('2');
+  await expect(phone.locator('picture[data-weather-layer="sun"]')).toHaveCount(1);
+  await expect(phone.locator('picture[data-weather-layer="partly-cloudy"]')).toHaveCount(1);
+  await page.getByLabel('Daytime').uncheck();
+  await expect(phone.locator('picture[data-weather-layer="sun"]')).toHaveCount(0);
+  await expect(phone.locator('picture[data-weather-layer="partly-cloudy"]')).toHaveCount(1);
+  await expect(phone.getByRole('img', { name: /first quarter.*clouds/i })).toBeVisible();
+  await page.getByLabel('Daytime').check();
+  await expect(phone.locator('picture[data-weather-layer="sun"]')).toHaveCount(1);
+
   await page.getByLabel('Weather sample').selectOption('sleet');
   await expect(phone.locator('picture[data-weather-layer="sleet"]')).toBeVisible();
   await page.getByLabel('Weather sample').selectOption('95');

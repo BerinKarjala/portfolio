@@ -20,12 +20,10 @@ export function selectWeatherLayers(weather, { windThresholdMph = DEFAULT_WIND_M
   const layers = new Set();
   const { code, daytime, windSpeedKmh, rainMm, snowfallCm, intervalSeconds, precipitationType } = weather;
   if (code === 0 && daytime === true) layers.add('sun');
-  if (code === 1) {
+  if (code === 1 || code === 2) {
     if (daytime === true) layers.add('sun');
     layers.add('partly-cloudy');
   }
-  // The owner's current partly-cloudy art direction includes the sun even at night.
-  if (code === 2) { layers.add('sun'); layers.add('partly-cloudy'); }
   if (code === 3) layers.add('overcast');
   if (code === 45 || code === 48) layers.add('fog');
   if (RAIN.has(code)) layers.add('rain');

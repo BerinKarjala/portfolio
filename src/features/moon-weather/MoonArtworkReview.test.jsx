@@ -5,6 +5,18 @@ import MoonArtworkReview from './MoonArtworkReview';
 
 afterEach(cleanup);
 
+it('shows the sun for partly cloudy daytime and removes it when daytime is unchecked', () => {
+  render(<MoonArtworkReview />);
+  const phone = screen.getByRole('figure', { name: /phone-size artwork/i });
+  fireEvent.change(screen.getByLabelText('Weather sample'), { target: { value: '2' } });
+  expect([...phone.querySelectorAll('picture')].map(el => el.dataset.weatherLayer)).toEqual(['sun', 'partly-cloudy']);
+  fireEvent.click(screen.getByLabelText('Daytime'));
+  expect([...phone.querySelectorAll('picture')].map(el => el.dataset.weatherLayer)).toEqual(['partly-cloudy']);
+  expect(within(phone).getByRole('img', { name: /first quarter.*clouds/i }).getAttribute('aria-label')).not.toMatch(/sun/i);
+  fireEvent.click(screen.getByLabelText('Daytime'));
+  expect([...phone.querySelectorAll('picture')].map(el => el.dataset.weatherLayer)).toEqual(['sun', 'partly-cloudy']);
+});
+
 it('lets reviewers inspect the moon with supported weather and southern orientation', () => {
   render(<MoonArtworkReview />);
   expect(screen.getByText(/illustrated samples.*not live weather/i)).not.toBeNull();
