@@ -6,9 +6,10 @@
   "notes": [
     "Source images are not optimized runtime assets.",
     "Weather layers have different intrinsic aspect ratios; use contain placement and review sizing.",
-    "The review page uses a phase mask on the common moon master; actual runtime behavior remains unimplemented."
+    "The review page uses a phase mask on the common moon master; actual runtime behavior remains unimplemented.",
+    "Partly cloudy preview composes the sun layer with the partly cloudy layer; scattered-showers and sleet overlays require verified provider mappings before runtime use."
   ],
-  "total_bytes": 13806403,
+  "total_bytes": 16624214,
   "assets": [
     {
       "file": "moon-master.png",
@@ -109,6 +110,28 @@
       "sha256": "3d8e616004585cb7b90f99459aa1c09974b69768d21d1b35f5bc59366d4cc3b1",
       "transparent_background": true,
       "prompt": "Use case: stylized-concept. Asset type: one separate transparent weather overlay for a mobile website moon/weather widget. Input image 1 is the approved style reference: match its dimensional, softly luminous cinematic rendering, blue-gray clouds and restrained highlights. A separate moon will be composited in the center later; keep most of the center clear. Genuinely transparent background with alpha. No moon, lunar disk, crescent, sun, stars, landscape, words, frame, solid sky, or interface elements. Keep the weather layer recognizable when composited in a 128px widget. Draw a compact dark blue-gray cloud bank along the lower left and lower right edges with a small number of distinct round pale ice pellets falling below. Make the round hail pellets legible at small sizes and visually distinct from snowflakes or rain. Keep the central moon area open. No lightning or snowflakes."
+    },
+    {
+      "file": "scattered-showers.png",
+      "role": "scattered-showers",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1671216,
+      "sha256": "17e4b21bb33106ea7d4c82a47816e4b5842b57f0a683313082ba22bee20abf55",
+      "transparent_background": true,
+      "reference_asset": "partly-cloudy.png",
+      "prompt": "Use case: lighting-weather. Asset type: transparent weather overlay for a 128px moon-and-weather website widget. Image 1 is the EDIT TARGET and style reference. Make a new companion overlay for SCATTERED SHOWERS by keeping its cinematic, softly luminous blue-gray cumulus clouds, transparent alpha, and open center for a separately composited moon, while changing only the weather details: separate the clouds into small patchy clusters and add a few visibly spaced silver-blue short falling rain streaks beneath the individual clouds, readable at small size. It should look noticeably lighter and more intermittent than a continuous rainstorm. Preserve the overall naturalistic lighting, high-quality volumetric cloud texture, and transparent background. No moon, sun, snowflakes, ice pellets, lightning, sky, scenery, text, interface, or border. This is an independent overlay; it must not contain the moon."
+    },
+    {
+      "file": "sleet.png",
+      "role": "sleet",
+      "width": 1660,
+      "height": 948,
+      "bytes": 1146595,
+      "sha256": "477b8c4958c923c7f44f576bbc463e4bfd54dc0c4c3d858e3fc740f389e619b6",
+      "transparent_background": true,
+      "reference_asset": "hail.png",
+      "prompt": "Use case: lighting-weather. Asset type: transparent weather overlay for a 128px moon-and-weather website widget. Image 1 is the EDIT TARGET and style reference. Create a distinct SLEET companion overlay by preserving its cinematic softly luminous blue-gray winter cloud clusters, independent transparent alpha, and largely clear center for a separate moon, while changing the precipitation: replace the large round hailstones with a small number of fine silvery rain streaks interspersed with tiny translucent ice pellets. Use noticeably smaller pellets than hail and make both types of precipitation clear when scaled down; the mixture should read as sleet rather than fluffy snow or large hailstones. Preserve realistic dimensional textures, subtle highlights and the cool subdued palette. No moon, sun, large hailstones, snowflake symbols, lightning, sky, scenery, text, interface, or border. This is an independent overlay; it must not contain the moon."
     }
   ]
 }
