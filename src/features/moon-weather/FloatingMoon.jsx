@@ -74,8 +74,8 @@ export default function FloatingMoon({ date, latitude, weather, reducedData, chi
     <button ref={button} type="button" className="floating-moon__button" aria-label="Moon and weather"
       aria-describedby={instructionsId} aria-expanded={open} aria-controls={open ? detailsId : undefined} {...motion.handlers}>
       <MoonArtwork date={date} latitude={latitude} weather={weather} reducedData={reducedData} />
+      <span id={instructionsId} className="floating-moon__instructions">Use the arrow keys to move the moon. Press Home to return to its starting position.</span>
     </button>
-    <span id={instructionsId} className="floating-moon__instructions">Use the arrow keys to move the moon. Press Home to return to its starting position.</span>
     {open && <section ref={panel} id={detailsId} className="floating-moon__panel" aria-label="Moon and weather details"
       style={{ left: panelPosition.left, top: panelPosition.top }}>
       <button className="floating-moon__close" type="button" aria-label="Close moon details"
