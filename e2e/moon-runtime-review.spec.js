@@ -8,7 +8,7 @@ test('runtime artwork loads only selected effects and follows sample controls', 
   });
   await page.goto('/artwork-review/runtime.html');
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow');
-  const phone = page.getByRole('group', { name: 'Phone-size artwork' });
+  const phone = page.getByRole('figure', { name: 'Phone-size artwork' });
   await expect(phone.getByRole('img', { name: /first quarter.*approximate/i })).toBeVisible();
   await expect.poll(() => requested.some(url => /moon-master-384-.*\.webp/.test(url))).toBe(true);
   expect(requested.some(url => /\/(sun|rain|wind|thunderstorm)-/.test(url))).toBe(false);
@@ -36,7 +36,7 @@ test('runtime artwork uses PNG fallbacks if WebP images fail', async ({ page }) 
   await page.route('**/moon-master-384-*.webp', route => route.abort());
   await page.route('**/overcast-*-*.webp', route => route.abort());
   await page.goto('/artwork-review/runtime.html');
-  const phone = page.getByRole('group', { name: 'Phone-size artwork' });
+  const phone = page.getByRole('figure', { name: 'Phone-size artwork' });
   await expect(phone.locator('svg image').first()).toHaveAttribute('href', /moon-master-256-.*\.png$/);
   await page.getByLabel('Weather sample').selectOption('3');
   await phone.scrollIntoViewIfNeeded();

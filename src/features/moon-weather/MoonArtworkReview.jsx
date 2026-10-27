@@ -51,11 +51,11 @@ export default function MoonArtworkReview() {
         <label><input type="checkbox" checked={reducedData} onChange={event => setReducedData(event.target.checked)} /> Reduced data</label>
       </div>
       <div className="moon-review__examples">
-        <figure role="group" aria-label="Phone-size artwork">
+        <figure aria-label="Phone-size artwork">
           <div className="moon-review__scene moon-review__scene--phone" style={{ backgroundColor: BACKGROUNDS[background] }}><MoonArtwork date={date} latitude={southern ? -33 : 40} weather={weather} reducedData={reducedData} /></div>
           <figcaption>Phone target · 128px</figcaption>
         </figure>
-        <figure role="group" aria-label="Large artwork">
+        <figure aria-label="Large artwork">
           <div className="moon-review__scene moon-review__scene--large" style={{ backgroundColor: BACKGROUNDS[background] }}><MoonArtwork date={date} latitude={southern ? -33 : 40} weather={weather} reducedData={reducedData} /></div>
           <figcaption>Closer look · 256px</figcaption>
         </figure>

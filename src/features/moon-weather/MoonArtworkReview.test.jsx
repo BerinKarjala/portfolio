@@ -8,7 +8,7 @@ afterEach(cleanup);
 it('lets reviewers inspect the moon with supported weather and southern orientation', () => {
   render(<MoonArtworkReview />);
   expect(screen.getByText(/illustrated samples.*not live weather/i)).not.toBeNull();
-  const phone = screen.getByRole('group', { name: /phone-size artwork/i });
+  const phone = screen.getByRole('figure', { name: /phone-size artwork/i });
   expect(within(phone).getByRole('img', { name: /first quarter/i })).not.toBeNull();
   fireEvent.change(screen.getByLabelText('Preview background'), { target: { value: 'light' } });
   expect(phone.querySelector('.moon-review__scene').style.backgroundColor).toBe('rgb(245, 242, 232)');
