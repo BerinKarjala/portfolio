@@ -5,6 +5,9 @@ button, select, input { font: inherit; }
 .floating-review__header nav { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem 1rem; margin-right: clamp(120px, 34vw, 168px); }
 .floating-review__header a { display: inline-flex; align-items: center; min-height: 44px; color: #f0f8ed; font-weight: 600; text-decoration: none; }
 .floating-review__header a:first-child { font-size: 1.1rem; }
+@media (max-width: 220px) {
+  .floating-review__header nav { margin-right: 0; padding-top: 120px; }
+}
 .floating-review { max-width: 42rem; min-height: calc(100dvh - 5rem); margin: 0 auto; padding: 1.5rem 1rem 4rem; }
 .floating-review h1 { margin: 0 0 .75rem; font-size: clamp(1.5rem, 5vw, 2rem); }
 .floating-review p { line-height: 1.5; }

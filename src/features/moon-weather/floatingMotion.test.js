@@ -20,6 +20,15 @@ describe('floating moon motion', () => {
     expect(clampPoint({ x: 0, y: 1000 }, bounds)).toEqual({ x: 0, y: 256 });
   });
 
+  it('keeps the moon clear of each device safe-area inset', () => {
+    const bounds = dragBounds(
+      { left: 200, top: 24, right: 328, bottom: 152 },
+      { x: 0, y: 0 }, { width: 360, height: 740 },
+      { left: 16, right: 32, top: 24, bottom: 34 },
+    );
+    expect(bounds).toEqual({ minX: -184, maxX: 0, minY: 0, maxY: 554 });
+  });
+
   it('returns halfway through the eight-second drift and arrives at home on time', () => {
     const from = { x: -160, y: 200 };
     expect(returnPoint(from, 0, 8000)).toEqual(from);

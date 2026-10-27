@@ -50,9 +50,11 @@ it('opens an attached callout outside the header and supports calendar activatio
   const { moon, calendar } = show();
   expect(moon.closest('header')).toBeNull();
   expect(screen.queryByText('Weather unavailable')).toBeNull();
+  expect(moon.hasAttribute('aria-controls')).toBe(false);
   fireEvent.click(moon);
   expect(screen.getByText('Weather unavailable')).toBeTruthy();
   expect(moon.getAttribute('aria-expanded')).toBe('true');
+  expect(document.getElementById(moon.getAttribute('aria-controls'))).toBeTruthy();
   fireEvent.click(screen.getByRole('button', { name: 'Calendar' }));
   expect(calendar).toHaveBeenCalledOnce();
 });
@@ -93,6 +95,16 @@ it('offers a stable reset when reduced motion is enabled', () => {
   expect(position(box)).toEqual([0, 0]);
 });
 
+it('keeps the reset control focused when the return finishes', () => {
+  const { moon } = show();
+  drag(moon, -90, 100);
+  fireEvent.keyDown(moon, { key: 'Enter' }); fireEvent.click(moon);
+  const reset = screen.getByRole('button', { name: /return moon to starting position/i });
+  reset.focus();
+  tick(8000);
+  expect(document.activeElement).toBe(reset);
+});
+
 it('distinguishes a two-finger calendar shortcut from pinch movement', () => {
   const { moon, calendar } = show();
   fireEvent.pointerDown(moon, pointer(1, 180, 20, 'touch'));
@@ -129,6 +141,14 @@ it('refits the moon when the viewport narrows during its return', () => {
   expect(position(box)).toEqual([-56, 200]);
   tick(8000);
   expect(position(box)).toEqual([0, 0]);
+});
+
+it('honors device safe-area insets when dragging to the edges', () => {
+  const { moon, box } = show();
+  box.style.setProperty('--moon-safe-left', '24px');
+  box.style.setProperty('--moon-safe-bottom', '32px');
+  drag(moon, -500, 1000);
+  expect(position(box)).toEqual([-160, 572]);
 });
 
 it('ends an interrupted drag and returns without activating the callout', () => {

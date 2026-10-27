@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { clampPoint, dragBounds, returnPoint } from './floatingMotion';
+import { clampPoint, dragBounds, returnPoint, safeInsets } from './floatingMotion';
 
 const THRESHOLD = 8;
 const RETURN_DURATION = 8000;
@@ -34,7 +34,7 @@ export default function useFloatingMoon({ element, onActivate, onCalendar, onInt
   function limits() {
     const rect = element.current?.getBoundingClientRect();
     if (!rect) return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
-    return dragBounds(rect, current.current, { width: window.innerWidth, height: window.innerHeight });
+    return dragBounds(rect, current.current, { width: window.innerWidth, height: window.innerHeight }, safeInsets(element.current));
   }
   function stopReturn() {
     if (returning.current !== null) cancelAnimationFrame(returning.current);

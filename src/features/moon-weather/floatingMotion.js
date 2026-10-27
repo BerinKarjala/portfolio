@@ -1,10 +1,19 @@
 export function dragBounds(rect, position, viewport, inset = 8) {
+  const edges = typeof inset === 'number'
+    ? { left: inset, right: inset, top: inset, bottom: inset } : inset;
   return {
-    minX: position.x + inset - rect.left,
-    maxX: position.x + viewport.width - inset - rect.right,
-    minY: position.y + inset - rect.top,
-    maxY: position.y + viewport.height - inset - rect.bottom,
+    minX: position.x + edges.left - rect.left,
+    maxX: position.x + viewport.width - edges.right - rect.right,
+    minY: position.y + edges.top - rect.top,
+    maxY: position.y + viewport.height - edges.bottom - rect.bottom,
   };
+}
+
+export function safeInsets(element) {
+  const style = window.getComputedStyle(element);
+  return Object.fromEntries(['left', 'right', 'top', 'bottom'].map(side => [
+    side, Math.max(8, Number.parseFloat(style.getPropertyValue(`--moon-safe-${side}`)) || 0),
+  ]));
 }
 
 const clamp = (value, min, max) => min > max ? min : Math.max(min, Math.min(max, value));

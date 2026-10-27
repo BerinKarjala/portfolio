@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import MoonArtwork from './MoonArtwork';
 import useFloatingMoon from './useFloatingMoon';
+import { safeInsets } from './floatingMotion';
 import './floating-moon.css';
 
 const GAP = 8;
@@ -50,13 +51,14 @@ export default function FloatingMoon({ date, latitude, weather, reducedData, chi
   const fitPanel = useCallback(() => {
     const rect = element.current?.getBoundingClientRect();
     if (!rect || !panel.current) return;
-    const width = panel.current.offsetWidth || Math.min(288, window.innerWidth - 2 * GAP);
-    const height = panel.current.offsetHeight || Math.min(260, window.innerHeight - 2 * GAP);
-    const left = clamp(rect.left, GAP, Math.max(GAP, window.innerWidth - width - GAP)) - rect.left;
+    const inset = safeInsets(element.current);
+    const width = panel.current.offsetWidth || Math.min(288, window.innerWidth - inset.left - inset.right);
+    const height = panel.current.offsetHeight || Math.min(260, window.innerHeight - inset.top - inset.bottom);
+    const left = clamp(rect.left, inset.left, Math.max(inset.left, window.innerWidth - width - inset.right)) - rect.left;
     const below = rect.bottom + GAP;
     const above = rect.top - height - GAP;
-    const screenTop = below + height <= window.innerHeight - GAP
-      ? below : above >= GAP ? above : clamp(below, GAP, Math.max(GAP, window.innerHeight - height - GAP));
+    const screenTop = below + height <= window.innerHeight - inset.bottom
+      ? below : above >= inset.top ? above : clamp(below, inset.top, Math.max(inset.top, window.innerHeight - height - inset.bottom));
     const top = screenTop - rect.top;
     setPanelPosition(previous => previous.left === left && previous.top === top ? previous : { left, top });
   }, []);
@@ -72,7 +74,7 @@ export default function FloatingMoon({ date, latitude, weather, reducedData, chi
   return <div ref={element} data-floating-moon className="floating-moon"
     style={{ transform: `translate(${position.x}px, ${position.y}px)` }}>
     <button ref={button} type="button" className="floating-moon__button" aria-label="Moon and weather"
-      aria-expanded={open} aria-controls={detailsId} {...motion.handlers}>
+      aria-expanded={open} aria-controls={open ? detailsId : undefined} {...motion.handlers}>
       <MoonArtwork date={date} latitude={latitude} weather={weather} reducedData={reducedData} />
     </button>
     {open && <section ref={panel} id={detailsId} className="floating-moon__panel" aria-label="Moon and weather details"
@@ -86,7 +88,7 @@ export default function FloatingMoon({ date, latitude, weather, reducedData, chi
           if (moving) motion.finishMove();
           setMoving(value => !value);
         }}>{moving ? 'Done moving' : 'Move moon'}</button>
-        {(position.x !== 0 || position.y !== 0) && <button type="button" onClick={motion.reset}>Return moon to starting position</button>}
+        <button type="button" onClick={motion.reset}>Return moon to starting position</button>
       </div>
       {moving && <div className="floating-moon__directions" aria-label="Move moon">
         <button type="button" aria-label="Move moon left" onClick={() => motion.moveBy(-40, 0)}>←</button>

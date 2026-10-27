@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 
 test('floating preview keeps navigation reachable and opens the calendar', async ({ page }, testInfo) => {
   for (const viewport of [
-    { width: 320, height: 740 }, { width: 390, height: 844 }, { width: 768, height: 1024 },
+    { width: 200, height: 320 }, { width: 320, height: 740 }, { width: 390, height: 844 }, { width: 768, height: 1024 },
     { width: 1440, height: 900 }, { width: 1920, height: 1080 }, { width: 3840, height: 2160 },
   ]) {
     await page.setViewportSize(viewport);
