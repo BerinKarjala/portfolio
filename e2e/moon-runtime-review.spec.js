@@ -23,15 +23,36 @@ test('runtime artwork loads only selected effects and follows sample controls', 
   await page.getByLabel('Daytime').check();
   await expect(phone.locator('picture[data-weather-layer="sun"]')).toHaveCount(1);
 
+  for (const [sample, layer] of [['3', 'overcast'], ['45', 'fog'], ['80', 'scattered-showers'], ['71', 'snow']]) {
+    await page.getByLabel('Weather sample').selectOption(sample);
+    await expect(phone.locator('picture[data-weather-layer="sun"]')).toHaveCount(1);
+    await expect(phone.locator(`picture[data-weather-layer="${layer}"]`)).toHaveCount(1);
+    if (sample === '45') {
+      await phone.scrollIntoViewIfNeeded();
+      for (const img of await phone.locator('picture img').all()) {
+        await expect.poll(() => img.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+      }
+      await testInfo.attach('daytime-fog-artwork', { body: await phone.screenshot(), contentType: 'image/png' });
+    }
+    await page.getByLabel('Daytime').uncheck();
+    await expect(phone.locator('picture[data-weather-layer="sun"]')).toHaveCount(0);
+    await expect(phone.locator(`picture[data-weather-layer="${layer}"]`)).toHaveCount(1);
+    await page.getByLabel('Daytime').check();
+  }
+
   await page.getByLabel('Weather sample').selectOption('sleet');
   await expect(phone.locator('picture[data-weather-layer="sleet"]')).toBeVisible();
+  await expect(phone.locator('picture[data-weather-layer="sun"]')).toHaveCount(1);
   await page.getByLabel('Weather sample').selectOption('95');
   await page.getByLabel('Add recent rain').check();
   await page.getByLabel('Add wind').check();
   await phone.scrollIntoViewIfNeeded();
   const layers = phone.locator('picture');
-  await expect(layers).toHaveCount(4);
-  expect(await layers.evaluateAll(elements => elements.map(element => element.dataset.weatherLayer))).toEqual(['thunderstorm', 'rain', 'wind', 'lightning']);
+  await expect(layers).toHaveCount(5);
+  expect(await layers.evaluateAll(elements => elements.map(element => element.dataset.weatherLayer))).toEqual(['sun', 'thunderstorm', 'rain', 'wind', 'lightning']);
+  const stacking = await layers.evaluateAll(elements => Object.fromEntries(elements.map(element => [element.dataset.weatherLayer, Number.parseInt(getComputedStyle(element).zIndex, 10) || 0])));
+  expect(stacking.sun).toBeGreaterThan(stacking.thunderstorm);
+  expect(stacking.lightning).toBeGreaterThan(stacking.sun);
   for (const img of await phone.locator('picture img').all()) {
     await expect.poll(() => img.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   }

@@ -15,7 +15,7 @@ describe('weather artwork selection', () => {
     expect(selectWeatherLayers({ code: 2, daytime: true })).toEqual(['sun', 'partly-cloudy']);
     expect(selectWeatherLayers({ code: 2, daytime: false })).toEqual(['partly-cloudy']);
     expect(selectWeatherLayers({ code: 2, daytime: undefined })).toEqual(['partly-cloudy']);
-    expect(selectWeatherLayers({ code: 3, daytime: true })).toEqual(['overcast']);
+    expect(selectWeatherLayers({ code: 3, daytime: true })).toEqual(['sun', 'overcast']);
   });
 
   it.each([
@@ -24,8 +24,10 @@ describe('weather artwork selection', () => {
     [80, ['scattered-showers']], [82, ['scattered-showers']], [85, ['snow']],
     [95, ['thunderstorm', 'lightning']], [97, ['thunderstorm', 'lightning']],
     [96, ['thunderstorm', 'hail', 'lightning']], [99, ['thunderstorm', 'hail', 'lightning']],
-  ])('maps provider code %s to its supported layers', (code, expected) => {
-    expect(selectWeatherLayers({ code, daytime: true })).toEqual(expected);
+  ])('maps provider code %s with and without daytime sun', (code, expected) => {
+    expect(selectWeatherLayers({ code, daytime: true })).toEqual(['sun', ...expected]);
+    expect(selectWeatherLayers({ code, daytime: false })).toEqual(expected);
+    expect(selectWeatherLayers({ code, daytime: undefined })).toEqual(expected);
   });
 
   it('combines independently reported rain and wind without covering lightning', () => {
@@ -54,6 +56,13 @@ describe('weather artwork selection', () => {
 
   it('shows sleet for an explicit ice-pellets classification', () => {
     expect(selectWeatherLayers({ code: 999, precipitationType: 'ice-pellets' })).toEqual(['sleet']);
+    expect(selectWeatherLayers({ code: 999, precipitationType: 'ice-pellets', daytime: true })).toEqual(['sun', 'sleet']);
     expect(selectWeatherLayers({ code: 999, precipitationType: 'mixed-rain-and-snow' })).toEqual([]);
+  });
+
+  it('does not invent a sun overlay when weather is unavailable or unknown', () => {
+    expect(selectWeatherLayers(null)).toEqual([]);
+    expect(selectWeatherLayers({ code: 999, daytime: true })).toEqual([]);
+    expect(selectWeatherLayers({ code: 999, daytime: true, windSpeedKmh: 40 })).toEqual(['sun', 'wind']);
   });
 });

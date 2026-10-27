@@ -19,9 +19,7 @@ export function selectWeatherLayers(weather, { windThresholdMph = DEFAULT_WIND_M
   if (!weather || typeof weather !== 'object' || Array.isArray(weather)) return [];
   const layers = new Set();
   const { code, daytime, windSpeedKmh, rainMm, snowfallCm, intervalSeconds, precipitationType } = weather;
-  if (code === 0 && daytime === true) layers.add('sun');
   if (code === 1 || code === 2) {
-    if (daytime === true) layers.add('sun');
     layers.add('partly-cloudy');
   }
   if (code === 3) layers.add('overcast');
@@ -38,5 +36,8 @@ export function selectWeatherLayers(weather, { windThresholdMph = DEFAULT_WIND_M
   if (recent && Number.isFinite(snowfallCm) && snowfallCm > 0 && (STORMS.has(code) || RAIN.has(code) || SHOWERS.has(code))) layers.add('snow');
   const threshold = Number.isFinite(windThresholdMph) && windThresholdMph >= 0 ? windThresholdMph : DEFAULT_WIND_MPH;
   if (Number.isFinite(windSpeedKmh) && windSpeedKmh >= 0 && windSpeedKmh / KM_PER_MILE >= threshold) layers.add('wind');
+  // Daylight can coexist with any recognized weather or explicit effect.
+  // A missing or unrecognized observation must not imply sunny weather.
+  if (daytime === true && (code === 0 || layers.size > 0)) layers.add('sun');
   return LAYER_ORDER.filter(layer => layers.has(layer));
 }
