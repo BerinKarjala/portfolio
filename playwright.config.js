@@ -6,6 +6,7 @@ import { defineConfig, devices } from "@playwright/test";
 const crossBrowserCases = [
   /page-builder(?:-acceptance|-canvas|-export)?\.spec\.js/,
   /moon-artwork-review\.spec\.js/,
+  /moon-runtime-review\.spec\.js/,
   /phone preview preserves drafts, traps focus/,
   /autosave completion preserves an in-progress effect-control click/,
 ];
