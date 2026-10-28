@@ -63,6 +63,7 @@ export default function FloatingMoonReview() {
       <h1>Floating moon preview</h1>
       <p>Weather samples are illustrative; they are not live readings.</p>
       <p>Drag the moon, release it, and watch it return. Select the moon to open its details.</p>
+      <p>With the moon focused, use the arrow keys to move it or Home to return it to its starting position.</p>
       <div className="floating-review__controls">
         <label htmlFor="floating-weather">Weather sample</label>
         <select id="floating-weather" value={code} onChange={event => { setCode(event.target.value); setRain(false); }}>

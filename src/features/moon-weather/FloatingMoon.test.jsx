@@ -55,6 +55,8 @@ it('opens an attached callout outside the header and supports calendar activatio
   expect(screen.getByText('Weather unavailable')).toBeTruthy();
   expect(moon.getAttribute('aria-expanded')).toBe('true');
   expect(document.getElementById(moon.getAttribute('aria-controls'))).toBeTruthy();
+  expect(screen.queryByRole('button', { name: /^move moon$/i })).toBeNull();
+  expect(screen.queryByRole('button', { name: /return moon to starting position/i })).toBeNull();
   fireEvent.click(screen.getByRole('button', { name: 'Calendar' }));
   expect(calendar).toHaveBeenCalledOnce();
 });
@@ -84,25 +86,24 @@ it('lets a callout travel with the returning moon and permits re-dragging withou
   expect(screen.getByText('Weather unavailable')).toBeTruthy();
 });
 
-it('offers a stable reset when reduced motion is enabled', () => {
+it('allows the focused moon to be reset with Home when reduced motion is enabled', () => {
   reduced = true;
   const { moon, box } = show();
   drag(moon, -90, 100);
   expect(position(box)).toEqual([-90, 100]);
   expect(frame).toBeNull();
-  fireEvent.keyDown(moon, { key: 'Enter' }); fireEvent.click(moon);
-  fireEvent.click(screen.getByRole('button', { name: /return moon to starting position/i }));
+  moon.focus();
+  fireEvent.keyDown(moon, { key: 'Home' });
   expect(position(box)).toEqual([0, 0]);
+  expect(document.activeElement).toBe(moon);
 });
 
-it('keeps the reset control focused when the return finishes', () => {
+it('keeps the moon focused when the return finishes', () => {
   const { moon } = show();
   drag(moon, -90, 100);
-  fireEvent.keyDown(moon, { key: 'Enter' }); fireEvent.click(moon);
-  const reset = screen.getByRole('button', { name: /return moon to starting position/i });
-  reset.focus();
+  moon.focus();
   tick(8000);
-  expect(document.activeElement).toBe(reset);
+  expect(document.activeElement).toBe(moon);
 });
 
 it('distinguishes a two-finger calendar shortcut from pinch movement', () => {
@@ -120,17 +121,44 @@ it('distinguishes a two-finger calendar shortcut from pinch movement', () => {
   expect(calendar).toHaveBeenCalledOnce();
 });
 
-it('starts a return after closing the keyboard movement controls', () => {
+it('moves the focused moon with arrow keys and starts returning after the last key is released', () => {
   const { moon, box } = show();
-  fireEvent.click(moon);
-  fireEvent.click(screen.getByRole('button', { name: 'Move moon' }));
-  fireEvent.click(screen.getByRole('button', { name: 'Move moon left' }));
-  fireEvent.click(screen.getByRole('button', { name: 'Move moon down' }));
+  moon.focus();
+  expect(document.getElementById(moon.getAttribute('aria-describedby')).textContent).toMatch(/arrow keys.*home/i);
+  fireEvent.keyDown(moon, { key: 'ArrowLeft' });
+  fireEvent.keyDown(moon, { key: 'ArrowDown' });
   expect(position(box)).toEqual([-40, 40]);
-  fireEvent.click(screen.getByRole('button', { name: 'Close moon details' }));
+  fireEvent.keyUp(moon, { key: 'ArrowLeft' });
+  expect(frame).toBeNull();
+  fireEvent.keyUp(moon, { key: 'ArrowDown' });
+  tick(4000);
+  expect(position(box)).toEqual([-20, 20]);
   tick(8000);
   expect(position(box)).toEqual([0, 0]);
   expect(document.activeElement).toBe(moon);
+});
+
+it('starts returning if focus leaves during keyboard movement and preserves modified arrow shortcuts', () => {
+  const { moon, box } = show();
+  moon.focus();
+  fireEvent.keyDown(moon, { key: 'ArrowLeft', ctrlKey: true });
+  expect(position(box)).toEqual([0, 0]);
+  fireEvent.keyDown(moon, { key: 'ArrowLeft' });
+  expect(position(box)).toEqual([-40, 0]);
+  fireEvent.blur(moon);
+  tick(8000);
+  expect(position(box)).toEqual([0, 0]);
+});
+
+it('continues returning when a pointer tap interrupts a held arrow key', () => {
+  const { moon, box } = show();
+  moon.focus();
+  fireEvent.keyDown(moon, { key: 'ArrowLeft' });
+  fireEvent.pointerDown(moon, pointer(1, 210, 60));
+  fireEvent.pointerUp(moon, pointer(1, 210, 60));
+  fireEvent.keyUp(moon, { key: 'ArrowLeft' });
+  tick(8000);
+  expect(position(box)).toEqual([0, 0]);
 });
 
 it('refits the moon when the viewport narrows during its return', () => {

@@ -34,6 +34,8 @@ test('floating preview keeps navigation reachable and opens the calendar', async
   await moon.click();
   const details = page.getByRole('region', { name: 'Moon and weather details' });
   await expect(details.getByText(/fog.*sample/i)).toBeVisible();
+  await expect(details.getByRole('button', { name: 'Move moon', exact: true })).toHaveCount(0);
+  await expect(details.getByRole('button', { name: 'Return moon to starting position' })).toHaveCount(0);
   await details.getByRole('button', { name: 'Calendar', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Calendar' });
   await expect(dialog).toBeVisible();
@@ -95,7 +97,11 @@ test('reduced motion leaves the moon in place until the visitor resets it', asyn
   const moved = await moon.boundingBox();
   expect(moved.x).toBeCloseTo(initial.x - 80, 0);
   await moon.click();
-  await page.getByRole('button', { name: 'Return moon to starting position' }).click();
+  await moon.focus();
+  await moon.press('ArrowLeft');
+  const keyboardMoved = await moon.boundingBox();
+  expect(keyboardMoved.x).toBeCloseTo(initial.x - 120, 0);
+  await moon.press('Home');
   const returned = await moon.boundingBox();
   expect(returned.x).toBeCloseTo(initial.x, 0);
   expect(returned.y).toBeCloseTo(initial.y, 0);

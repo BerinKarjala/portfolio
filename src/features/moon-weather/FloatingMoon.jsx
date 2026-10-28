@@ -9,12 +9,12 @@ const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
 export default function FloatingMoon({ date, latitude, weather, reducedData, children, onCalendar, onInteraction }) {
   const [open, setOpen] = useState(false);
-  const [moving, setMoving] = useState(false);
   const [panelPosition, setPanelPosition] = useState({ left: 0, top: 0 });
   const element = useRef(null);
   const button = useRef(null);
   const panel = useRef(null);
   const detailsId = useId();
+  const instructionsId = useId();
   const motion = useFloatingMoon({
     element,
     onActivate: () => { if (open) closeDetails(); else setOpen(true); },
@@ -23,14 +23,12 @@ export default function FloatingMoon({ date, latitude, weather, reducedData, chi
   });
   const { position } = motion;
   function closeDetails(restoreFocus = false) {
-    if (moving) motion.finishMove();
-    setMoving(false);
     setOpen(false);
     if (restoreFocus) button.current?.focus({ preventScroll: true });
   }
 
   useEffect(() => {
-    if (!open) { setMoving(false); return undefined; }
+    if (!open) return undefined;
     const dismiss = event => {
       if (!element.current?.contains(event.target)) closeDetails();
     };
@@ -46,7 +44,7 @@ export default function FloatingMoon({ date, latitude, weather, reducedData, chi
       document.removeEventListener('pointerdown', dismiss);
       document.removeEventListener('keydown', key);
     };
-  }, [open, moving]);
+  }, [open]);
 
   const fitPanel = useCallback(() => {
     const rect = element.current?.getBoundingClientRect();
@@ -62,7 +60,7 @@ export default function FloatingMoon({ date, latitude, weather, reducedData, chi
     const top = screenTop - rect.top;
     setPanelPosition(previous => previous.left === left && previous.top === top ? previous : { left, top });
   }, []);
-  useLayoutEffect(() => { if (open) fitPanel(); }, [fitPanel, open, position.x, position.y, moving]);
+  useLayoutEffect(() => { if (open) fitPanel(); }, [fitPanel, open, position.x, position.y]);
   useEffect(() => {
     if (!open || !panel.current) return undefined;
     const observer = window.ResizeObserver ? new ResizeObserver(fitPanel) : null;
@@ -74,8 +72,9 @@ export default function FloatingMoon({ date, latitude, weather, reducedData, chi
   return <div ref={element} data-floating-moon className="floating-moon"
     style={{ transform: `translate(${position.x}px, ${position.y}px)` }}>
     <button ref={button} type="button" className="floating-moon__button" aria-label="Moon and weather"
-      aria-expanded={open} aria-controls={open ? detailsId : undefined} {...motion.handlers}>
+      aria-describedby={instructionsId} aria-expanded={open} aria-controls={open ? detailsId : undefined} {...motion.handlers}>
       <MoonArtwork date={date} latitude={latitude} weather={weather} reducedData={reducedData} />
+      <span id={instructionsId} className="floating-moon__instructions">Use the arrow keys to move the moon. Press Home to return to its starting position.</span>
     </button>
     {open && <section ref={panel} id={detailsId} className="floating-moon__panel" aria-label="Moon and weather details"
       style={{ left: panelPosition.left, top: panelPosition.top }}>
@@ -84,18 +83,7 @@ export default function FloatingMoon({ date, latitude, weather, reducedData, chi
       {children}
       <div className="floating-moon__actions">
         <button type="button" onClick={() => onCalendar?.(button.current)}>Calendar</button>
-        <button type="button" aria-expanded={moving} onClick={() => {
-          if (moving) motion.finishMove();
-          setMoving(value => !value);
-        }}>{moving ? 'Done moving' : 'Move moon'}</button>
-        <button type="button" onClick={motion.reset}>Return moon to starting position</button>
       </div>
-      {moving && <div className="floating-moon__directions" aria-label="Move moon">
-        <button type="button" aria-label="Move moon left" onClick={() => motion.moveBy(-40, 0)}>←</button>
-        <button type="button" aria-label="Move moon up" onClick={() => motion.moveBy(0, -40)}>↑</button>
-        <button type="button" aria-label="Move moon down" onClick={() => motion.moveBy(0, 40)}>↓</button>
-        <button type="button" aria-label="Move moon right" onClick={() => motion.moveBy(40, 0)}>→</button>
-      </div>}
     </section>}
   </div>;
 }
