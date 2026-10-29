@@ -81,3 +81,16 @@ test('calendar shortcuts work on all three routes and preserve an open editor', 
   await expect(title).toHaveValue('Draft remains');
   await expect(moon).toBeFocused();
 });
+
+test('the moon remains visible below the Studio toolbar', async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/about');
+    await page.getByRole('button', { name: 'Theme Studio', exact: true }).click();
+    const toolbar = await page.getByRole('region', { name: 'Theme Studio tools' }).boundingBox();
+    const moon = await page.getByRole('button', { name: 'Moon and weather' }).boundingBox();
+    expect(moon.y).toBeGreaterThanOrEqual(toolbar.y + toolbar.height);
+    expect(moon.y + moon.height).toBeLessThanOrEqual(viewport.height);
+    await page.getByRole('button', { name: 'Close tools' }).click();
+  }
+});

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation as useRouteLocation } from 'react-router-dom';
 import Calendar from '../../components/Calendar';
@@ -39,12 +39,25 @@ export default function LiveMoon() {
   const date = useMinuteClock();
   const { weather, latitude, message, loading, unit, useLocation, toggleUnit } = useCurrentWeather(scene?.setTimeZone);
   const [launcher, setLauncher] = useState(null);
+  const [toolbarBottom, setToolbarBottom] = useState(0);
   const visible = supportsMoon(pathname);
   const zone = weather?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
   const phase = getMoonPresentation(date, latitude);
   const timestamp = new Intl.DateTimeFormat('en-US', { dateStyle: 'full', timeStyle: 'short', timeZone: zone }).format(date);
   const stale = weather && date.getTime() - weather.observedAt > 45 * 60 * 1000;
 
+  useLayoutEffect(() => {
+    if (!studioOpen) { setToolbarBottom(0); return undefined; }
+    const toolbar = document.querySelector('.studio-toolbar');
+    if (!toolbar) return undefined;
+    const measure = () => setToolbarBottom(Math.max(0, toolbar.getBoundingClientRect().bottom));
+    measure();
+    const observer = window.ResizeObserver ? new ResizeObserver(measure) : null;
+    observer?.observe(toolbar);
+    window.addEventListener('resize', measure);
+    window.addEventListener('scroll', measure, { passive: true });
+    return () => { observer?.disconnect(); window.removeEventListener('resize', measure); window.removeEventListener('scroll', measure); };
+  }, [studioOpen]);
   useEffect(() => {
     if (!visible) setLauncher(null);
   }, [visible]);
@@ -55,7 +68,7 @@ export default function LiveMoon() {
   }, [launcher, scene?.setInteracting]);
   if (!visible) return null;
 
-  return createPortal(<div className={studioOpen ? 'moon-live moon-live--studio-open' : 'moon-live'}>
+  return createPortal(<div className={studioOpen ? 'moon-live moon-live--studio-open' : 'moon-live'} style={{ '--moon-toolbar-bottom': `${toolbarBottom}px` }}>
     <FloatingMoon date={date} latitude={latitude} weather={weather}
       onInteraction={active => { if (!launcher) scene?.setInteracting(active); }} onCalendar={setLauncher}>
       <p><strong>{timestamp}</strong></p>

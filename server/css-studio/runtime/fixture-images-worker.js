@@ -14,6 +14,16 @@ import { createImageNormalizer } from "../imageNormalizer.js";
 import { boundedDimensions } from "../../../src/shared/studioRaster.js";
 import production, { QuotaAuthority, quotaClient } from "../worker.js";
 export { QuotaAuthority };
+// Run this local-only image adapter fixture during the reviewed period without
+// changing the production worker or the Durable Object's real-time clock.
+// Translate its reservation deadline by the same offset so HTTP admission
+// still compares the same remaining time that the real authority granted.
+let reviewedOffset;
+function reviewedClock() {
+  if (reviewedOffset === undefined)
+    reviewedOffset = Date.UTC(2026, 9, 27, 12) - Date.now();
+  return Date.now() + reviewedOffset;
+}
 const facts = {
   inferencePerformed: false,
   aiCalls: 0,
@@ -39,7 +49,7 @@ export default {
   async fetch(request, env) {
     const authority = quotaClient(env.QUOTA);
     if (new URL(request.url).pathname === "/__fixture/stats") {
-      const owner = await createIdentity(env.IDENTITY_SECRET).read(
+      const owner = await createIdentity(env.IDENTITY_SECRET, { clock: reviewedClock }).read(
         request.headers.get("cookie"),
       );
       return Response.json({
@@ -123,7 +133,9 @@ export default {
           ]);
           facts.events.push("admit");
         }
-        return result;
+        return result.admitted
+          ? { ...result, deadline: result.deadline + reviewedOffset }
+          : result;
       },
       async settle(value) {
         facts.settlements.push(value.outcome);
@@ -140,6 +152,7 @@ export default {
         image: createKleinImageProvider(ai, createImageNormalizer(images)),
       },
       policy: { ...CLOUDFLARE_THEME_PLAN, ...KLEIN_IMAGE_PLAN },
+      clock: reviewedClock,
     })(request);
   },
 };
