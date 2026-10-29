@@ -1,5 +1,5 @@
 import { DatabaseSync } from "node:sqlite";
-import { expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { QuotaLedger } from "./quota.js";
 import { createIdentity } from "./identity.js";
 import { createApp } from "./http.js";
@@ -7,6 +7,8 @@ import {
   createCloudflareProvider,
   CLOUDFLARE_THEME_PLAN,
 } from "./cloudflareProvider.js";
+beforeEach(() => { vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(Date.UTC(2026, 9, 27, 12)); });
+afterEach(() => vi.useRealTimers());
 it("retains the full provider charge and closes durable admission after an interrupted response", async () => {
   const db = new DatabaseSync(":memory:");
   const store = {

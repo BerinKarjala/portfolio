@@ -1,5 +1,5 @@
 import { deflateSync } from "node:zlib";
-import { expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { createApp } from "./http.js";
 import { createIdentity } from "./identity.js";
 import {
@@ -8,6 +8,9 @@ import {
 } from "./cloudflareProvider.js";
 import { createKleinImageProvider, KLEIN_IMAGE_PLAN } from "./kleinProvider.js";
 import { createImageNormalizer } from "./imageNormalizer.js";
+
+beforeEach(() => { vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(Date.UTC(2026, 9, 27, 12)); });
+afterEach(() => vi.useRealTimers());
 
 // Fully encoded raster; the injected Images boundary remains an explicit mock.
 function png(size) {
