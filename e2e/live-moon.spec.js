@@ -88,9 +88,19 @@ test('the moon remains visible below the Studio toolbar', async ({ page }) => {
     await page.goto('/about');
     await page.getByRole('button', { name: 'Theme Studio', exact: true }).click();
     const toolbar = await page.getByRole('region', { name: 'Theme Studio tools' }).boundingBox();
-    const moon = await page.getByRole('button', { name: 'Moon and weather' }).boundingBox();
-    expect(moon.y).toBeGreaterThanOrEqual(toolbar.y + toolbar.height);
-    expect(moon.y + moon.height).toBeLessThanOrEqual(viewport.height);
+    const moon = page.getByRole('button', { name: 'Moon and weather' });
+    const box = await moon.boundingBox();
+    expect(box.y).toBeGreaterThanOrEqual(toolbar.y + toolbar.height);
+    expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+    // On narrow screens the expanded Studio panel takes priority; collapse it
+    // to verify the moon remains above the page and can receive pointer input.
+    await page.getByRole('button', { name: 'Styles', exact: true }).click();
+    expect(await moon.evaluate(node => {
+      const rect = node.getBoundingClientRect();
+      return [0.5, 0.8].every(y => node.contains(document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height * y)));
+    })).toBe(true);
+    await moon.click();
+    await expect(page.getByRole('region', { name: 'Moon and weather details' })).toBeVisible();
     await page.getByRole('button', { name: 'Close tools' }).click();
   }
 });

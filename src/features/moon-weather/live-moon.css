@@ -1,4 +1,4 @@
-.moon-live--studio-open .floating-moon { top: max(8px, var(--moon-safe-top), calc(var(--moon-toolbar-bottom, 0px) + 8px)); z-index: 9; }
+.moon-live--studio-open .floating-moon { top: max(8px, var(--moon-safe-top), calc(var(--moon-toolbar-bottom, 0px) + 8px)); z-index: 11; }
 .moon-live__location-actions { display: flex; flex-wrap: wrap; gap: .35rem; margin: .65rem 0; }
 .moon-calendar:modal { position: fixed; inset: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); overflow: auto; color: #f0f8ed; background: #073d25; }
 .moon-calendar::backdrop { background: #000b; }

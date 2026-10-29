@@ -33,7 +33,7 @@
   max-height: calc(100dvh - 64px);
   overflow: auto;
   border: 1px solid #64748b;
-  z-index: 10;
+  z-index: 12;
 }
 .studio-left {
   grid-column: 1;
