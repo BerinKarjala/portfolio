@@ -26,6 +26,7 @@ test('the live moon is separate, responsive and limited to the agreed routes', a
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width + 1);
       if (path === '/' && (viewport.width === 320 || viewport.width === 3840)) {
+        await expect(page.getByRole('link', { name: 'Open Sudoku Solver' })).toBeVisible();
         await testInfo.attach(`live-moon-${viewport.width}`, { body: await page.screenshot({ scale: 'css' }), contentType: 'image/png' });
       }
     }
@@ -65,6 +66,7 @@ test('calendar shortcuts work on all three routes and preserve an open editor', 
     await moon.click({ button: 'right' });
     const dialog = page.getByRole('dialog', { name: 'Calendar' });
     await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Close calendar' })).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
     await expect(moon).toBeFocused();
