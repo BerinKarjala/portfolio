@@ -63,6 +63,16 @@ it('opens and closes the calendar on the same page and restores moon focus', asy
   expect(window.location.pathname).toBe('/about');
 });
 
+it('closes the shortcut calendar immediately with Escape', async () => {
+  render(<App />);
+  const moon = await screen.findByRole('button', { name: 'Moon and weather' });
+  fireEvent.contextMenu(moon);
+  const close = screen.getByRole('button', { name: 'Close calendar' });
+  fireEvent.keyDown(close, { key: 'Escape' });
+  expect(screen.queryByRole('dialog', { name: 'Calendar' })).toBeNull();
+  expect(document.activeElement).toBe(moon);
+});
+
 it('requests weather only after consent and shares it between supported routes', async () => {
   fetchWeather.mockResolvedValue({ temperature: 15, code: 61, daytime: true, timezone: 'America/New_York', observedAt: Date.now(), fetchedAt: Date.now() });
   render(<App />);

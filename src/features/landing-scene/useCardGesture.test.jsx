@@ -28,6 +28,19 @@ it('single tap selects; two sequential stationary taps expand exactly once and s
   tap(preview, 2); fireEvent.click(preview); fireEvent.doubleClick(preview);
   expect(expand).toHaveBeenCalledOnce(); expect(select).toHaveBeenCalledOnce();
 });
+it('suppresses the compatibility click if expansion moves a link under the touch, while allowing the next intentional click', () => {
+  const {preview, expand} = setup();
+  const link = screen.getByRole('link', {name: 'Project action'});
+  tap(preview); vi.advanceTimersByTime(100); tap(preview, 2);
+  expect(expand).toHaveBeenCalledOnce();
+  const compatibility = new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 });
+  fireEvent(link, compatibility);
+  expect(compatibility.defaultPrevented).toBe(true);
+  fireEvent.pointerDown(link, pointer(3, 20, 100));
+  const intentional = new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 });
+  fireEvent(link, intentional);
+  expect(intentional.defaultPrevented).toBe(false);
+});
 it('accepts an upward swipe at the distance and time boundary', () => {
   const {preview, expand, select} = setup();
   fireEvent.pointerDown(preview, pointer(1, 20, 100));

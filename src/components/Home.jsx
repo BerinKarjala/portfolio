@@ -66,7 +66,7 @@ export default function Home() {
     });
     return () => { active = false; cancelIdle(idle); };
   }, []);
-  const { utility, closeUtility, interacting, timeZone } = useScene();
+  const { utility, closeUtility, interacting, moonCalendarOpen, timeZone } = useScene();
   const deskRef = useRef(null);
   const sceneRef = useRef(null);
   const utilityHeading = useRef(null);
@@ -88,7 +88,7 @@ export default function Home() {
     setSelectedKey(next);
   }, [keys]);
   const studioOpen = useStudioOpen();
-  const utilityOpen = studioOpen || utility !== null;
+  const utilityOpen = studioOpen || utility !== null || moonCalendarOpen;
   const rotation = useCarouselRotation({ blocked: utilityOpen || interacting || expanded !== null, count, advance: move });
   useEffect(() => {if (utility) {rotation.hold(); utilityHeading.current?.focus();}}, [utility, rotation.hold]);
   useEffect(() => {if (expanded && expanded.utility !== utility) setExpanded(null);}, [utility, expanded]);

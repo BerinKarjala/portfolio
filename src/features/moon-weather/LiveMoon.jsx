@@ -14,7 +14,7 @@ import './live-moon.css';
 
 function MoonCalendar({ launcher, timeZone, onClose }) {
   const dialog = useRef(null);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const node = dialog.current;
     node.showModal();
     node.querySelector('button')?.focus();
@@ -24,7 +24,8 @@ function MoonCalendar({ launcher, timeZone, onClose }) {
     };
   }, [launcher]);
   return <dialog ref={dialog} className="moon-calendar" aria-label="Calendar" aria-modal="true"
-    onCancel={event => { event.preventDefault(); onClose(); }} onClose={onClose}>
+    onCancel={event => { event.preventDefault(); onClose(); }} onClose={onClose}
+    onKeyDownCapture={event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); onClose(); } }}>
     <div className="moon-calendar__content">
       <div className="moon-calendar__heading"><h2>Calendar</h2><button type="button" onClick={onClose} aria-label="Close calendar">×</button></div>
       <Calendar timeZone={timeZone} />
@@ -61,11 +62,11 @@ export default function LiveMoon() {
   useEffect(() => {
     if (!visible) setLauncher(null);
   }, [visible]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!launcher) return undefined;
-    scene?.setInteracting(true);
-    return () => scene?.setInteracting(false);
-  }, [launcher, scene?.setInteracting]);
+    scene?.setMoonCalendarOpen(true);
+    return () => scene?.setMoonCalendarOpen(false);
+  }, [launcher, scene?.setMoonCalendarOpen]);
   if (!visible) return null;
 
   return createPortal(<div className={studioOpen ? 'moon-live moon-live--studio-open' : 'moon-live'} style={{ '--moon-toolbar-bottom': `${toolbarBottom}px` }}>
