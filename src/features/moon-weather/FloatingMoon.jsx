@@ -30,7 +30,7 @@ export default function FloatingMoon({ date, latitude, weather, reducedData, chi
   useEffect(() => {
     if (!open) return undefined;
     const dismiss = event => {
-      if (!element.current?.contains(event.target)) closeDetails();
+      if (!element.current?.contains(event.target) && !event.target.closest?.('dialog[open]')) closeDetails();
     };
     const key = event => {
       if (event.key === 'Escape' && !event.defaultPrevented && !event.target.closest?.('dialog[open]')) {

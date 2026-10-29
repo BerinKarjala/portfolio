@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { useStudioControls } from '../css-studio/Studio';
 import { moonPath, moonPhase } from '../css-studio/moon';
 import { useScene } from './SceneContext';
 import useMinuteClock from './useMinuteClock';
-import { fetchWeather, formatTemperature, temperatureUnit, weatherDescription, WEATHER_REFRESH } from './weather';
+import { formatTemperature, weatherDescription } from './weather';
+import useCurrentWeather from './useCurrentWeather';
 import './weather.css';
 import useObjectGesture from './useObjectGesture';
 
@@ -48,72 +49,7 @@ export default function WeatherWidget() {
     window.addEventListener('resize', reset);
     return () => window.removeEventListener('resize', reset);
   }, []);
-  const [weather, setWeather] = useState(null);
-  const [message, setMessage] = useState('Weather needs your permission.');
-  const [loading, setLoading] = useState(false);
-  const [unitOverride, setUnitOverride] = useState(null);
-  const coordinates = useRef(null);
-  const reading = useRef(null);
-  const request = useRef(null);
-  const generation = useRef(0);
-  const alive = useRef(true);
-  const refresh = useCallback(async () => {
-    if (!coordinates.current || !alive.current) return;
-    const id = ++generation.current;
-    request.current?.abort();
-    const controller = new AbortController();
-    request.current = controller;
-    setLoading(true);
-    try {
-      const result = await fetchWeather(coordinates.current, { signal: controller.signal });
-      if (!alive.current || generation.current !== id) return;
-      reading.current = result;
-      setWeather(result);
-      setTimeZone?.(result.timezone);
-      setMessage('');
-    } catch {
-      if (!alive.current || generation.current !== id || controller.signal.aborted) return;
-      setMessage(reading.current ? 'Last reading; update unavailable.' : 'Weather unavailable. Try location again.');
-    } finally {
-      if (alive.current && generation.current === id) setLoading(false);
-    }
-  }, [setTimeZone]);
-  useEffect(() => {
-    alive.current = true;
-    const check = () => {
-      if (document.visibilityState !== 'hidden' && coordinates.current && (!reading.current || Date.now() - reading.current.fetchedAt >= WEATHER_REFRESH)) void refresh();
-    };
-    const timer = setInterval(check, WEATHER_REFRESH);
-    document.addEventListener('visibilitychange', check);
-    window.addEventListener('pageshow', check);
-    return () => {
-      alive.current = false;
-      generation.current++;
-      request.current?.abort();
-      clearInterval(timer);
-      document.removeEventListener('visibilitychange', check);
-      window.removeEventListener('pageshow', check);
-    };
-  }, [refresh]);
-  function useLocation() {
-    if (!navigator.geolocation) { setMessage('Location is unavailable in this browser.'); return; }
-    const id = ++generation.current;
-    request.current?.abort();
-    coordinates.current = null;
-    setLoading(true);
-    setMessage('Waiting for location permission…');
-    navigator.geolocation.getCurrentPosition(position => {
-      if (!alive.current || generation.current !== id) return;
-      coordinates.current = { latitude: position.coords.latitude, longitude: position.coords.longitude };
-      setMessage('Loading weather…');
-      void refresh();
-    }, error => {
-      if (!alive.current || generation.current !== id) return;
-      setLoading(false);
-      setMessage(error.code === 1 ? 'Location permission was denied. Clock and moon remain available.' : 'Location unavailable. Try again when ready.');
-    }, { enableHighAccuracy: false, timeout: 10000, maximumAge: WEATHER_REFRESH });
-  }
-  const unit = unitOverride || temperatureUnit(weather?.timezone || '');
+  const { weather, message, loading, unit, useLocation, toggleUnit } = useCurrentWeather(setTimeZone);
   const zone = weather?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
   const options = { timeZone: zone };
   const description = weather ? weatherDescription(weather.code) : '';
@@ -139,7 +75,7 @@ export default function WeatherWidget() {
       <p role="status">{message || (loading ? 'Refreshing weather…' : '')}</p>
       <div className="scene-weather-actions">
         <button onClick={useLocation} disabled={loading}>Use my location</button>
-        {weather && <button aria-label={`Switch to ${unit === 'fahrenheit' ? 'Celsius' : 'Fahrenheit'}`} onClick={() => setUnitOverride(unit === 'fahrenheit' ? 'celsius' : 'fahrenheit')}>{unit === 'fahrenheit' ? '°C' : '°F'}</button>}
+        {weather && <button aria-label={`Switch to ${unit === 'fahrenheit' ? 'Celsius' : 'Fahrenheit'}`} onClick={toggleUnit}>{unit === 'fahrenheit' ? '°C' : '°F'}</button>}
         <button ref={scene?.calendarLauncher} onClick={event => scene?.openCalendar(event.currentTarget)}>Calendar</button>
         {(gesture.position.x !== 0 || gesture.position.y !== 0) && <button onClick={gesture.reset}>Reset weather position</button>}
       </div>

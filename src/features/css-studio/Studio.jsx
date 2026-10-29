@@ -22,7 +22,6 @@ import {
   exportCss,
   profileId,
 } from "./theme";
-import { moonPath, moonPhase } from "./moon";
 import "./studio.css";
 import Voice from "./Voice";
 import {
@@ -848,22 +847,10 @@ export function StudioProvider({
     </StudioContext.Provider>
   );
 }
-export function MoonLauncher() {
+export function StudioLauncher() {
   const context = useContext(StudioContext);
   const { launch, navLauncher } = context || {};
-  const [phase, setPhase] = useState(() => moonPhase());
   const id = useId();
-  useEffect(() => {
-    const refresh = () => {
-      if (document.visibilityState !== "hidden") setPhase(moonPhase());
-    };
-    const timer = setInterval(refresh, 15 * 60 * 1000);
-    document.addEventListener("visibilitychange", refresh);
-    return () => {
-      clearInterval(timer);
-      document.removeEventListener("visibilitychange", refresh);
-    };
-  }, []);
   if (!context) return null;
   return (
     <span className="studio-launch-wrap">
@@ -874,10 +861,7 @@ export function MoonLauncher() {
         aria-describedby={id}
         onClick={launch}
       >
-        <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
-          <circle cx="16" cy="16" r="12" fill="#334155" stroke="#e2e8f0" />
-          <path d={moonPath(phase)} fill="#f8fafc" />
-        </svg>
+        <span aria-hidden="true">⚙</span>
       </button>
       <span id={id} role="tooltip" className="studio-tooltip">
         Theme Studio

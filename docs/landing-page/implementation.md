@@ -30,7 +30,7 @@ Confirmed user decisions, quoted:
 - “Move feather and inkwell together”
 
 Reviewable implementation defaults: eight-second idle rotation plus manual
-arrows; utilities temporarily replace the selected card; Close restores that
+arrows; the text editor temporarily replaces the selected card; Close restores that
 card; explicit Save stores one document locally; closing or switching utilities
 keeps the unsaved draft in memory. Reload/navigation warns when it is unsaved.
 Object positions reset on reload/viewport resize, with explicit Reset controls.
@@ -47,13 +47,13 @@ represented as a separate user approval.
 | CMS projects, bundled application routes, safe destination handling | Home.jsx | Home.test.jsx, including late CMS and normalized owned routes |
 | Original forest; separate transparent desk/quill/inkwell | landing-scene.css; assets/landing | Six-size scene/editor/calendar renders; asset README |
 | Idle rotation, Start/Pause, manual arrows, utility pause | useCarouselRotation.js; SceneContext.jsx | Home.test.jsx; Studio/editor idle browser checks |
-| Center utilities, focus/return, retained editor draft | Home.jsx; SceneContext.jsx; WritingContext.jsx | Home.test.jsx; editor browser workflows |
+| Center editor, focus/return, retained editor draft; full-screen calendar | Home.jsx; SceneContext.jsx; LiveMoon.jsx; WritingContext.jsx | Home.test.jsx; live moon and editor browser workflows |
 | Editor formatting, history, browser Save, plain-text Download | TextEditor.jsx; writingDocument.js | TextEditor.test.jsx; writingDocument.test.js; actual browser download/reload checks |
 | Quill/inkwell click/drag/reset, keyboard movement | WritingSet.jsx; useObjectGesture.js | Shared gesture tests; bounded writing-set browser check |
 | Real grids, Today, month/year/leap boundaries, keyboard dates | Calendar.jsx | Calendar.test.jsx; six-size browser/axe checks |
-| Minute clock, midnight/DST/resume, approximate moon helper | useMinuteClock.js; WeatherWidget.jsx | useMinuteClock.test.jsx |
-| Permission-only location, inferred units/timezone, stale/error states | weather.js; WeatherWidget.jsx | WeatherWidget.test.jsx; weather.test.js; mocked provider browser check |
-| Weather drag/click/right-click/two-contact intent isolation | useObjectGesture.js | Gesture tests; real mouse drag/right-click browser checks |
+| Minute clock, midnight/DST/resume, approximate moon helper | useMinuteClock.js; LiveMoon.jsx; lunar.js | useMinuteClock.test.jsx; lunar.test.js |
+| Permission-only location, inferred units/timezone, stale/error states | weather.js; useCurrentWeather.js; LiveMoon.jsx | WeatherWidget.test.jsx; weather.test.js; mocked provider browser check |
+| Floating moon drag/click/right-click/two-contact intent isolation | FloatingMoon.jsx; useFloatingMoon.js | Motion tests; real mouse drag/right-click browser checks |
 | Existing Studio and Page Builder contracts | Existing providers/routes; optional RichTextEditor extensions | Full unit suite; existing rich-formatting/wizard browser workflows |
 
 ## Interaction and storage
@@ -97,11 +97,13 @@ context menus remain available. The desk is directly below the cards, with
 carousel controls following it. Narrow perspective cards are deliberately
 cropped by the scene window rather than expanding page width.
 
-The weather object opens existing Studio on click and the calendar on right-click
-or a stationary two-finger tap. Both contacts are tracked through completion;
+The floating moon is outside the header on Home, Projects and About. Clicking it
+opens weather and time details; Calendar, right-click and a stationary two-finger
+tap open the full-screen calendar. Both contacts are tracked through completion;
 motion/pinch, third contacts, mixed pointer types and long-press are rejected as
-calendar taps. Cancellation rolls back movement and releases capture. The full
-weather/time group stays bounded to the viewport, including after content changes.
+calendar taps. A drag returns toward the home anchor over eight seconds under
+normal motion. The separate header Studio control and project-gallery entry open
+the existing tools; the moon does not open Studio.
 
 Granted coordinates stay in memory and are rounded to two decimals before a
 request to the fixed HTTPS Open-Meteo endpoint. Requests omit credentials and
@@ -110,9 +112,10 @@ response limit. Last/stale readings are labeled honestly. Readings older than
 45 minutes are stale. Units inferred from IANA timezone are approximate; a unit
 switch is available. Weather, clock and calendar share the location timezone;
 before weather is available they use device time. The moon uses the existing
-approximate mean-synodic calculation and northern-view orientation. Compact
-mobile weather controls keep navigation separate and date/time readable; the
-phase explanation remains accessible to assistive technology.
+approximate mean-synodic calculation and selected-location hemisphere. Until a
+weather reading is available it shows no weather overlays. Manual city/ZIP input
+and additional concurrent precipitation and wind observations remain separate
+follow-up work in epic #290.
 
 ## Setup and verification
 

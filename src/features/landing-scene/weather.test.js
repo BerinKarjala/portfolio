@@ -1,6 +1,12 @@
 import { expect, it, vi } from 'vitest';
-import { fetchWeather, temperatureUnit, formatTemperature } from './weather';
+import { fetchWeather, temperatureUnit, formatTemperature, weatherDescription } from './weather';
 const sample = { timezone: 'America/New_York', current: { time: 1792713600, temperature_2m: 15, weather_code: 61, is_day: 1 } };
+it('distinguishes clear, partly cloudy and overcast provider codes', () => {
+  expect([0, 1, 2, 3].map(weatherDescription)).toEqual(['Clear skies', 'Mainly clear', 'Partly cloudy', 'Overcast']);
+});
+it('describes heavy thunderstorms and hail without calling them unavailable', () => {
+  expect([95, 96, 97, 99].map(weatherDescription)).toEqual(['Thunderstorm', 'Thunderstorm with hail', 'Thunderstorm', 'Thunderstorm with hail']);
+});
 it('uses a fixed provider endpoint, rounded granted coordinates and validated data', async () => {
   const fetcher = vi.fn(async () => new Response(JSON.stringify(sample)));
   const weather = await fetchWeather({ latitude: 40.71281, longitude: -74.00604 }, { fetcher, now: () => 1000 });

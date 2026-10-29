@@ -4,15 +4,20 @@ const viewports = [[320, 740], [390, 844], [768, 1024], [1440, 900], [1920, 1080
 test.beforeEach(async ({ page }) => {
   await page.route('**/*sanity.io/**', route => route.fulfill({ json: { result: [] } }));
 });
+async function openCalendar(page) {
+  const moon = page.getByRole('button', { name: 'Moon and weather' });
+  if (await moon.getAttribute('aria-expanded') !== 'true') await moon.click();
+  await page.getByRole('button', { name: 'Calendar', exact: true }).click();
+  return moon;
+}
 for (const [width, height] of viewports) {
-  test(`calendar remains usable inside the scene at ${width}px`, async ({ page }, testInfo) => {
+  test(`full-screen calendar remains usable at ${width}px`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width, height });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
-    const launcher = page.getByRole('button', { name: 'Calendar', exact: true });
-    await launcher.click();
-    const calendar = page.getByRole('region', { name: 'Calendar utility' });
-    await expect(calendar.getByRole('heading', { name: 'Calendar', exact: true })).toBeFocused();
+    const launcher = await openCalendar(page);
+    const calendar = page.getByRole('dialog', { name: 'Calendar' });
+    await expect(calendar.getByRole('button', { name: 'Close calendar' })).toBeFocused();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     const targets = await calendar.locator('tbody button').evaluateAll(buttons => buttons.map(button => {
       const { width, height } = button.getBoundingClientRect();
@@ -24,7 +29,7 @@ for (const [width, height] of viewports) {
     }
     await expect(page.locator('[aria-label="Next project"]')).toBeDisabled();
     await expect(page.getByRole('button', { name: /add event/i })).toHaveCount(0);
-    expect((await new AxeBuilder({ page }).include('main').analyze()).violations).toEqual([]);
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     await testInfo.attach(`calendar-${width}`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
     await page.getByRole('button', { name: 'Close calendar' }).click();
     await expect(launcher).toBeFocused();
@@ -56,34 +61,37 @@ test('weather waits for explicit location permission, infers units and opens the
     return route.fulfill({ json: { timezone: 'America/New_York', current: { time: Math.floor(Date.now() / 1000), temperature_2m: 15, weather_code: 61, is_day: 1 } } });
   });
   await page.goto('/');
+  const moon = page.getByRole('button', { name: 'Moon and weather' });
+  await moon.click();
   await expect(page.getByText('Weather needs your permission.')).toBeVisible();
   expect(requests).toBe(0);
   await page.getByRole('button', { name: 'Use my location' }).click();
   await expect(page.getByText('59°F · Rain')).toBeVisible();
   await page.getByRole('button', { name: 'Switch to Celsius' }).click();
   await expect(page.getByText('15°C · Rain')).toBeVisible();
-  await page.getByRole('button', { name: 'Theme Studio', exact: true }).click({ button: 'right' });
-  await expect(page.getByRole('region', { name: 'Calendar utility' })).toBeVisible();
+  await moon.click({ button: 'right' });
+  await expect(page.getByRole('dialog', { name: 'Calendar' })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Theme Studio tools' })).toHaveCount(0);
 });
 
-test('dragging the weather object does not open tools and can be reset', async ({ page }) => {
+test('dragging the moon does not open tools and it returns to its anchor', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
+  await page.clock.install();
   await page.goto('/');
-  const object = page.getByRole('button', { name: 'Theme Studio', exact: true });
+  const object = page.getByRole('button', { name: 'Moon and weather' });
   const box = await object.boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
-  await page.mouse.move(box.x - 150, 2000, { steps: 10 });
+  await page.mouse.move(box.x - 150, 850, { steps: 10 });
   await page.mouse.up();
   await expect(page.getByRole('region', { name: 'Theme Studio tools' })).toHaveCount(0);
-  const reset = page.getByRole('button', { name: 'Reset weather position' });
-  await expect(reset).toBeVisible();
-  const moved = await page.getByRole('group', { name: 'Weather and time' }).boundingBox();
+  const moved = await object.boundingBox();
   expect(moved.y).toBeGreaterThanOrEqual(0);
   expect(moved.y + moved.height).toBeLessThanOrEqual(901);
-  await reset.click();
-  await expect(reset).toHaveCount(0);
+  await page.clock.runFor(8000);
+  const returned = await object.boundingBox();
+  expect(returned.x).toBeCloseTo(box.x, 0);
+  expect(returned.y).toBeCloseTo(box.y, 0);
 });
 
 test('landing cards and calendar keep readable colors in Studio light/dark high-contrast themes', async ({ page }) => {
@@ -93,12 +101,14 @@ test('landing cards and calendar keep readable colors in Studio light/dark high-
   for (const appearance of ['light', 'dark']) {
     await page.getByRole('combobox', { name: 'Appearance', exact: true }).selectOption(appearance);
     expect((await new AxeBuilder({ page }).include('main').include('header').analyze()).violations).toEqual([]);
-    await page.getByRole('button', { name: 'Calendar', exact: true }).click();
-    expect((await new AxeBuilder({ page }).include('main').include('header').analyze()).violations).toEqual([]);
+    await page.getByRole('button', { name: 'Close tools' }).click();
+    await openCalendar(page);
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     await page.getByRole('button', { name: 'Close calendar' }).click();
     await page.getByRole('button', { name: 'Open text editor with the quill', exact: true }).click();
     expect((await new AxeBuilder({ page }).include('main').include('header').analyze()).violations).toEqual([]);
     await page.getByRole('button', { name: 'Close text editor' }).click();
+    if (appearance === 'light') await page.getByRole('button', { name: 'Theme Studio', exact: true }).click();
   }
 });
 
@@ -163,8 +173,8 @@ test('editor formats, undoes, saves across reload and downloads plain text', asy
   await page.getByRole('button', { name: 'Bulleted list', exact: true }).click();
   await expect(sheet.locator('ul li')).toHaveText('A quiet forest');
   await expect(page.getByRole('combobox', { name: 'Paragraph style' })).toHaveValue('bullet');
-  await page.getByRole('button', { name: 'Calendar', exact: true }).click();
-  await page.getByRole('button', { name: 'Open text editor with the quill', exact: true }).click();
+  await openCalendar(page);
+  await page.getByRole('button', { name: 'Close calendar' }).click();
   await expect(sheet.locator('strong')).toHaveText('quiet');
   await sheet.press('Control+s');
   await expect(page.getByText('Saved in this browser.', { exact: true })).toBeVisible();

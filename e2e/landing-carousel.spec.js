@@ -14,6 +14,12 @@ async function settle(page) {
     await Promise.all([...document.querySelectorAll('.landing-card--center img,.landing-desk img')].map(image => image.decode().catch(() => {})));
   });
 }
+async function openCalendar(page) {
+  const moon = page.getByRole('button', {name: 'Moon and weather'});
+  if (await moon.getAttribute('aria-expanded') !== 'true') await moon.click();
+  await page.getByRole('button', {name: 'Calendar', exact: true}).click();
+  return moon;
+}
 async function deskEdge(page) {
   const dimensions = await page.evaluate(() => ({
     desk: document.querySelector('.landing-desk').getBoundingClientRect().bottom + scrollY,
@@ -85,25 +91,20 @@ for (const [width, height] of sizes) {
     await dialog.getByRole('button', {name: 'Exit full screen'}).click();
     await expect(card.getByRole('button', {name: 'Expand Sudoku Solver'})).toBeFocused();
 
-    await page.getByRole('button', {name: 'Calendar', exact: true}).click();
+    const moon = await openCalendar(page);
+    const calendar = page.getByRole('dialog', {name: 'Calendar'});
+    const calendarBox = await calendar.boundingBox();
+    expect(calendarBox).toMatchObject({x: 0, y: 0, width, height});
     await page.getByRole('button', {name: 'Next month'}).click();
     const month = await page.getByRole('table').getAttribute('aria-label');
     await page.getByRole('table').locator('button[tabindex="0"]').click();
     const selected = await page.getByRole('table').locator('[aria-pressed="true"]').getAttribute('aria-label');
     await capture('calendar');
-    const calendarExpand = page.getByRole('button', {name: 'Expand Calendar'});
-    await calendarExpand.scrollIntoViewIfNeeded();
-    const calendarScroll = await page.evaluate(() => scrollY);
-    await calendarExpand.click();
-    dialog = await viewportCard(page, 'Calendar');
-    await expect(dialog.getByRole('table')).toHaveAttribute('aria-label', month);
-    await expect(dialog.getByRole('button', {name: selected})).toHaveAttribute('aria-pressed', 'true');
-    await capture('expanded-calendar');
+    await expect(calendar.getByRole('table')).toHaveAttribute('aria-label', month);
+    await expect(calendar.getByRole('button', {name: selected})).toHaveAttribute('aria-pressed', 'true');
     await page.keyboard.press('Escape');
-    await expect.poll(() => page.evaluate(() => scrollY)).toBe(calendarScroll);
-    await expect(page.getByRole('table')).toHaveAttribute('aria-label', month);
-    await page.getByRole('button', {name: 'Close calendar'}).click();
-    await expect(page.getByRole('button', {name: 'Calendar', exact: true})).toBeFocused();
+    await expect(calendar).toHaveCount(0);
+    await expect(moon).toBeFocused();
 
     await page.getByRole('button', {name: 'Open text editor with the quill'}).click();
     await page.getByRole('textbox', {name: 'Document title'}).fill('Retained forest draft');
@@ -167,11 +168,9 @@ test('selection latches, arrow hover resumes the chosen direction, and utilities
   await page.clock.runFor(100); // Flush React's post-commit timer registration.
   await page.clock.fastForward(12000);
   await expect(page.getByRole('link', {name: 'Open HTML Page Builder'})).toBeVisible();
-  await page.getByRole('button', {name: 'Calendar', exact: true}).click();
-  await page.getByRole('link', {name: 'Projects', exact: true}).focus();
+  await openCalendar(page);
   await page.clock.fastForward(36000);
   await page.getByRole('button', {name: 'Close calendar'}).click();
-  await page.clock.fastForward(36000);
   await expect(page.getByRole('link', {name: 'Open HTML Page Builder'})).toBeVisible();
 });
 
@@ -198,9 +197,9 @@ test('card gestures expand only eligible chrome and reject cancelled, multiple-c
   await send(preview, 'pointerup', 6, 30, 150);
   await viewportCard(page, 'Sudoku Solver');
   await page.keyboard.press('Escape');
-  await page.getByRole('button', {name: 'Calendar', exact: true}).click();
+  await openCalendar(page);
   await page.getByRole('button', {name: 'Next month'}).dblclick();
-  await expect(page.locator('dialog[aria-modal="true"]')).toHaveCount(0);
+  await expect(page.locator('dialog[aria-modal="true"]')).toHaveCount(1);
   await page.getByRole('button', {name: 'Close calendar'}).click();
   await page.getByRole('button', {name: 'Open text editor with the quill'}).click();
   await page.getByRole('textbox', {name: 'Writing area'}).pressSequentially('Select these words');

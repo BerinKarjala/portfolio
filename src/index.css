@@ -216,3 +216,9 @@ body {
 .portfolio-nav { flex-direction: row; align-items: center; }
 .portfolio-nav > div { flex: 1; }
 .portfolio-nav > .studio-launch-wrap { flex-shrink: 0; }
+.nav-bar--moon .portfolio-nav { margin-right: min(clamp(112px, 32vw, 160px), calc(100dvh - 16px)); }
+@media (max-width: 480px) {
+  .nav-bar--moon .portfolio-nav { align-items: flex-start; flex-wrap: wrap; gap: .25rem; }
+  .nav-bar--moon .portfolio-nav > div { flex-basis: 100%; min-width: 0; gap: .25rem; }
+  .nav-bar--moon .portfolio-nav a { padding: .25rem; font-size: .875rem; letter-spacing: normal; overflow-wrap: anywhere; }
+}

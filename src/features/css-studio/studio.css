@@ -125,10 +125,17 @@
 }
 .studio-moon {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 1.5rem;
   padding: 5px;
   border: 1px solid #94a3b8;
   border-radius: 50%;
   background: #0f172a;
+  color: #f8fafc;
+  line-height: 1;
   cursor: pointer;
 }
 .studio-launch-wrap {
@@ -209,7 +216,7 @@ html[data-studio-theme] .studio-canvas .nav-active {
 }
 html[data-studio-theme]
   .studio-canvas
-  :is(button:not(.studio-moon), .resetbtn, a.bg-green-400) {
+  :is(button:not(.studio-moon):not(.floating-moon__button), .resetbtn, a.bg-green-400) {
   border-radius: var(--studio-radius);
   background: var(--studio-accent);
   color: var(--studio-button-text) !important;
