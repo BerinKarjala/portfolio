@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import { SceneProvider } from "./features/landing-scene/SceneContext";
 import { StudioProvider } from "./features/css-studio/Studio";
+import LiveMoon from "./features/moon-weather/LiveMoon";
 
 const Home = lazy(() => import("./components/Home"));
 const About = lazy(() => import("./components/About"));
@@ -22,6 +23,7 @@ function App() {
         <StudioProvider connectDesigner>
           <SceneProvider>
           <NavBar />
+          <LiveMoon />
           <Suspense
             fallback={
               <main className="forest-bg text-emerald-50 min-h-screen flex items-center justify-center">

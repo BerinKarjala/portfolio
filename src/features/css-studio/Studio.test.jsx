@@ -9,7 +9,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Link, Routes, Route } from "react-router-dom";
-import { StudioProvider, MoonLauncher, StudioGalleryEntry } from "./Studio";
+import { StudioProvider, StudioLauncher, StudioGalleryEntry } from "./Studio";
 beforeEach(() => {
   localStorage.clear();
   window.matchMedia = vi.fn(() => ({
@@ -26,7 +26,7 @@ function Site() {
   return (
     <MemoryRouter>
       <StudioProvider>
-        <MoonLauncher />
+        <StudioLauncher />
         <Link to="/next">Next page</Link>
         <Routes>
           <Route
@@ -183,7 +183,7 @@ it("previews mocked proposals and prevents a late result from overwriting anothe
   };
   render(
     <StudioProvider designer={designer}>
-      <MoonLauncher />
+      <StudioLauncher />
     </StudioProvider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "Theme Studio" }));
@@ -221,7 +221,7 @@ it("listens only on request and inserts editable speech without submitting AC-07
   const designer = { available: true, propose: vi.fn() };
   const view = render(
     <StudioProvider designer={designer}>
-      <MoonLauncher />
+      <StudioLauncher />
     </StudioProvider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "Theme Studio" }));
@@ -279,7 +279,7 @@ it("keeps typed drafts usable after denied microphone permission and never sends
   const designer = { available: true, propose: vi.fn() };
   const view = render(
     <StudioProvider designer={designer}>
-      <MoonLauncher />
+      <StudioLauncher />
     </StudioProvider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "Theme Studio" }));
@@ -309,7 +309,7 @@ it("connects the opted-in same-origin designer only on first launch and disables
   vi.stubGlobal("fetch", fetch);
   render(
     <StudioProvider connectDesigner>
-      <MoonLauncher />
+      <StudioLauncher />
     </StudioProvider>,
   );
   expect(fetch).not.toHaveBeenCalled();
@@ -342,7 +342,7 @@ it("retains manual styling and the draft when the live connection is unavailable
   vi.stubGlobal("fetch", fetch);
   render(
     <StudioProvider connectDesigner>
-      <MoonLauncher />
+      <StudioLauncher />
     </StudioProvider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "Theme Studio" }));
@@ -380,7 +380,7 @@ it("keeps explicitly injected designers independent of live connection setup", (
       connectDesigner
       designer={{ available: true, propose: vi.fn() }}
     >
-      <MoonLauncher />
+      <StudioLauncher />
     </StudioProvider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "Theme Studio" }));
@@ -402,7 +402,7 @@ it("cancels an in-progress connection when Studio unmounts", async () => {
   vi.stubGlobal("fetch", fetch);
   const view = render(
     <StudioProvider connectDesigner>
-      <MoonLauncher />
+      <StudioLauncher />
     </StudioProvider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "Theme Studio" }));

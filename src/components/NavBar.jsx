@@ -1,7 +1,6 @@
 import React from "react";
-import { useScene } from "../features/landing-scene/SceneContext";
-import WeatherWidget from "../features/landing-scene/WeatherWidget";
-import { MoonLauncher } from "../features/css-studio/Studio";
+import { StudioLauncher } from "../features/css-studio/Studio";
+import { supportsMoon } from "../features/moon-weather/moonRoutes";
 import { NavLink, useLocation } from "react-router-dom";
 
 function moveNavigationFocus(event) {
@@ -38,7 +37,6 @@ function moveNavigationFocus(event) {
 }
 
 export default function NavBar() {
-  const scene = useScene();
   const location = useLocation();
   const navLinkBaseClasses =
     "inline-flex items-center px-3 sm:px-5 py-1.5 sm:py-1 rounded nav-item text-white hover:text-red-100 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-offset-2 focus:ring-offset-green-900";
@@ -47,7 +45,7 @@ export default function NavBar() {
     `${navLinkBaseClasses} ${extraClasses}${isActive ? " nav-active" : ""}`;
 
   return (
-    <header className="w-full nav-bar shadow-lg">
+    <header className={`w-full nav-bar shadow-lg${supportsMoon(location.pathname) ? ' nav-bar--moon' : ''}`}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <nav
           aria-label="Primary"
@@ -62,6 +60,7 @@ export default function NavBar() {
             >
               Berin Karjala
             </NavLink>
+            <StudioLauncher />
             <NavLink
               to="/project"
               className={getNavLinkClasses("text-base sm:text-lg ")}
@@ -75,7 +74,6 @@ export default function NavBar() {
               About Me!
             </NavLink>
           </div>
-          {scene && location.pathname === "/" ? <WeatherWidget /> : <MoonLauncher />}
         </nav>
       </div>
     </header>

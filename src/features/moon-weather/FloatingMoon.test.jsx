@@ -86,16 +86,43 @@ it('lets a callout travel with the returning moon and permits re-dragging withou
   expect(screen.getByText('Weather unavailable')).toBeTruthy();
 });
 
-it('allows the focused moon to be reset with Home when reduced motion is enabled', () => {
+it('keeps the callout to the left of the moon as it returns, even at the left edge', () => {
+  const { moon, box } = show();
+  drag(moon, -500, 200);
+  tick(1000);
+  fireEvent.keyDown(moon, { key: 'Enter' }); fireEvent.click(moon);
+  const details = screen.getByRole('region', { name: 'Moon and weather details' });
+  const gapFromMoon = () => Number.parseFloat(details.style.left);
+  expect(gapFromMoon()).toBe(-296);
+  tick(4000);
+  expect(gapFromMoon()).toBe(-296);
+  tick(8000);
+  expect(position(box)).toEqual([0, 0]);
+  expect(gapFromMoon()).toBe(-296);
+});
+
+it('returns the moon without animation when reduced motion is enabled', () => {
   reduced = true;
   const { moon, box } = show();
   drag(moon, -90, 100);
-  expect(position(box)).toEqual([-90, 100]);
+  expect(position(box)).toEqual([0, 0]);
   expect(frame).toBeNull();
   moon.focus();
   fireEvent.keyDown(moon, { key: 'Home' });
   expect(position(box)).toEqual([0, 0]);
   expect(document.activeElement).toBe(moon);
+});
+
+it('returns an interrupted drag when the page becomes hidden with reduced motion', () => {
+  reduced = true;
+  const { moon, box } = show();
+  fireEvent.pointerDown(moon, pointer(1, 250, 60));
+  fireEvent.pointerMove(moon, pointer(1, 160, 160));
+  expect(position(box)).toEqual([-90, 100]);
+  vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+  fireEvent(document, new Event('visibilitychange'));
+  expect(position(box)).toEqual([0, 0]);
+  expect(frame).toBeNull();
 });
 
 it('keeps the moon focused when the return finishes', () => {

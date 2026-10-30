@@ -73,6 +73,7 @@ for (const viewport of [screens[1], screens[5]]) {
     await page.goto("/");
     const nav = page.getByRole("navigation", { name: "Primary" });
     const home = nav.getByRole("link", { name: "Berin Karjala" });
+    const studio = nav.getByRole("button", { name: "Theme Studio" });
     const projects = nav.getByRole("link", { name: "Projects", exact: true });
     const about = nav.getByRole("link", { name: "About Me!" });
     const lastLink = about;
@@ -103,7 +104,11 @@ for (const viewport of [screens[1], screens[5]]) {
     await expect(lastLink).toBeFocused();
     await page.keyboard.press("Home");
     await page.keyboard.press("Tab");
+    await expect(studio).toBeFocused();
+    await page.keyboard.press("Tab");
     await expect(projects).toBeFocused();
+    await page.keyboard.press("Shift+Tab");
+    await expect(studio).toBeFocused();
     await page.keyboard.press("Shift+Tab");
     await expect(home).toBeFocused();
   });

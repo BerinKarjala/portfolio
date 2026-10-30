@@ -2,31 +2,33 @@ import { useEffect, useRef, useState } from 'react';
 const THRESHOLD = 8;
 const clamp = (value, min, max) => min > max ? min : Math.min(max, Math.max(min, value));
 
-export default function useObjectGesture({ primary, secondary, bounds, onInteraction }) {
+export default function useObjectGesture({ primary, secondary, bounds, onInteraction, onDrag, onDragEnd, onTap }) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const current = useRef(position);
   current.current = position;
   const session = useRef(null);
   const suppressClick = useRef(false);
   const lastInput = useRef('');
-  const callbacks = useRef({ primary, secondary, bounds, onInteraction });
-  callbacks.current = { primary, secondary, bounds, onInteraction };
+  const callbacks = useRef({ primary, secondary, bounds, onInteraction, onDrag, onDragEnd, onTap });
+  callbacks.current = { primary, secondary, bounds, onInteraction, onDrag, onDragEnd, onTap };
+  function place(point) { current.current = point; setPosition(point); }
   function release(element, id) {
     try { if (element.hasPointerCapture?.(id)) element.releasePointerCapture(id); } catch { /* Contact may already be gone. */ }
   }
-  function cancel(restore = true) {
+  function cancel(restore = true, notify = true) {
     const state = session.current;
     if (!state) return;
     session.current = null;
     suppressClick.current = true;
     for (const id of state.contacts.keys()) release(state.element, id);
-    if (restore) setPosition(state.origin);
+    if (restore) place(state.origin);
     callbacks.current.onInteraction?.(false);
+    if (notify && state.dragged) callbacks.current.onDragEnd?.(current.current);
   }
   useEffect(() => {
     const blur = () => cancel();
     window.addEventListener('blur', blur);
-    return () => { window.removeEventListener('blur', blur); cancel(false); };
+    return () => { window.removeEventListener('blur', blur); cancel(false, false); };
   }, []);
   function move(event) {
     const state = session.current;
@@ -38,7 +40,9 @@ export default function useObjectGesture({ primary, secondary, bounds, onInterac
       else {
         state.dragged = true;
         suppressClick.current = true;
-        setPosition({ x: clamp(state.origin.x + dx, state.bounds.minX, state.bounds.maxX), y: clamp(state.origin.y + dy, state.bounds.minY, state.bounds.maxY) });
+        const next = { x: clamp(state.origin.x + dx, state.bounds.minX, state.bounds.maxX), y: clamp(state.origin.y + dy, state.bounds.minY, state.bounds.maxY) };
+        place(next);
+        callbacks.current.onDrag?.(next);
       }
     }
   }
@@ -46,16 +50,22 @@ export default function useObjectGesture({ primary, secondary, bounds, onInterac
     position,
     moveBy: (x, y) => {
       const limits = callbacks.current.bounds();
-      setPosition(previous => ({ x: clamp(previous.x + x, limits.minX, limits.maxX), y: clamp(previous.y + y, limits.minY, limits.maxY) }));
+      const previous = current.current;
+      const next = { x: clamp(previous.x + x, limits.minX, limits.maxX), y: clamp(previous.y + y, limits.minY, limits.maxY) };
+      place(next);
+      callbacks.current.onDrag?.(next);
     },
+    moveTo: place,
+    currentPosition: () => current.current,
+    clickAllowed: () => !suppressClick.current && !session.current,
     fit: () => {
       const limits = callbacks.current.bounds();
       if (session.current) session.current.bounds = limits;
       const previous = current.current;
       const next = { x: clamp(previous.x, limits.minX, limits.maxX), y: clamp(previous.y, limits.minY, limits.maxY) };
-      if (next.x !== previous.x || next.y !== previous.y) setPosition(next);
+      if (next.x !== previous.x || next.y !== previous.y) place(next);
     },
-    reset: () => { cancel(); setPosition({ x: 0, y: 0 }); },
+    reset: () => { cancel(false, false); place({ x: 0, y: 0 }); },
     handlers: {
       onPointerDown: event => {
         lastInput.current = event.pointerType;
@@ -63,14 +73,16 @@ export default function useObjectGesture({ primary, secondary, bounds, onInterac
         let state = session.current;
         if (!state) {
           suppressClick.current = false;
-          state = { contacts: new Map(), origin: current.current, bounds: callbacks.current.bounds(), started: Date.now(), dragged: false, multi: false, rejected: false, total: 0, initialType: event.pointerType, element: event.currentTarget };
+          state = { contacts: new Map(), origin: current.current, bounds: callbacks.current.bounds(), started: Date.now(), dragged: false, multi: false, rejected: false, total: 0, initialType: event.pointerType, element: event.currentTarget, downTarget: event.target };
           session.current = state;
           callbacks.current.onInteraction?.(true);
         } else {
+          const interruptedDrag = state.dragged;
           state.multi = true;
           state.rejected ||= state.dragged || state.initialType !== 'touch' || event.pointerType !== 'touch';
           suppressClick.current = true;
-          setPosition(state.origin);
+          place(state.origin);
+          if (interruptedDrag) {state.dragged = false; callbacks.current.onDragEnd?.(current.current);}
         }
         if (state.contacts.has(event.pointerId)) { state.rejected = true; return; }
         state.total++;
@@ -100,7 +112,12 @@ export default function useObjectGesture({ primary, secondary, bounds, onInterac
         if (state.multi) {
           suppressClick.current = true;
           if (!state.rejected && state.total === 2 && Date.now() - state.started <= 600) callbacks.current.secondary?.(event);
-        } else if (state.dragged) suppressClick.current = true;
+        } else if (state.dragged) {
+          suppressClick.current = true;
+          callbacks.current.onDragEnd?.(current.current);
+        } else {
+          callbacks.current.onTap?.(event, state.downTarget, current.current);
+        }
       },
       onPointerCancel: () => cancel(),
       onLostPointerCapture: event => { if (session.current?.contacts.has(event.pointerId)) cancel(); },

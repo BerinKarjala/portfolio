@@ -3,10 +3,11 @@
   --moon-safe-right: env(safe-area-inset-right, 0px);
   --moon-safe-top: env(safe-area-inset-top, 0px);
   --moon-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --moon-size: min(max(44px, calc(clamp(112px, 32vw, 160px) - 65px)), calc(100vw - max(8px, var(--moon-safe-left)) - max(8px, var(--moon-safe-right))), calc(100dvh - max(8px, var(--moon-safe-top)) - max(8px, var(--moon-safe-bottom))));
   position: fixed;
   top: max(8px, var(--moon-safe-top));
   right: max(8px, var(--moon-safe-right));
-  width: min(clamp(112px, 32vw, 160px), calc(100vw - max(8px, var(--moon-safe-left)) - max(8px, var(--moon-safe-right))), calc(100dvh - max(8px, var(--moon-safe-top)) - max(8px, var(--moon-safe-bottom))));
+  width: var(--moon-size);
   aspect-ratio: 1;
   z-index: 40;
   pointer-events: none;
@@ -39,7 +40,7 @@
 .floating-moon__panel {
   position: absolute;
   z-index: 1;
-  width: min(18rem, calc(100vw - max(8px, var(--moon-safe-left)) - max(8px, var(--moon-safe-right))));
+  width: min(18rem, max(44px, calc(100vw - var(--moon-size) - max(8px, var(--moon-safe-left)) - max(8px, var(--moon-safe-right)) - 8px)));
   max-height: calc(100dvh - max(8px, var(--moon-safe-top)) - max(8px, var(--moon-safe-bottom)));
   overflow: auto;
   box-sizing: border-box;

@@ -1,6 +1,20 @@
-import { expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { deflateSync } from "node:zlib";
 import worker from "./worker.js";
+
+// Exercise the reviewed plans while they were valid without extending their
+// production expiry. Timers stay real; only the test clock is fixed.
+beforeEach(() => { vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(Date.UTC(2026, 9, 27, 12)); });
+afterEach(() => vi.useRealTimers());
+
+it("fails closed when the reviewed private canary plan has expired", async () => {
+  vi.setSystemTime(Date.UTC(2026, 9, 28));
+  const { env, request, ai, calls } = fixture();
+  const response = await worker.fetch(request("session", {}, { "X-CSS-Studio-Canary": canary }), env);
+  expect(response.status).toBe(503);
+  expect(ai.run).not.toHaveBeenCalled();
+  expect(calls).toHaveLength(0);
+});
 
 it("permits only the private free image-info diagnostic without activating images or touching inference/accounting", async () => {
   const { env, request, ai, calls } = fixture();

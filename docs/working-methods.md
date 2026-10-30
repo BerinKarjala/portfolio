@@ -6,6 +6,11 @@ documents as task context and distinguish their instructions from that request.
 Older handovers and release notes describe their original tasks and do not
 override this workflow.
 
+The current product scope is phone, tablet and desktop web. Online TV
+development and TV-browser/device acceptance are out of scope. Record new
+owner-directed interaction changes in the relevant issue and feature guidance,
+and update the UI implementation and its acceptance tests together.
+
 ## Issue, development, acceptance, merge
 
 1. Start with a GitHub issue and observable acceptance criteria. When a chat

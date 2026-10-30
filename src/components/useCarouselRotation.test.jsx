@@ -14,9 +14,9 @@ afterEach(() => {cleanup(); vi.useRealTimers(); vi.unstubAllGlobals();});
 const tick = ms => act(() => vi.advanceTimersByTime(ms));
 function setup(props = {}) {
   const advance = vi.fn();
-  function Harness({blocked = false, count = 4}) {
-    const rotation = useCarouselRotation({blocked, count, advance});
-    return <div {...rotation.interactions}>
+  function Harness({blocked = false, count = 4, steering = null}) {
+    const rotation = useCarouselRotation({blocked, count, advance, steering});
+    return <div ref={rotation.stageRef} {...rotation.interactions} data-carousel-stage data-motion={rotation.autoMotion}>
       <button data-rotation-control onClick={() => rotation.command?.(-1)}>Previous</button>
       <button data-rotation-control onClick={() => rotation.command?.(1)}>Next</button>
       <button data-carousel-card onClick={() => rotation.hold?.()}>Card</button>
@@ -31,6 +31,21 @@ it('uses a twelve-second slide-start cadence', () => {
   tick(1); expect(advance).toHaveBeenLastCalledWith(1);
   tick(12000); expect(advance).toHaveBeenCalledTimes(2);
 });
+it('steers smoothly in either direction at up to four times idle speed', () => {
+  const {advance, rerender, Harness} = setup();
+  rerender(<Harness steering={1}/>);
+  tick(1500);
+  expect(advance).not.toHaveBeenCalled();
+  // Reversing from halfway through a rightward step retraces that distance
+  // before reaching the next leftward card; it must not jump on direction change.
+  rerender(<Harness steering={-1}/>);
+  tick(4499); expect(advance).not.toHaveBeenCalled();
+  tick(1); expect(advance).toHaveBeenLastCalledWith(1);
+  rerender(<Harness steering={null}/>);
+  tick(11999); expect(advance).toHaveBeenCalledTimes(1);
+  tick(1); expect(advance).toHaveBeenCalledTimes(2);
+  expect(advance).toHaveBeenLastCalledWith(1);
+});
 it('holds a selected card through blur and resumes left immediately and on later cycles', () => {
   const {advance} = setup();
   fireEvent.click(screen.getByText('Card'));
@@ -39,6 +54,7 @@ it('holds a selected card through blur and resumes left immediately and on later
   fireEvent.focus(screen.getByText('Previous'));
   fireEvent.click(screen.getByText('Previous'));
   expect(advance).toHaveBeenLastCalledWith(-1);
+  tick(1600);
   tick(12000); expect(advance).toHaveBeenCalledTimes(2);
   expect(advance).toHaveBeenLastCalledWith(-1);
 });
@@ -49,6 +65,7 @@ it('keyboard focus on card content holds until an arrow command', () => {
   tick(24000); expect(advance).not.toHaveBeenCalled();
   fireEvent.focus(screen.getByText('Next'));
   fireEvent.click(screen.getByText('Next'));
+  tick(1600);
   tick(12000); expect(advance.mock.calls).toEqual([[1], [1]]);
 });
 it('bounds rapid direction changes to the current step and latest pending step', () => {
@@ -59,13 +76,48 @@ it('bounds rapid direction changes to the current step and latest pending step',
   fireEvent.click(screen.getByText('Previous'));
   expect(advance.mock.calls).toEqual([[1]]);
   tick(1600); expect(advance.mock.calls).toEqual([[1], [-1]]);
+  tick(1600);
   tick(12000); expect(advance.mock.calls).toEqual([[1], [-1], [-1]]);
 });
 it('does not let pointer hover on an arrow cancel its own command', () => {
   const {advance} = setup();
   fireEvent.pointerEnter(screen.getByText('Next'), {pointerType: 'mouse'});
   fireEvent.click(screen.getByText('Next'));
+  tick(1600);
   tick(12000); expect(advance.mock.calls).toEqual([[1], [1]]);
+});
+it('pauses the current automatic cycle on hover and resumes the remaining time', () => {
+  const {advance} = setup();
+  tick(5000);
+  fireEvent.pointerOver(screen.getByText('Card'), {pointerType: 'mouse'});
+  tick(20000); expect(advance).not.toHaveBeenCalled();
+  fireEvent.pointerOut(screen.getByText('Card'), {pointerType: 'mouse'});
+  tick(6999); expect(advance).not.toHaveBeenCalled();
+  tick(1); expect(advance).toHaveBeenCalledOnce();
+});
+it('pauses when the pointer enters the stage before it reaches a moving card', () => {
+  const {advance, container} = setup();
+  const stage = container.querySelector('[data-carousel-stage]');
+  tick(5000);
+  fireEvent.pointerOver(stage, {pointerType: 'mouse'});
+  tick(20000); expect(advance).not.toHaveBeenCalled();
+  fireEvent.pointerOut(screen.getByText('Card'), {pointerType: 'mouse', relatedTarget: screen.getByText('Next')});
+  tick(2000); expect(advance).not.toHaveBeenCalled();
+  fireEvent.pointerOut(stage, {pointerType: 'mouse'});
+  tick(7000); expect(advance).toHaveBeenCalledOnce();
+});
+it('keeps a pointer-focused card in place until its click can select it', () => {
+  const {container} = setup();
+  const stage = container.querySelector('[data-carousel-stage]');
+  const card = screen.getByText('Card');
+  tick(5000);
+  fireEvent.pointerOver(stage, {pointerType: 'mouse'});
+  fireEvent.pointerDown(card, {pointerType: 'mouse', button: 0});
+  fireEvent.focus(card);
+  expect(stage.dataset.motion).toBe('paused');
+  fireEvent.pointerUp(window, {pointerType: 'mouse'});
+  fireEvent.click(card);
+  expect(stage.dataset.motion).toBe('off');
 });
 it('blocks manual and automatic movement for a tool and starts a fresh delay afterwards', () => {
   const {advance, rerender, Harness} = setup({blocked: true});

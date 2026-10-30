@@ -6,6 +6,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 vi.mock('../client.js', () => ({ default: { fetch: vi.fn().mockRejectedValue(new Error('offline')) } }));
 import HomePage from './Home';
 import WeatherWidget from '../features/landing-scene/WeatherWidget';
+import LiveMoon from '../features/moon-weather/LiveMoon';
 import { SceneProvider, useScene } from '../features/landing-scene/SceneContext';
 function Home() { return <SceneProvider><WeatherWidget /><HomePage /></SceneProvider>; }
 import sanityClient from '../client.js';
@@ -22,6 +23,19 @@ it('keeps bundled projects usable offline and exposes only the center destinatio
   expect(screen.getByRole('link', { name: 'Open Sudoku Solver' })).not.toBeNull();
   expect(await screen.findByText(/latest project content is unavailable/i)).not.toBeNull();
   expect(screen.queryByText('Core Strengths')).toBeNull();
+});
+
+it('disables carousel controls while the floating calendar is open and restores them after closing', () => {
+  HTMLDialogElement.prototype.showModal = function () { this.setAttribute('open', ''); };
+  HTMLDialogElement.prototype.close = function () { this.removeAttribute('open'); };
+  render(<HelmetProvider><MemoryRouter><SceneProvider><LiveMoon /><HomePage /></SceneProvider></MemoryRouter></HelmetProvider>);
+  const next = screen.getByRole('button', { name: 'Next project' });
+  expect(next.disabled).toBe(false);
+  fireEvent.contextMenu(screen.getByRole('button', { name: 'Moon and weather' }));
+  expect(screen.getByRole('dialog', { name: 'Calendar' })).toBeTruthy();
+  expect(next.disabled).toBe(true);
+  fireEvent.click(screen.getByRole('button', { name: 'Close calendar' }));
+  expect(next.disabled).toBe(false);
 });
 
 it('normalizes local application URLs and rejects unsafe CMS destinations', async () => {
@@ -74,6 +88,16 @@ describe('idle carousel rotation', () => {
     centered('Minesweeper');
     advance(1);
     centered('HTML Page Builder');
+  });
+
+  it('starts continuous automatic motion immediately while keeping the initial project selected until the first cycle finishes', async () => {
+    await scene();
+    const stage = document.querySelector('.landing-stage');
+    expect(stage.dataset.autoMotion).toBe('running');
+    centered('Sudoku Solver');
+    advance(12000);
+    centered('Minesweeper');
+    expect(stage.dataset.autoMotion).toBe('running');
   });
 
   it('supports an explicit pause and keeps keyboard interaction stable until rotation is restarted', async () => {
@@ -164,7 +188,7 @@ it('keeps the Studio card centered and its launcher reachable when late CMS proj
 it('opens the text editor in the center and retains drafts while switching utilities', () => {
   localStorage.clear();
   render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);
-  const launcher = screen.getByRole('button', { name: 'Open text editor with the quill', exact: true });
+  const launcher = screen.getByRole('button', { name: 'Open text editor with the inkwell', exact: true });
   fireEvent.click(launcher);
   expect(screen.getByRole('heading', { name: 'Text Editor', exact: true })).not.toBeNull();
   fireEvent.change(screen.getByRole('textbox', { name: 'Document title' }), { target: { value: 'Keep my draft' } });

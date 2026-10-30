@@ -29,5 +29,5 @@ button, select, input { font: inherit; }
 .calendar-dates td { text-align: center; border: 1px solid #b5b59d; }
 .floating-review__calendar .calendar-dates button { width: 100%; min-width: 0; padding: 0; border: 1px solid transparent; color: #192d20; background: transparent; }
 .floating-review__calendar .calendar-dates button[aria-pressed="true"] { border: 2px solid #004b30; background: #bedbc0; font-weight: 700; }
-.calendar-other-month { opacity: .65; }
+.floating-review__calendar .calendar-dates button.calendar-other-month { color: #48594b; opacity: 1; }
 .calendar-selected { margin-top: .75rem; padding: .75rem; border-radius: .65rem; background: #f5ebd4; color: #192d20; }

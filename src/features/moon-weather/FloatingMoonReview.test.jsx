@@ -32,8 +32,11 @@ it('opens the calendar and returns focus to the moon after closing it', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Calendar', exact: true }));
   const dialog = screen.getByRole('dialog', { name: 'Calendar' });
   expect(within(dialog).getByRole('button', { name: 'Today' })).toBeTruthy();
-  fireEvent.click(within(dialog).getByRole('button', { name: 'Close calendar' }));
+  const close = within(dialog).getByRole('button', { name: 'Close calendar' });
+  fireEvent.pointerDown(close);
+  fireEvent.click(close);
   expect(screen.queryByRole('dialog', { name: 'Calendar' })).toBeNull();
+  expect(screen.getByRole('region', { name: 'Moon and weather details' })).toBeTruthy();
   expect(document.activeElement).toBe(moon);
 });
 

@@ -16,6 +16,7 @@ export default function useCardGesture({select, expand, disabled = false}) {
   const contact = useRef(null);
   const lastTap = useRef(null);
   const suppress = useRef(0);
+  const suppressExpansionClick = useRef(false);
   const touches = useRef(new Set());
   const cancel = () => {
     if (contact.current) suppress.current = Date.now() + 600;
@@ -42,6 +43,9 @@ export default function useCardGesture({select, expand, disabled = false}) {
   }, []);
   return {
     onPointerDown: event => {
+      // A new pointerdown is a new action, not the click synthesized from the
+      // touch that just expanded the card.
+      suppressExpansionClick.current = false;
       if (actions.current.disabled || !eligible(event) || event.button !== 0) return;
       if (contact.current) {contact.current.invalid = true; return;}
       contact.current = {id: event.pointerId, x: event.clientX, y: event.clientY, time: Date.now(), type: event.pointerType, invalid: touches.current.size > 1};
@@ -69,12 +73,14 @@ export default function useCardGesture({select, expand, disabled = false}) {
       if (dy >= CARD_GESTURES.swipe && dy >= dx * CARD_GESTURES.dominance && elapsed <= CARD_GESTURES.swipeMs) {
         lastTap.current = null;
         event.preventDefault();
+        suppressExpansionClick.current = true;
         actions.current.expand();
       } else if (!start.dragged && distance(start, end) <= CARD_GESTURES.jitter && elapsed <= CARD_GESTURES.tapMs) {
         const previous = lastTap.current;
         if (previous && end.time - previous.time <= CARD_GESTURES.tapMs && distance(previous, end) <= CARD_GESTURES.tapDrift) {
           lastTap.current = null;
           event.preventDefault();
+          suppressExpansionClick.current = true;
           actions.current.expand();
         } else {lastTap.current = end; actions.current.select();}
       } else lastTap.current = null;
@@ -82,6 +88,12 @@ export default function useCardGesture({select, expand, disabled = false}) {
     onPointerCancel: cancel,
     onLostPointerCapture: () => {if (contact.current) cancel();},
     onClickCapture: event => {
+      if (suppressExpansionClick.current) {
+        suppressExpansionClick.current = false;
+        // The layout can move an interactive link underneath the original
+        // touch before the browser dispatches its compatibility click.
+        if (event.detail !== 0) {event.preventDefault(); event.stopPropagation(); return;}
+      }
       if (interactive(event.target)) return;
       if (Date.now() < suppress.current) {event.preventDefault(); event.stopPropagation(); return;}
       if (!actions.current.disabled) actions.current.select();

@@ -26,6 +26,9 @@ Follow `docs/working-methods.md`, `docs/development-standards.md` and
 - Cloud release gates retain the full default three-browser coverage, dedicated
   CSS Studio/image-storage suites, accessibility/snapshot/performance checks,
   unit/runtime checks and builds. Local smoke success does not replace them.
+- Project scope covers phone, tablet and desktop web browsers; online TV
+  development and TV-device acceptance are outside scope unless the owner
+  changes that direction.
 - Preserve test-first development, existing assertions and zero browser retries.
   Record the exact tested commit/runtime and distinguish local dev-server
   checkout state from the test runner's worktree.

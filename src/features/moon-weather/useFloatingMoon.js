@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { clampPoint, dragBounds, returnPoint, safeInsets } from './floatingMotion';
 
 const THRESHOLD = 8;
@@ -20,6 +20,7 @@ function useReducedMotion() {
 export default function useFloatingMoon({ element, onActivate, onCalendar, onInteraction }) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const current = useRef(position);
+  const rendered = useRef(position);
   const session = useRef(null);
   const returning = useRef(null);
   const suppressClick = useRef(false);
@@ -28,6 +29,7 @@ export default function useFloatingMoon({ element, onActivate, onCalendar, onInt
   const reduced = useReducedMotion();
   const callbacks = useRef({ onActivate, onCalendar, onInteraction, reduced });
   callbacks.current = { onActivate, onCalendar, onInteraction, reduced };
+  useLayoutEffect(() => { rendered.current = position; }, [position]);
 
   function place(point) {
     current.current = point;
@@ -36,7 +38,7 @@ export default function useFloatingMoon({ element, onActivate, onCalendar, onInt
   function limits() {
     const rect = element.current?.getBoundingClientRect();
     if (!rect) return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
-    return dragBounds(rect, current.current, { width: window.innerWidth, height: window.innerHeight }, safeInsets(element.current));
+    return dragBounds(rect, rendered.current, { width: window.innerWidth, height: window.innerHeight }, safeInsets(element.current));
   }
   function stopReturn() {
     if (returning.current !== null) cancelAnimationFrame(returning.current);
@@ -45,7 +47,8 @@ export default function useFloatingMoon({ element, onActivate, onCalendar, onInt
   function startReturn() {
     stopReturn();
     const from = current.current;
-    if (callbacks.current.reduced || (from.x === 0 && from.y === 0)) return;
+    if (from.x === 0 && from.y === 0) return;
+    if (callbacks.current.reduced) { place({ x: 0, y: 0 }); return; }
     const start = performance.now();
     const step = now => {
       const elapsed = Math.max(0, now - start);
@@ -102,7 +105,7 @@ export default function useFloatingMoon({ element, onActivate, onCalendar, onInt
         movementKeys.current.clear();
         endSession(false);
         stopReturn();
-        if (!callbacks.current.reduced) place({ x: 0, y: 0 });
+        place({ x: 0, y: 0 });
       }
     };
     const blur = () => { endSession(); finishKeyboardMove(); };
@@ -117,7 +120,7 @@ export default function useFloatingMoon({ element, onActivate, onCalendar, onInt
       stopReturn();
     };
   }, []);
-  useEffect(() => { if (reduced) stopReturn(); }, [reduced]);
+  useEffect(() => { if (reduced && returning.current !== null) { stopReturn(); place({ x: 0, y: 0 }); } }, [reduced]);
 
   const handlers = {
     onPointerDown: event => {

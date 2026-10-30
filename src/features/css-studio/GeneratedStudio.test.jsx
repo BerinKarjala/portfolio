@@ -10,7 +10,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { StudioProvider, MoonLauncher } from "./Studio";
+import { StudioProvider, StudioLauncher } from "./Studio";
 import { createImageCache, memoryImageBackend } from "./imageCache";
 const bytes = readFileSync(
   "public/css-studio/images/spring/spring-01-woodland.webp",
@@ -67,7 +67,7 @@ it("previews image proposals, isolates late results, applies only explicitly, re
   };
   const view = render(
     <StudioProvider designer={designer} imageCache={images}>
-      <MoonLauncher />
+      <StudioLauncher />
     </StudioProvider>,
   );
   open();
@@ -122,7 +122,7 @@ it("previews image proposals, isolates late results, applies only explicitly, re
   view.unmount();
   render(
     <StudioProvider imageCache={images}>
-      <MoonLauncher />
+      <StudioLauncher />
     </StudioProvider>,
   );
   await waitFor(() =>
@@ -186,7 +186,7 @@ it("preserves selected and compared images when the cache is full and retains a 
   };
   render(
     <StudioProvider imageCache={images} designer={designer}>
-      <MoonLauncher />
+      <StudioLauncher />
     </StudioProvider>,
   );
   open();
@@ -254,7 +254,7 @@ it("ignores a canceled image response and rejects malformed returned bytes witho
   };
   render(
     <StudioProvider designer={designer} imageCache={images}>
-      <MoonLauncher />
+      <StudioLauncher />
     </StudioProvider>,
   );
   open();
@@ -302,7 +302,7 @@ it("shows visit-only storage failure while allowing Apply, then falls back after
   };
   const view = render(
     <StudioProvider designer={designer} imageCache={unavailable()}>
-      <MoonLauncher />
+      <StudioLauncher />
     </StudioProvider>,
   );
   open();
@@ -324,7 +324,7 @@ it("shows visit-only storage failure while allowing Apply, then falls back after
   view.unmount();
   render(
     <StudioProvider imageCache={unavailable()}>
-      <MoonLauncher />
+      <StudioLauncher />
     </StudioProvider>,
   );
   open();
