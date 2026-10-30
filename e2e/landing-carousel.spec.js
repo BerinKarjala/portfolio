@@ -156,13 +156,17 @@ for (const [width, height] of sizes) {
 test('selection latches, arrow hover resumes the chosen direction, and utilities retain the selected identity', async ({page}) => {
   await page.clock.install({time: fixtureTime});
   await page.goto('/'); await settle(page);
+  // A person approaches a moving card through the stage; this pauses the
+  // carousel before selecting the card, rather than clicking a moving target.
+  const stage = await page.locator('[data-carousel-stage]').boundingBox();
+  await page.mouse.move(stage.x + 8, stage.y + 4);
   await page.getByRole('button', {name: 'Select Minesweeper'}).click();
   await page.clock.fastForward(36000);
   await expect(page.getByRole('link', {name: 'Open Minesweeper'})).toBeVisible();
   const previous = page.getByRole('button', {name: 'Previous project'});
   await previous.hover(); await previous.click();
   await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
-  await page.clock.runFor(100); // Flush React's post-commit timer registration.
+  await page.clock.runFor(1700); // Finish the manual transition before the idle cycle starts.
   await page.clock.fastForward(12000);
   await expect(page.getByRole('heading', {name: 'CSS Theme Studio', exact: true})).toBeVisible();
   await page.clock.runFor(100); // Flush React's post-commit timer registration.

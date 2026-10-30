@@ -16,7 +16,7 @@ function setup(props = {}) {
   const advance = vi.fn();
   function Harness({blocked = false, count = 4}) {
     const rotation = useCarouselRotation({blocked, count, advance});
-    return <div {...rotation.interactions}>
+    return <div {...rotation.interactions} data-carousel-stage>
       <button data-rotation-control onClick={() => rotation.command?.(-1)}>Previous</button>
       <button data-rotation-control onClick={() => rotation.command?.(1)}>Next</button>
       <button data-carousel-card onClick={() => rotation.hold?.()}>Card</button>
@@ -79,6 +79,17 @@ it('pauses the current automatic cycle on hover and resumes the remaining time',
   fireEvent.pointerOut(screen.getByText('Card'), {pointerType: 'mouse'});
   tick(6999); expect(advance).not.toHaveBeenCalled();
   tick(1); expect(advance).toHaveBeenCalledOnce();
+});
+it('pauses when the pointer enters the stage before it reaches a moving card', () => {
+  const {advance, container} = setup();
+  const stage = container.querySelector('[data-carousel-stage]');
+  tick(5000);
+  fireEvent.pointerOver(stage, {pointerType: 'mouse'});
+  tick(20000); expect(advance).not.toHaveBeenCalled();
+  fireEvent.pointerOut(screen.getByText('Card'), {pointerType: 'mouse', relatedTarget: screen.getByText('Next')});
+  tick(2000); expect(advance).not.toHaveBeenCalled();
+  fireEvent.pointerOut(stage, {pointerType: 'mouse'});
+  tick(7000); expect(advance).toHaveBeenCalledOnce();
 });
 it('blocks manual and automatic movement for a tool and starts a fresh delay afterwards', () => {
   const {advance, rerender, Harness} = setup({blocked: true});

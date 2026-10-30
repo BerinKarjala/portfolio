@@ -58,7 +58,7 @@
 .landing-card-chrome { min-height: 44px; display: flex; justify-content: flex-end; touch-action: pan-x pinch-zoom; }
 .landing-expand, .landing-exit { min-width: 44px; min-height: 44px; border: 1px solid #8fd4a7; border-radius: .5rem; background: #003b27; padding: .35rem .6rem; font-size: .875rem; }
 .landing-select-preview { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit; background: transparent; border: 0; cursor: pointer; touch-action: pan-x pinch-zoom; }
-.landing-controls { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: calc(var(--landing-card-width) + var(--landing-card-width) + var(--landing-card-width) + 128px); max-width: calc(100% - 1rem); display: flex; justify-content: space-between; pointer-events: none; z-index: 3; }
+.landing-controls { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: calc(var(--landing-card-width) + var(--landing-card-width) + var(--landing-card-width) + var(--landing-card-width) + var(--landing-card-width) + 128px); max-width: calc(100% - 1rem); display: flex; justify-content: space-between; pointer-events: none; z-index: 3; }
 .landing-controls button { pointer-events: auto; flex: 0 0 44px; min-width: 44px; min-height: 44px; border: 1px solid #8fd4a7; border-radius: .75rem; background: #003b27; color: #eff8e7; font-size: 24px; }
 .landing-gallery-status { position: absolute; top: 100%; left: 0; width: 100%; min-height: 3rem; pointer-events: none; }
 .landing-status { background: #002e20; color: #eff8e7; border-radius: .5rem; padding: .5rem 1rem; width: fit-content; max-width: calc(100% - 2rem); margin: .5rem auto 0; text-align: center; font-size: .8rem; }

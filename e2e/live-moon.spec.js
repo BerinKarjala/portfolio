@@ -47,12 +47,19 @@ test('carousel moves gradually without pausing between automatic steps', async (
   const samples = await first.evaluate(async node => {
     const values = [];
     for (let step = 0; step < 7; step++) {
-      values.push(node.getBoundingClientRect().x);
+      const arrows = [...document.querySelectorAll('[data-rotation-control]')].map(button => button.getBoundingClientRect());
+      const cards = [...document.querySelectorAll('[data-carousel-card]')].filter(card => Number(getComputedStyle(card).opacity) > .15);
+      const covered = cards.some(card => {
+        const rect = card.getBoundingClientRect();
+        return arrows.some(arrow => arrow.left < rect.right && arrow.right > rect.left);
+      });
+      values.push({ x: node.getBoundingClientRect().x, covered });
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
     return values;
   });
-  for (let i = 1; i < samples.length; i++) expect(samples[i]).toBeLessThan(samples[i - 1] - 1);
+  for (const sample of samples) expect(sample.covered).toBe(false);
+  for (let i = 1; i < samples.length; i++) expect(samples[i].x).toBeLessThan(samples[i - 1].x - 1);
 });
 
 test('all collapsed project cards use the reduced Studio card size', async ({ page }) => {

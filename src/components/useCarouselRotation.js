@@ -96,8 +96,8 @@ export default function useCarouselRotation({blocked, count, advance}) {
     autoMotion: autoEnabled ? (rotating ? 'running' : 'paused') : 'off',
     interactions: {
       onFocusCapture: event => {if (event.target.closest('[data-carousel-card]') && !event.target.closest('[data-rotation-control]')) hold();},
-      onPointerOver: event => {if (event.pointerType !== 'touch' && event.target.closest('[data-carousel-card]')) setHovered(true);},
-      onPointerOut: event => {if (!event.relatedTarget?.closest?.('[data-carousel-card]')) setHovered(false);},
+      onPointerOver: event => {if (event.pointerType !== 'touch' && event.target.closest('[data-carousel-stage]')) setHovered(true);},
+      onPointerOut: event => {if (!event.relatedTarget?.closest?.('[data-carousel-stage]')) setHovered(false);},
       onPointerDown: event => {if (event.target.closest('[data-carousel-card]')) setPressed(true);},
     },
   };

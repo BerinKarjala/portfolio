@@ -121,7 +121,7 @@ export default function Home() {
     <main ref={sceneRef} className="landing-scene forest-bg" style={{'--landing-slide-duration': `${SLIDE_DURATION}ms`, '--landing-idle-duration': `${ROTATION_INTERVAL}ms`}}>
       <h1 className="sr-only">Berin Karjala</h1>
       <section className="landing-gallery" aria-label="Project gallery" aria-roledescription="carousel" {...rotation.interactions}>
-        <div className={`landing-stage-frame${utility ? ' landing-stage-frame--utility' : ''}`}>
+        <div data-carousel-stage className={`landing-stage-frame${utility ? ' landing-stage-frame--utility' : ''}`}>
         <div className="landing-stage" data-moving={rotation.moving && !rotation.reducedMotion ? 'true' : 'false'}
           data-auto-motion={rotation.autoMotion} data-auto-direction={rotation.autoDirection > 0 ? 'next' : 'previous'}>
           {Array.from({ length: count }, (_, index) => {
