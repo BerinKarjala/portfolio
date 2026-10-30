@@ -105,7 +105,7 @@ export default function useFloatingMoon({ element, onActivate, onCalendar, onInt
         movementKeys.current.clear();
         endSession(false);
         stopReturn();
-        if (!callbacks.current.reduced) place({ x: 0, y: 0 });
+        place({ x: 0, y: 0 });
       }
     };
     const blur = () => { endSession(); finishKeyboardMove(); };

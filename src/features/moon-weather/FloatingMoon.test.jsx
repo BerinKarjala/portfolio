@@ -113,6 +113,18 @@ it('returns the moon without animation when reduced motion is enabled', () => {
   expect(document.activeElement).toBe(moon);
 });
 
+it('returns an interrupted drag when the page becomes hidden with reduced motion', () => {
+  reduced = true;
+  const { moon, box } = show();
+  fireEvent.pointerDown(moon, pointer(1, 250, 60));
+  fireEvent.pointerMove(moon, pointer(1, 160, 160));
+  expect(position(box)).toEqual([-90, 100]);
+  vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+  fireEvent(document, new Event('visibilitychange'));
+  expect(position(box)).toEqual([0, 0]);
+  expect(frame).toBeNull();
+});
+
 it('keeps the moon focused when the return finishes', () => {
   const { moon } = show();
   drag(moon, -90, 100);
