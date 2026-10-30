@@ -14,9 +14,9 @@ afterEach(() => {cleanup(); vi.useRealTimers(); vi.unstubAllGlobals();});
 const tick = ms => act(() => vi.advanceTimersByTime(ms));
 function setup(props = {}) {
   const advance = vi.fn();
-  function Harness({blocked = false, count = 4}) {
-    const rotation = useCarouselRotation({blocked, count, advance});
-    return <div {...rotation.interactions} data-carousel-stage data-motion={rotation.autoMotion}>
+  function Harness({blocked = false, count = 4, steering = null}) {
+    const rotation = useCarouselRotation({blocked, count, advance, steering});
+    return <div ref={rotation.stageRef} {...rotation.interactions} data-carousel-stage data-motion={rotation.autoMotion}>
       <button data-rotation-control onClick={() => rotation.command?.(-1)}>Previous</button>
       <button data-rotation-control onClick={() => rotation.command?.(1)}>Next</button>
       <button data-carousel-card onClick={() => rotation.hold?.()}>Card</button>
@@ -30,6 +30,21 @@ it('uses a twelve-second slide-start cadence', () => {
   tick(11999); expect(advance).not.toHaveBeenCalled();
   tick(1); expect(advance).toHaveBeenLastCalledWith(1);
   tick(12000); expect(advance).toHaveBeenCalledTimes(2);
+});
+it('steers smoothly in either direction at up to four times idle speed', () => {
+  const {advance, rerender, Harness} = setup();
+  rerender(<Harness steering={1}/>);
+  tick(1500);
+  expect(advance).not.toHaveBeenCalled();
+  // Reversing from halfway through a rightward step retraces that distance
+  // before reaching the next leftward card; it must not jump on direction change.
+  rerender(<Harness steering={-1}/>);
+  tick(4499); expect(advance).not.toHaveBeenCalled();
+  tick(1); expect(advance).toHaveBeenLastCalledWith(1);
+  rerender(<Harness steering={null}/>);
+  tick(11999); expect(advance).toHaveBeenCalledTimes(1);
+  tick(1); expect(advance).toHaveBeenCalledTimes(2);
+  expect(advance).toHaveBeenLastCalledWith(1);
 });
 it('holds a selected card through blur and resumes left immediately and on later cycles', () => {
   const {advance} = setup();

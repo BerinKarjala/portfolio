@@ -106,7 +106,7 @@ for (const [width, height] of sizes) {
     await expect(calendar).toHaveCount(0);
     await expect(moon).toBeFocused();
 
-    await page.getByRole('button', {name: 'Open text editor with the quill'}).click();
+    await page.getByRole('button', {name: 'Open text editor with the inkwell'}).dblclick();
     await page.getByRole('textbox', {name: 'Document title'}).fill('Retained forest draft');
     const sheet = page.getByRole('textbox', {name: 'Writing area'});
     // Use real beforeinput typing, preserving the controlled rich-text DOM.
@@ -148,7 +148,7 @@ for (const [width, height] of sizes) {
     await page.getByRole('button', {name: 'Undo', exact: true}).click();
     await expect(sheet.locator('strong')).toHaveCount(0);
     await page.getByRole('button', {name: 'Close text editor'}).click();
-    await expect(page.getByRole('button', {name: 'Open text editor with the quill'})).toBeFocused();
+    await expect(page.getByRole('button', {name: 'Open text editor with the inkwell'})).toBeFocused();
     await deskEdge(page);
   });
 }
@@ -205,7 +205,7 @@ test('card gestures expand only eligible chrome and reject cancelled, multiple-c
   await page.getByRole('button', {name: 'Next month'}).dblclick();
   await expect(page.locator('dialog[aria-modal="true"]')).toHaveCount(1);
   await page.getByRole('button', {name: 'Close calendar'}).click();
-  await page.getByRole('button', {name: 'Open text editor with the quill'}).click();
+  await page.getByRole('button', {name: 'Open text editor with the inkwell'}).dblclick();
   await page.getByRole('textbox', {name: 'Writing area'}).pressSequentially('Select these words');
   await page.getByRole('textbox', {name: 'Writing area'}).dblclick();
   await expect(page.locator('dialog[aria-modal="true"]')).toHaveCount(0);
@@ -252,7 +252,7 @@ test('expanded tools inherit light/dark high contrast and keep Exit reachable in
   await page.getByLabel('High Contrast', {exact: true}).setChecked(true);
   for (const appearance of ['light', 'dark']) {
     await page.getByRole('combobox', {name: 'Appearance', exact: true}).selectOption(appearance);
-    await page.getByRole('button', {name: 'Open text editor with the quill'}).click();
+    await page.getByRole('button', {name: 'Open text editor with the inkwell'}).dblclick();
     await page.getByRole('button', {name: 'Expand Text Editor'}).click();
     await viewportCard(page, 'Text Editor');
     expect((await new AxeBuilder({page}).include('[aria-modal="true"]').analyze()).violations).toEqual([]);

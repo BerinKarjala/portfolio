@@ -28,27 +28,17 @@
 .landing-card:not(:has(.landing-utility)) .landing-card-surface:not(:modal) .studio-gallery { padding: .35rem; }
 .landing-card:not(:has(.landing-utility)) .landing-card-surface:not(:modal) .studio-gallery button { min-height: 44px; width: 100%; padding: .35rem .5rem; font-size: .8rem; line-height: 1.2; }
 .landing-card:not(:has(.landing-utility)) .landing-card-surface:not(:modal) a { margin-top: .25rem; font-size: .8rem; }
-/* The automatic cycle advances the same physical cards continuously. The
-   selected card changes only after it arrives at the next position. */
-.landing-stage[data-auto-motion='running'] .landing-card,
-.landing-stage[data-auto-motion='paused'] .landing-card { animation-duration: var(--landing-idle-duration); animation-timing-function: linear; animation-fill-mode: both; transition: none; }
-.landing-stage[data-auto-motion='paused'] .landing-card { animation-play-state: paused; }
-.landing-stage[data-auto-direction='next'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--center { animation-name: card-center-to-left; }
-.landing-stage[data-auto-direction='next'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--right { animation-name: card-right-to-center; }
-.landing-stage[data-auto-direction='next'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--left { animation-name: card-left-to-out; }
-.landing-stage[data-auto-direction='next'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--incoming { animation-name: card-in-to-right; visibility: visible; }
-.landing-stage[data-auto-direction='previous'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--center { animation-name: card-center-to-right; }
-.landing-stage[data-auto-direction='previous'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--left { animation-name: card-left-to-center; }
-.landing-stage[data-auto-direction='previous'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--right { animation-name: card-right-to-out; }
-.landing-stage[data-auto-direction='previous'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--incoming { animation-name: card-in-to-left; visibility: visible; }
-@keyframes card-center-to-left { from { transform: translateX(-50%); } to { transform: translateX(var(--landing-left)); } }
-@keyframes card-right-to-center { from { transform: translateX(var(--landing-right)); } to { transform: translateX(-50%); } }
-@keyframes card-left-to-out { from { transform: translateX(var(--landing-left)); opacity: 1; } to { transform: translateX(var(--landing-far-left)); opacity: 0; } }
-@keyframes card-in-to-right { from { transform: translateX(var(--landing-far-right)); opacity: 0; } to { transform: translateX(var(--landing-right)); opacity: 1; } }
-@keyframes card-center-to-right { from { transform: translateX(-50%); } to { transform: translateX(var(--landing-right)); } }
-@keyframes card-left-to-center { from { transform: translateX(var(--landing-left)); } to { transform: translateX(-50%); } }
-@keyframes card-right-to-out { from { transform: translateX(var(--landing-right)); opacity: 1; } to { transform: translateX(var(--landing-far-right)); opacity: 0; } }
-@keyframes card-in-to-left { from { transform: translateX(var(--landing-far-left)); opacity: 0; } to { transform: translateX(var(--landing-left)); opacity: 1; } }
+/* JavaScript advances one continuous fraction, including when the writing set
+   changes speed or reverses direction. The cards keep their physical positions. */
+.landing-stage[data-auto-motion]:not([data-auto-motion='off']) .landing-card { transition: none; }
+.landing-stage[data-auto-direction='next'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--center { transform: translateX(calc(-50% - var(--landing-shift, 0%))); }
+.landing-stage[data-auto-direction='next'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--right { transform: translateX(calc(var(--landing-right) - var(--landing-shift, 0%))); }
+.landing-stage[data-auto-direction='next'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--left { transform: translateX(calc(var(--landing-left) - var(--landing-shift, 0%))); opacity: calc(1 - var(--landing-fraction, 0)); }
+.landing-stage[data-auto-direction='next'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--incoming-next { transform: translateX(calc(var(--landing-far-right) - var(--landing-shift, 0%))); opacity: var(--landing-fraction, 0); visibility: visible; }
+.landing-stage[data-auto-direction='previous'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--center { transform: translateX(calc(-50% + var(--landing-shift, 0%))); }
+.landing-stage[data-auto-direction='previous'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--left { transform: translateX(calc(var(--landing-left) + var(--landing-shift, 0%))); }
+.landing-stage[data-auto-direction='previous'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--right { transform: translateX(calc(var(--landing-right) + var(--landing-shift, 0%))); opacity: calc(1 - var(--landing-fraction, 0)); }
+.landing-stage[data-auto-direction='previous'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--incoming-previous { transform: translateX(calc(var(--landing-far-left) + var(--landing-shift, 0%))); opacity: var(--landing-fraction, 0); visibility: visible; }
 .landing-card h2 { font-size: 1.65rem; line-height: 1.25; margin: 1rem 0 .65rem; }
 .landing-card p { line-height: 1.6; }
 .landing-card [data-card-gesture] { touch-action: pan-x pinch-zoom; }
@@ -69,7 +59,7 @@
    tail inside the art frame, preserving image ratio and writing-set overflow. */
 .landing-desk-art { position: relative; aspect-ratio: 2172 / 680; overflow: clip; }
 .landing-desk-art > img { position: absolute; top: 0; left: 0; display: block; width: 100%; height: auto; }
-.landing-writing-set { position: absolute; left: 50%; top: 25%; width: min(clamp(5rem, 9vw, 10rem), 38vw); height: min(clamp(5rem, 9vw, 10rem), 38vw); pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; }
+.landing-writing-set { position: absolute; left: 65%; top: 25%; width: min(clamp(5rem, 9vw, 10rem), 38vw); height: min(clamp(5rem, 9vw, 10rem), 38vw); pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; }
 .landing-writing-set:active { cursor: grabbing; }
 .landing-writing-set img { position: absolute; user-select: none; }
 .landing-inkwell { width: 100%; bottom: 0; }

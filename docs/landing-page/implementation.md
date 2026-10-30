@@ -13,6 +13,26 @@ continuously over each 12-second interval, pausing for interaction and honoring
 reduced motion. The phone minimum is an implementation assumption for owner
 review, not a separate approved requirement.
 
+The current writing-set interaction supersedes the historical click and drag
+description below. The quill and inkwell start at the middle-right of the desk
+and move together. While held, their horizontal position steers the carousel in
+the same visual direction, from the normal 12-second pace near the screen center
+to approximately 3 seconds per card at either screen edge. Reversing direction
+retraces the current motion rather than jumping. On release, the set glides back
+to its resting position and the carousel resumes its slow idle pace. A double
+click or double touch tap on the inkwell opens the editor; Enter and Space remain
+available as single keyboard activations. Reduced motion keeps the carousel
+static and returns the writing set without animation. Keyboard arrows provide
+an alternative to dragging. The neutral-center behavior is an implementation
+assumption for owner review.
+
+`WritingSet` maps the inkwell's screen position to a bounded steering value;
+`Home` passes that value to `useCarouselRotation`. The rotation hook retains
+signed fractional progress across speed and direction changes, and the stage
+renders that progress without restarting an animation. Moon and open-utility
+interaction still block carousel movement; dragging the writing set deliberately
+steers it instead. Inactive project cards remain inert.
+
 The October 25 carousel refinements at the end of this document supersede the
 original carousel timing, bottom controls, and fullscreen behavior below. Earlier
 sections retain the original implementation and its historical evidence.

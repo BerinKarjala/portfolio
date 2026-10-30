@@ -32,7 +32,7 @@ it('removes bottom control groups, ends scene flow with the desk, and keeps real
   expect(screen.queryByRole('button', {name: /^(Start|Pause) carousel$/})).toBeNull();
   expect(document.querySelector('.landing-gallery').lastElementChild.classList.contains('landing-desk')).toBe(true);
   expect(screen.getByRole('button', {name: 'Calendar', exact: true})).toBeTruthy();
-  expect(screen.getByRole('button', {name: 'Open text editor with the quill'})).toBeTruthy();
+  expect(screen.getByRole('button', {name: 'Open text editor with the inkwell'})).toBeTruthy();
 });
 it('selects an adjacent preview without exposing its nested project link', async () => {
   await scene();
@@ -66,7 +66,7 @@ it('expands and exits the same calendar instance, preserving viewed month and se
 });
 it('keeps the exact editor DOM, draft and undo history through expansion and Escape', async () => {
   await scene();
-  fireEvent.click(screen.getByRole('button', {name: 'Open text editor with the quill'}));
+  fireEvent.click(screen.getByRole('button', {name: 'Open text editor with the inkwell'}));
   const title = screen.getByRole('textbox', {name: 'Document title'});
   fireEvent.change(title, {target: {value: 'Keep this draft'}});
   const sheet = screen.getByRole('textbox', {name: 'Writing area'});

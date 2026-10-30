@@ -166,7 +166,7 @@ test('calendar shortcuts work on all three routes and preserve an open editor', 
     expect(new URL(page.url()).pathname).toBe(path);
   }
   await page.goto('/');
-  await page.getByRole('button', { name: 'Open text editor with the quill' }).click();
+  await page.getByRole('button', { name: 'Open text editor with the inkwell' }).dblclick();
   const title = page.getByRole('textbox', { name: 'Document title' });
   await title.fill('Draft remains');
   const moon = page.getByRole('button', { name: 'Moon and weather' });

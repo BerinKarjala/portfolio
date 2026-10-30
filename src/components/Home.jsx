@@ -40,12 +40,12 @@ function gallery(data) {
   });
   return [...applications, ...projects.filter(project => !bundled.some(fallback => localRoute(project.link, fallback.link)))];
 }
-function SceneCard({cardKey, position, incoming, active, title, blocked, expanded, onSelect, onExpand, onExit, children}) {
+function SceneCard({cardKey, position, incomingNext, incomingPrevious, active, title, blocked, expanded, onSelect, onExpand, onExit, children}) {
   const element = useRef(null);
   const visible = ['center', 'left', 'right'].includes(position);
   const select = () => {onSelect(cardKey); element.current?.focus({preventScroll: true});};
   const gesture = useCardGesture({select, expand: () => onExpand(cardKey), disabled: (!active && blocked) || expanded || !visible});
-  return <div ref={element} className={`landing-card landing-card--${position}${incoming ? ' landing-card--incoming' : ''}`} data-carousel-card data-card-key={cardKey}
+  return <div ref={element} className={`landing-card landing-card--${position}${incomingNext ? ' landing-card--incoming-next' : ''}${incomingPrevious ? ' landing-card--incoming-previous' : ''}`} data-carousel-card data-card-key={cardKey}
     tabIndex={-1} aria-hidden={!visible ? true : undefined} inert={!visible ? true : undefined} {...gesture}>
     <div inert={!active ? true : undefined} aria-hidden={!active ? true : undefined}>
       <CardPresentation title={title} expanded={expanded} onExpand={() => onExpand(cardKey)} onExit={onExit}>{children}</CardPresentation>
@@ -73,6 +73,7 @@ export default function Home() {
   const selectedRef = useRef(selectedKey);
   const [travel, setTravel] = useState(null);
   const [expanded, setExpanded] = useState(null);
+  const [steering, setSteering] = useState(null);
   const keys = useMemo(() => [...projects.map(project => project.link), 'studio'], [projects]);
   const count = keys.length;
   const selected = Math.max(0, keys.indexOf(selectedKey));
@@ -89,7 +90,7 @@ export default function Home() {
   }, [keys]);
   const studioOpen = useStudioOpen();
   const utilityOpen = studioOpen || utility !== null || moonCalendarOpen;
-  const rotation = useCarouselRotation({ blocked: utilityOpen || interacting || expanded !== null, count, advance: move });
+  const rotation = useCarouselRotation({ blocked: utilityOpen || interacting || expanded !== null, count, advance: move, steering });
   useEffect(() => {if (utility) {rotation.hold(); utilityHeading.current?.focus();}}, [utility, rotation.hold]);
   useEffect(() => {if (expanded && expanded.utility !== utility) setExpanded(null);}, [utility, expanded]);
   useLayoutEffect(() => {
@@ -122,8 +123,8 @@ export default function Home() {
       <h1 className="sr-only">Berin Karjala</h1>
       <section className="landing-gallery" aria-label="Project gallery" aria-roledescription="carousel" {...rotation.interactions}>
         <div data-carousel-stage className={`landing-stage-frame${utility ? ' landing-stage-frame--utility' : ''}`}>
-        <div className="landing-stage" data-moving={rotation.moving && !rotation.reducedMotion ? 'true' : 'false'}
-          data-auto-motion={rotation.autoMotion} data-auto-direction={rotation.autoDirection > 0 ? 'next' : 'previous'}>
+        <div ref={rotation.stageRef} className="landing-stage" data-moving={rotation.moving && !rotation.reducedMotion ? 'true' : 'false'}
+          data-auto-motion={rotation.autoMotion} data-auto-direction="next">
           {Array.from({ length: count }, (_, index) => {
             const offset = (index - selected + count) % count;
             let position = offset === 0 ? 'center' : offset === 1 ? 'right' : offset === count - 1 ? 'left' : 'hidden';
@@ -134,12 +135,12 @@ export default function Home() {
               if (travel.direction > 0 && previousOffset === count - 1) position = 'exit-left';
               if (travel.direction < 0 && previousOffset === 1) position = 'exit-right';
             }
-            const incoming = position === 'hidden' && rotation.autoMotion !== 'off'
-              && (rotation.autoDirection > 0 ? offset === 2 : offset === count - 2);
+            const incomingNext = position === 'hidden' && offset === 2;
+            const incomingPrevious = position === 'hidden' && offset === count - 2;
             const project = projects[index];
             const key = project?.link || 'studio';
             const title = offset === 0 && utility ? utility === 'calendar' ? 'Calendar' : 'Text Editor' : project?.name || 'CSS Theme Studio';
-            return <SceneCard key={key} cardKey={key} position={position} incoming={incoming} active={offset === 0} title={title}
+            return <SceneCard key={key} cardKey={key} position={position} incomingNext={incomingNext} incomingPrevious={incomingPrevious} active={offset === 0} title={title}
               blocked={utilityOpen} expanded={expanded?.key === key && expanded.utility === utility}
               onSelect={selectCard} onExpand={expandCard} onExit={() => setExpanded(null)}>
               {offset === 0 && utility ? <section aria-label={utility === 'calendar' ? 'Calendar utility' : 'Text editor utility'} className="landing-utility">
@@ -165,7 +166,7 @@ export default function Home() {
         </div>
         <div className="landing-desk" ref={deskRef}>
           <div className="landing-desk-art"><img src={desk} alt="" width="2172" height="724" decoding="async" /></div>
-          <WritingSet deskRef={deskRef} />
+          <WritingSet deskRef={deskRef} onSteer={setSteering} />
         </div>
       </section>
     </main>

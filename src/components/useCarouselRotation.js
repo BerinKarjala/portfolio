@@ -1,9 +1,9 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
 
 export const ROTATION_INTERVAL = 12000;
 export const SLIDE_DURATION = 1600;
 
-export default function useCarouselRotation({blocked, count, advance}) {
+export default function useCarouselRotation({blocked, count, advance, steering = null}) {
   const [held, setHeld] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [pressed, setPressed] = useState(false);
@@ -14,8 +14,10 @@ export default function useCarouselRotation({blocked, count, advance}) {
   const current = useRef(null);
   current.current = {blocked, count, advance, reducedMotion};
   const direction = useRef(1);
-  const [autoDirection, setAutoDirection] = useState(1);
-  const remaining = useRef(ROTATION_INTERVAL);
+  const stageRef = useRef(null);
+  // Signed progress preserves the current physical position when steering
+  // reverses: the carousel retraces its path before reaching the other card.
+  const progress = useRef(0);
   const pending = useRef(null);
   const motionTimer = useRef(null);
   const inMotion = useRef(false);
@@ -41,8 +43,7 @@ export default function useCarouselRotation({blocked, count, advance}) {
   const command = useCallback(delta => {
     if (current.current.blocked || current.current.count < 2) return;
     direction.current = delta < 0 ? -1 : 1;
-    setAutoDirection(direction.current);
-    remaining.current = ROTATION_INTERVAL;
+    progress.current = 0;
     setHeld(false);
     setHovered(false);
     slide(direction.current);
@@ -74,26 +75,55 @@ export default function useCarouselRotation({blocked, count, advance}) {
       setMoving(false);
     }
   }, [blocked, reducedMotion, visible]);
-  const autoEnabled = !held && !blocked && visible && !reducedMotion && count > 1 && !moving;
-  const rotating = autoEnabled && !hovered && !pressed;
-  useEffect(() => { if (!autoEnabled) remaining.current = ROTATION_INTERVAL; }, [autoEnabled]);
+  const steeringActive = steering !== null && Number.isFinite(steering);
+  const amount = steeringActive ? Math.max(-1, Math.min(1, steering)) : 0;
+  // Positive steering moves cards visually right; the previous-project slot
+  // is the rightward direction in the carousel's indexing convention.
+  const flowDirection = steeringActive && amount !== 0 ? -Math.sign(amount) : direction.current;
+  const speed = steeringActive ? 1 + 3 * Math.abs(amount) : 1;
+  const autoEnabled = (!held || steeringActive) && !blocked && visible && !reducedMotion && count > 1 && !moving;
+  const rotating = autoEnabled && (steeringActive || (!hovered && !pressed));
+  const paint = useCallback(value => {
+    const node = stageRef.current;
+    if (!node) return;
+    const fraction = Math.min(1, Math.abs(value));
+    node.style.setProperty('--landing-shift', `${fraction * 110}%`);
+    node.style.setProperty('--landing-fraction', String(fraction));
+    node.dataset.autoDirection = value < 0 ? 'previous' : 'next';
+  }, []);
+  useEffect(() => {
+    if (steeringActive) {
+      setHeld(false);
+      if (amount !== 0) direction.current = -Math.sign(amount);
+    }
+  }, [steeringActive, amount]);
+  useLayoutEffect(() => { paint(progress.current); }, [cycle, paint]);
+  useEffect(() => { if (!autoEnabled) {progress.current = 0; paint(0);} }, [autoEnabled, paint]);
   useEffect(() => {
     if (!rotating) return;
     const started = performance.now();
+    const from = progress.current;
+    const rate = flowDirection * speed / ROTATION_INTERVAL;
+    const target = flowDirection;
     let completed = false;
+    let frame = null;
+    const positionAt = now => Math.max(-1, Math.min(1, from + Math.max(0, now - started) * rate));
+    const draw = now => {paint(positionAt(now)); frame = requestAnimationFrame(draw);};
+    frame = requestAnimationFrame(draw);
     const timer = setTimeout(() => {
       completed = true;
-      remaining.current = ROTATION_INTERVAL;
-      current.current.advance(direction.current);
+      progress.current = 0;
+      current.current.advance(target);
       setCycle(value => value + 1);
-    }, remaining.current);
+    }, Math.max(0, (target - from) / rate));
     return () => {
       clearTimeout(timer);
-      if (!completed) remaining.current = Math.max(0, remaining.current - (performance.now() - started));
+      if (frame !== null) cancelAnimationFrame(frame);
+      if (!completed) {progress.current = positionAt(performance.now()); paint(progress.current);}
     };
-  }, [rotating, cycle]);
+  }, [rotating, cycle, flowDirection, speed, paint]);
   return {
-    rotating, moving, reducedMotion, hold, command, autoDirection,
+    rotating, moving, reducedMotion, hold, command, stageRef,
     autoMotion: autoEnabled ? (rotating ? 'running' : 'paused') : 'off',
     interactions: {
       onFocusCapture: event => {if (!pointerDown.current && event.target.closest('[data-carousel-card]') && !event.target.closest('[data-rotation-control]')) hold();},

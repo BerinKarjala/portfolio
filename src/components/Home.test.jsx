@@ -188,7 +188,7 @@ it('keeps the Studio card centered and its launcher reachable when late CMS proj
 it('opens the text editor in the center and retains drafts while switching utilities', () => {
   localStorage.clear();
   render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);
-  const launcher = screen.getByRole('button', { name: 'Open text editor with the quill', exact: true });
+  const launcher = screen.getByRole('button', { name: 'Open text editor with the inkwell', exact: true });
   fireEvent.click(launcher);
   expect(screen.getByRole('heading', { name: 'Text Editor', exact: true })).not.toBeNull();
   fireEvent.change(screen.getByRole('textbox', { name: 'Document title' }), { target: { value: 'Keep my draft' } });
