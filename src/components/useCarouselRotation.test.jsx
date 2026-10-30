@@ -39,6 +39,7 @@ it('holds a selected card through blur and resumes left immediately and on later
   fireEvent.focus(screen.getByText('Previous'));
   fireEvent.click(screen.getByText('Previous'));
   expect(advance).toHaveBeenLastCalledWith(-1);
+  tick(1600);
   tick(12000); expect(advance).toHaveBeenCalledTimes(2);
   expect(advance).toHaveBeenLastCalledWith(-1);
 });
@@ -49,6 +50,7 @@ it('keyboard focus on card content holds until an arrow command', () => {
   tick(24000); expect(advance).not.toHaveBeenCalled();
   fireEvent.focus(screen.getByText('Next'));
   fireEvent.click(screen.getByText('Next'));
+  tick(1600);
   tick(12000); expect(advance.mock.calls).toEqual([[1], [1]]);
 });
 it('bounds rapid direction changes to the current step and latest pending step', () => {
@@ -59,13 +61,24 @@ it('bounds rapid direction changes to the current step and latest pending step',
   fireEvent.click(screen.getByText('Previous'));
   expect(advance.mock.calls).toEqual([[1]]);
   tick(1600); expect(advance.mock.calls).toEqual([[1], [-1]]);
+  tick(1600);
   tick(12000); expect(advance.mock.calls).toEqual([[1], [-1], [-1]]);
 });
 it('does not let pointer hover on an arrow cancel its own command', () => {
   const {advance} = setup();
   fireEvent.pointerEnter(screen.getByText('Next'), {pointerType: 'mouse'});
   fireEvent.click(screen.getByText('Next'));
+  tick(1600);
   tick(12000); expect(advance.mock.calls).toEqual([[1], [1]]);
+});
+it('pauses the current automatic cycle on hover and resumes the remaining time', () => {
+  const {advance} = setup();
+  tick(5000);
+  fireEvent.pointerOver(screen.getByText('Card'), {pointerType: 'mouse'});
+  tick(20000); expect(advance).not.toHaveBeenCalled();
+  fireEvent.pointerOut(screen.getByText('Card'), {pointerType: 'mouse'});
+  tick(6999); expect(advance).not.toHaveBeenCalled();
+  tick(1); expect(advance).toHaveBeenCalledOnce();
 });
 it('blocks manual and automatic movement for a tool and starts a fresh delay afterwards', () => {
   const {advance, rerender, Harness} = setup({blocked: true});

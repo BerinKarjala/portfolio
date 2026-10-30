@@ -6,8 +6,8 @@
   background-attachment: scroll;
 }
 .landing-gallery { width: 100%; min-width: 0; display: flex; flex-direction: column; container-type: inline-size; }
-.landing-stage-frame { --landing-card-width: min(calc(100cqw - 128px), 25rem); position: relative; width: min(100%, 74rem); margin: 0 auto 6rem; flex-shrink: 0; }
-.landing-stage { position: relative; width: 100%; min-height: 0; padding-block: .5rem; perspective: 75rem; overflow-x: clip; overflow-y: visible; }
+.landing-stage-frame { --landing-card-width: min(12.5rem, max(10rem, calc(50cqw - 64px))); --landing-card-height: 13.5rem; position: relative; width: min(100%, 74rem); margin: 0 auto 6rem; flex-shrink: 0; }
+.landing-stage { --landing-left: -139%; --landing-right: 39%; --landing-far-left: -230%; --landing-far-right: 130%; position: relative; width: 100%; min-height: 0; padding-block: .5rem; overflow-x: clip; overflow-y: visible; }
 .landing-card { position: absolute; top: .5rem; left: 50%; width: var(--landing-card-width); border: 1px solid #369466; border-radius: 1.5rem; background: linear-gradient(135deg, #005733, #003820); box-shadow: 0 1rem 3rem #001e1570, inset 0 1px 2px #a5f3c640; overflow-wrap: anywhere; transition: transform var(--landing-slide-duration) ease-in-out, opacity var(--landing-slide-duration) ease-in-out; }
 /* Prepare the three visible transform layers before the next step, avoiding
    a full-scene repaint when WebKit promotes the centered card mid-animation. */
@@ -15,12 +15,39 @@
 .landing-card--center { position: relative; top: 0; z-index: 2; transform: translateX(-50%); }
 /* Decorative previews cannot extend the document past the active card/desk. */
 .landing-card:not(.landing-card--center) { max-height: 40rem; overflow: clip; }
-.landing-card--left { transform: translateX(-139%) translateZ(-9rem) rotateY(25deg); }
-.landing-card--right { transform: translateX(39%) translateZ(-9rem) rotateY(-25deg); }
-.landing-card--exit-left { transform: translateX(-230%) translateZ(-18rem); opacity: 0; pointer-events: none; }
-.landing-card--exit-right { transform: translateX(130%) translateZ(-18rem); opacity: 0; pointer-events: none; }
-.landing-card--hidden { transform: translateX(var(--landing-hidden-x, 130%)) translateZ(-18rem); opacity: 0; visibility: hidden; pointer-events: none; transition: none; }
+.landing-card--left { transform: translateX(var(--landing-left)); }
+.landing-card--right { transform: translateX(var(--landing-right)); }
+.landing-card--exit-left { transform: translateX(var(--landing-far-left)); opacity: 0; pointer-events: none; }
+.landing-card--exit-right { transform: translateX(var(--landing-far-right)); opacity: 0; pointer-events: none; }
+.landing-card--hidden { transform: translateX(var(--landing-hidden-x, var(--landing-far-right))); opacity: 0; visibility: hidden; pointer-events: none; transition: none; }
 .landing-card-surface { position: static; display: block; width: 100%; max-width: none; min-height: 27rem; margin: 0; padding: 1.25rem; border: 0; color: inherit; background: transparent; overflow: visible; }
+.landing-card:not(:has(.landing-utility)) .landing-card-surface:not(:modal) { height: var(--landing-card-height); min-height: 0; padding: .5rem; overflow: auto; }
+.landing-card:not(:has(.landing-utility)) .landing-card-surface:not(:modal) .landing-preview { height: 3rem; aspect-ratio: auto; }
+.landing-card:not(:has(.landing-utility)) .landing-card-surface:not(:modal) h2 { font-size: 1rem; line-height: 1.2; margin: .25rem 0; }
+.landing-card:not(:has(.landing-utility)) .landing-card-surface:not(:modal) article > p { margin: .25rem 0; font-size: .75rem; line-height: 1.25; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.landing-card:not(:has(.landing-utility)) .landing-card-surface:not(:modal) .studio-gallery { padding: .35rem; }
+.landing-card:not(:has(.landing-utility)) .landing-card-surface:not(:modal) a { margin-top: .25rem; font-size: .8rem; }
+/* The automatic cycle advances the same physical cards continuously. The
+   selected card changes only after it arrives at the next position. */
+.landing-stage[data-auto-motion='running'] .landing-card,
+.landing-stage[data-auto-motion='paused'] .landing-card { animation-duration: var(--landing-idle-duration); animation-timing-function: linear; animation-fill-mode: both; transition: none; }
+.landing-stage[data-auto-motion='paused'] .landing-card { animation-play-state: paused; }
+.landing-stage[data-auto-direction='next'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--center { animation-name: card-center-to-left; }
+.landing-stage[data-auto-direction='next'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--right { animation-name: card-right-to-center; }
+.landing-stage[data-auto-direction='next'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--left { animation-name: card-left-to-out; }
+.landing-stage[data-auto-direction='next'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--incoming { animation-name: card-in-to-right; visibility: visible; }
+.landing-stage[data-auto-direction='previous'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--center { animation-name: card-center-to-right; }
+.landing-stage[data-auto-direction='previous'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--left { animation-name: card-left-to-center; }
+.landing-stage[data-auto-direction='previous'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--right { animation-name: card-right-to-out; }
+.landing-stage[data-auto-direction='previous'][data-auto-motion]:not([data-auto-motion='off']) .landing-card--incoming { animation-name: card-in-to-left; visibility: visible; }
+@keyframes card-center-to-left { from { transform: translateX(-50%); } to { transform: translateX(var(--landing-left)); } }
+@keyframes card-right-to-center { from { transform: translateX(var(--landing-right)); } to { transform: translateX(-50%); } }
+@keyframes card-left-to-out { from { transform: translateX(var(--landing-left)); opacity: 1; } to { transform: translateX(var(--landing-far-left)); opacity: 0; } }
+@keyframes card-in-to-right { from { transform: translateX(var(--landing-far-right)); opacity: 0; } to { transform: translateX(var(--landing-right)); opacity: 1; } }
+@keyframes card-center-to-right { from { transform: translateX(-50%); } to { transform: translateX(var(--landing-right)); } }
+@keyframes card-left-to-center { from { transform: translateX(var(--landing-left)); } to { transform: translateX(-50%); } }
+@keyframes card-right-to-out { from { transform: translateX(var(--landing-right)); opacity: 1; } to { transform: translateX(var(--landing-far-right)); opacity: 0; } }
+@keyframes card-in-to-left { from { transform: translateX(var(--landing-far-left)); opacity: 0; } to { transform: translateX(var(--landing-left)); opacity: 1; } }
 .landing-card h2 { font-size: 1.65rem; line-height: 1.25; margin: 1rem 0 .65rem; }
 .landing-card p { line-height: 1.6; }
 .landing-card [data-card-gesture] { touch-action: pan-x pinch-zoom; }
@@ -65,11 +92,11 @@
 .studio-canvas:has(.landing-scene) { position: relative; }
 .studio-canvas:has(.landing-scene) > .studio-photo-attribution { position: absolute; bottom: .5rem; left: .5rem; margin: 0; max-width: 45%; }
 @media (max-width: 45rem) {
+  .landing-stage-frame { --landing-card-height: 14rem; }
   .landing-stage { min-height: 0; }
   .landing-card-surface { padding: .875rem; min-height: 28rem; }
   .landing-card h2 { font-size: 1.4rem; }
-  .landing-card--left { transform: translateX(-160%) translateZ(-18rem) rotateY(34deg); }
-  .landing-card--right { transform: translateX(60%) translateZ(-18rem) rotateY(-34deg); }
+  .landing-stage { --landing-left: -160%; --landing-right: 60%; --landing-far-left: -270%; --landing-far-right: 170%; }
   .landing-stage-frame--utility .landing-controls { visibility: hidden; }
   .landing-desk-art { aspect-ratio: auto; height: calc(15rem * 680 / 724); }
   .landing-desk-art > img { height: 15rem; object-fit: cover; }

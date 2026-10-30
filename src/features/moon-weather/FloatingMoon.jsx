@@ -52,11 +52,11 @@ export default function FloatingMoon({ date, latitude, weather, reducedData, chi
     const inset = safeInsets(element.current);
     const width = panel.current.offsetWidth || Math.min(288, window.innerWidth - inset.left - inset.right);
     const height = panel.current.offsetHeight || Math.min(260, window.innerHeight - inset.top - inset.bottom);
-    const left = clamp(rect.left, inset.left, Math.max(inset.left, window.innerWidth - width - inset.right)) - rect.left;
-    const below = rect.bottom + GAP;
-    const above = rect.top - height - GAP;
-    const screenTop = below + height <= window.innerHeight - inset.bottom
-      ? below : above >= inset.top ? above : clamp(below, inset.top, Math.max(inset.top, window.innerHeight - height - inset.bottom));
+    // The owner chose to let the panel extend offscreen at the left edge
+    // instead of allowing it to overlap or switch sides of the moon.
+    const left = -width - GAP;
+    const desiredTop = rect.top + (rect.height - height) / 2;
+    const screenTop = clamp(desiredTop, inset.top, Math.max(inset.top, window.innerHeight - height - inset.bottom));
     const top = screenTop - rect.top;
     setPanelPosition(previous => previous.left === left && previous.top === top ? previous : { left, top });
   }, []);

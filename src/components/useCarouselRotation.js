@@ -14,6 +14,8 @@ export default function useCarouselRotation({blocked, count, advance}) {
   const current = useRef(null);
   current.current = {blocked, count, advance, reducedMotion};
   const direction = useRef(1);
+  const [autoDirection, setAutoDirection] = useState(1);
+  const remaining = useRef(ROTATION_INTERVAL);
   const pending = useRef(null);
   const motionTimer = useRef(null);
   const inMotion = useRef(false);
@@ -38,6 +40,8 @@ export default function useCarouselRotation({blocked, count, advance}) {
   const command = useCallback(delta => {
     if (current.current.blocked || current.current.count < 2) return;
     direction.current = delta < 0 ? -1 : 1;
+    setAutoDirection(direction.current);
+    remaining.current = ROTATION_INTERVAL;
     setHeld(false);
     setHovered(false);
     slide(direction.current);
@@ -69,14 +73,27 @@ export default function useCarouselRotation({blocked, count, advance}) {
       setMoving(false);
     }
   }, [blocked, reducedMotion, visible]);
-  const rotating = !held && !blocked && !hovered && !pressed && visible && !reducedMotion && count > 1;
+  const autoEnabled = !held && !blocked && visible && !reducedMotion && count > 1 && !moving;
+  const rotating = autoEnabled && !hovered && !pressed;
+  useEffect(() => { if (!autoEnabled) remaining.current = ROTATION_INTERVAL; }, [autoEnabled]);
   useEffect(() => {
     if (!rotating) return;
-    const timer = setInterval(() => slide(direction.current), ROTATION_INTERVAL);
-    return () => clearInterval(timer);
-  }, [rotating, cycle, slide]);
+    const started = performance.now();
+    let completed = false;
+    const timer = setTimeout(() => {
+      completed = true;
+      remaining.current = ROTATION_INTERVAL;
+      current.current.advance(direction.current);
+      setCycle(value => value + 1);
+    }, remaining.current);
+    return () => {
+      clearTimeout(timer);
+      if (!completed) remaining.current = Math.max(0, remaining.current - (performance.now() - started));
+    };
+  }, [rotating, cycle]);
   return {
-    rotating, moving, reducedMotion, hold, command,
+    rotating, moving, reducedMotion, hold, command, autoDirection,
+    autoMotion: autoEnabled ? (rotating ? 'running' : 'paused') : 'off',
     interactions: {
       onFocusCapture: event => {if (event.target.closest('[data-carousel-card]') && !event.target.closest('[data-rotation-control]')) hold();},
       onPointerOver: event => {if (event.pointerType !== 'touch' && event.target.closest('[data-carousel-card]')) setHovered(true);},

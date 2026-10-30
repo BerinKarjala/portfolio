@@ -12,8 +12,8 @@ test('floating preview keeps navigation reachable and opens the calendar', async
     await expect(moon).toBeVisible();
     expect(await moon.evaluate(node => Boolean(node.closest('header')))).toBe(false);
     const moonBox = await moon.boundingBox();
-    expect(moonBox.width).toBeGreaterThanOrEqual(110);
-    expect(moonBox.width).toBeLessThanOrEqual(161);
+    expect(moonBox.width).toBeGreaterThanOrEqual(44);
+    expect(moonBox.width).toBeLessThanOrEqual(96);
     expect(moonBox.x + moonBox.width).toBeLessThanOrEqual(viewport.width);
     for (const link of await page.getByRole('navigation', { name: 'Primary' }).getByRole('link').all()) {
       const box = await link.boundingBox();
@@ -83,7 +83,7 @@ test('the callout follows an eight-second return and a new drag interrupts it', 
   await expect(details).toBeVisible();
 });
 
-test('reduced motion leaves the moon in place until the visitor resets it', async ({ page }) => {
+test('reduced motion returns the moon immediately without animation', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/artwork-review/floating.html');
@@ -95,12 +95,12 @@ test('reduced motion leaves the moon in place until the visitor resets it', asyn
   await page.mouse.move(x - 80, y + 100);
   await page.mouse.up();
   const moved = await moon.boundingBox();
-  expect(moved.x).toBeCloseTo(initial.x - 80, 0);
+  expect(moved.x).toBeCloseTo(initial.x, 0);
   await moon.click();
   await moon.focus();
   await moon.press('ArrowLeft');
   const keyboardMoved = await moon.boundingBox();
-  expect(keyboardMoved.x).toBeCloseTo(initial.x - 120, 0);
+  expect(keyboardMoved.x).toBeCloseTo(initial.x, 0);
   await moon.press('Home');
   const returned = await moon.boundingBox();
   expect(returned.x).toBeCloseTo(initial.x, 0);

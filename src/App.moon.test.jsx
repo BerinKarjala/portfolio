@@ -50,6 +50,14 @@ it('does not display the moon on project application routes', async () => {
   expect(screen.queryByRole('button', { name: 'Moon and weather' })).toBeNull();
 });
 
+it('places the Studio control between the home and Projects links', async () => {
+  render(<App />);
+  await screen.findByRole('button', { name: 'Moon and weather' });
+  const nav = screen.getByRole('navigation', { name: 'Primary' });
+  const controls = [...nav.querySelectorAll('a, button')].map(element => element.getAttribute('aria-label') || element.textContent.trim());
+  expect(controls).toEqual(['Berin Karjala', 'Theme Studio', 'Projects', 'About Me!']);
+});
+
 it('opens and closes the calendar on the same page and restores moon focus', async () => {
   window.history.pushState({}, '', '/about');
   render(<App />);

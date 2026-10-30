@@ -1,5 +1,9 @@
 # Landing redesign implementation
 
+Current owner direction supersedes the historical target-TV requirements below:
+online TV browsers and devices are outside the project's scope. Phone, tablet,
+and desktop web layouts remain in scope.
+
 The October 25 carousel refinements at the end of this document supersede the
 original carousel timing, bottom controls, and fullscreen behavior below. Earlier
 sections retain the original implementation and its historical evidence.

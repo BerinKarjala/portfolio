@@ -60,6 +60,7 @@ export default function NavBar() {
             >
               Berin Karjala
             </NavLink>
+            <StudioLauncher />
             <NavLink
               to="/project"
               className={getNavLinkClasses("text-base sm:text-lg ")}
@@ -73,7 +74,6 @@ export default function NavBar() {
               About Me!
             </NavLink>
           </div>
-          <StudioLauncher />
         </nav>
       </div>
     </header>

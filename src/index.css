@@ -215,8 +215,8 @@ body {
 /* Keep the retained Studio launcher clear of wrapping primary links. */
 .portfolio-nav { flex-direction: row; align-items: center; }
 .portfolio-nav > div { flex: 1; }
-.portfolio-nav > .studio-launch-wrap { flex-shrink: 0; }
-.nav-bar--moon .portfolio-nav { margin-right: min(clamp(112px, 32vw, 160px), calc(100dvh - 16px)); }
+.portfolio-nav .studio-launch-wrap { flex-shrink: 0; }
+.nav-bar--moon .portfolio-nav { margin-right: max(44px, calc(min(clamp(112px, 32vw, 160px), 100dvh - 16px) - 65px)); }
 @media (max-width: 480px) {
   .nav-bar--moon .portfolio-nav { align-items: flex-start; flex-wrap: wrap; gap: .25rem; }
   .nav-bar--moon .portfolio-nav > div { flex-basis: 100%; min-width: 0; gap: .25rem; }

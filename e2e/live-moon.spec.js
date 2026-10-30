@@ -17,7 +17,8 @@ test('the live moon is separate, responsive and limited to the agreed routes', a
       await expect(moon).toHaveCount(1);
       expect(await moon.evaluate(node => Boolean(node.closest('header')))).toBe(false);
       const moonBox = await moon.boundingBox();
-      expect(moonBox.width).toBeGreaterThanOrEqual(110);
+      const previousDiameter = Math.min(Math.max(112, viewport.width * 0.32), 160, viewport.width - 16, viewport.height - 16);
+      expect(moonBox.width).toBeCloseTo(Math.max(44, previousDiameter - 65), 0);
       expect(moonBox.x + moonBox.width).toBeLessThanOrEqual(viewport.width);
       const nav = page.getByRole('navigation', { name: 'Primary' });
       for (const target of [...await nav.getByRole('link').all(), nav.getByRole('button', { name: 'Theme Studio' })]) {
@@ -33,6 +34,74 @@ test('the live moon is separate, responsive and limited to the agreed routes', a
   }
   await page.goto('/projects/Minesweeper');
   await expect(page.getByRole('button', { name: 'Moon and weather' })).toHaveCount(0);
+});
+
+test('carousel moves gradually without pausing between automatic steps', async ({ page }) => {
+  test.setTimeout(30000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/');
+  await page.mouse.move(0, 0);
+  const first = page.locator('[data-card-key="/projects/SudokuSolver"]');
+  await expect(first).toBeVisible();
+  const samples = await first.evaluate(async node => {
+    const values = [];
+    for (let step = 0; step < 7; step++) {
+      values.push(node.getBoundingClientRect().x);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    return values;
+  });
+  for (let i = 1; i < samples.length; i++) expect(samples[i]).toBeLessThan(samples[i - 1] - 1);
+});
+
+test('all collapsed project cards use the reduced Studio card size', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const viewport of [{ width: 320, height: 740 }, { width: 390, height: 844 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+    await expect(page.getByRole('link', { name: 'Open Sudoku Solver' })).toBeVisible();
+    const sizes = await page.locator('[data-carousel-card]').evaluateAll(nodes => nodes.map(node => {
+      const { width, height } = node.getBoundingClientRect();
+      return { width, height };
+    }));
+    for (const size of sizes) {
+      expect(size.width).toBeCloseTo(sizes[0].width, 0);
+      expect(size.height).toBeCloseTo(sizes[0].height, 0);
+    }
+    expect(sizes[0].width).toBeCloseTo(viewport.width >= 800 ? 200 : 160, 0);
+  }
+});
+
+test('the callout trails to the left without overlapping during the moon return', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.clock.install({ time: new Date('2026-10-27T12:00:00Z') });
+  await page.goto('/');
+  await page.clock.pauseAt(new Date('2026-10-27T12:01:00Z'));
+  const moon = page.getByRole('button', { name: 'Moon and weather' });
+  const home = await moon.boundingBox();
+  await page.mouse.move(home.x + home.width / 2, home.y + home.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(10 + home.width / 2, home.y + home.height / 2 + 200, { steps: 5 });
+  await page.mouse.up();
+  const displaced = await moon.boundingBox();
+  await page.mouse.click(displaced.x + displaced.width / 2, displaced.y + displaced.height / 2);
+  const panel = page.getByRole('region', { name: 'Moon and weather details' });
+  await expect(panel).toBeVisible();
+  let panelBox = await panel.boundingBox();
+  expect(panelBox.x).toBeLessThan(0);
+  expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(displaced.x - 7);
+  await page.clock.runFor(4000);
+  const halfway = await moon.boundingBox();
+  panelBox = await panel.boundingBox();
+  expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(halfway.x - 7);
+  await page.clock.runFor(4000);
+  const returned = await moon.boundingBox();
+  panelBox = await panel.boundingBox();
+  expect(returned.x).toBeCloseTo(home.x, 0);
+  expect(returned.y).toBeCloseTo(home.y, 0);
+  expect(panelBox.x).toBeGreaterThanOrEqual(7);
+  expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(returned.x - 7);
 });
 
 test('location weather persists while navigating without a second permission request', async ({ page, context }) => {

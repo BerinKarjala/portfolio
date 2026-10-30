@@ -11,7 +11,7 @@ import desk from '../assets/landing/walnut-desk.webp';
 import WritingSet from '../features/landing-scene/WritingSet';
 import TextEditor from '../features/landing-scene/TextEditor';
 import './landing-scene.css';
-import useCarouselRotation, {SLIDE_DURATION} from './useCarouselRotation';
+import useCarouselRotation, {ROTATION_INTERVAL, SLIDE_DURATION} from './useCarouselRotation';
 import CardPresentation from '../features/landing-scene/CardPresentation';
 import useCardGesture from '../features/landing-scene/useCardGesture';
 import Calendar from './Calendar';
@@ -40,12 +40,12 @@ function gallery(data) {
   });
   return [...applications, ...projects.filter(project => !bundled.some(fallback => localRoute(project.link, fallback.link)))];
 }
-function SceneCard({cardKey, position, active, title, blocked, expanded, onSelect, onExpand, onExit, children}) {
+function SceneCard({cardKey, position, incoming, active, title, blocked, expanded, onSelect, onExpand, onExit, children}) {
   const element = useRef(null);
   const visible = ['center', 'left', 'right'].includes(position);
   const select = () => {onSelect(cardKey); element.current?.focus({preventScroll: true});};
   const gesture = useCardGesture({select, expand: () => onExpand(cardKey), disabled: (!active && blocked) || expanded || !visible});
-  return <div ref={element} className={`landing-card landing-card--${position}`} data-carousel-card data-card-key={cardKey}
+  return <div ref={element} className={`landing-card landing-card--${position}${incoming ? ' landing-card--incoming' : ''}`} data-carousel-card data-card-key={cardKey}
     tabIndex={-1} aria-hidden={!visible ? true : undefined} inert={!visible ? true : undefined} {...gesture}>
     <div inert={!active ? true : undefined} aria-hidden={!active ? true : undefined}>
       <CardPresentation title={title} expanded={expanded} onExpand={() => onExpand(cardKey)} onExit={onExit}>{children}</CardPresentation>
@@ -79,7 +79,7 @@ export default function Home() {
   const move = useCallback(delta => {
     // Prepare invisible entrants on the correct side before changing slots.
     // This also makes a reversed command an adjacent slide rather than a sweep.
-    sceneRef.current?.style.setProperty('--landing-hidden-x', delta < 0 ? '-230%' : '130%');
+    sceneRef.current?.style.setProperty('--landing-hidden-x', delta < 0 ? 'var(--landing-far-left)' : 'var(--landing-far-right)');
     void sceneRef.current?.offsetWidth;
     const from = selectedRef.current;
     const next = keys[(Math.max(0, keys.indexOf(from)) + delta + keys.length) % keys.length];
@@ -118,11 +118,12 @@ export default function Home() {
   const closeTool = () => {if (expanded) flushSync(() => setExpanded(null)); closeUtility();};
   return <>
     <Seo title={SITE_NAME} description={DEFAULT_DESCRIPTION} path="/" jsonLd={{ '@context': 'https://schema.org', '@type': 'Person', name: SITE_NAME, url: SITE_URL, sameAs: SOCIAL_LINKS }} />
-    <main ref={sceneRef} className="landing-scene forest-bg" style={{'--landing-slide-duration': `${SLIDE_DURATION}ms`}}>
+    <main ref={sceneRef} className="landing-scene forest-bg" style={{'--landing-slide-duration': `${SLIDE_DURATION}ms`, '--landing-idle-duration': `${ROTATION_INTERVAL}ms`}}>
       <h1 className="sr-only">Berin Karjala</h1>
       <section className="landing-gallery" aria-label="Project gallery" aria-roledescription="carousel" {...rotation.interactions}>
         <div className={`landing-stage-frame${utility ? ' landing-stage-frame--utility' : ''}`}>
-        <div className="landing-stage" data-moving={rotation.moving && !rotation.reducedMotion ? 'true' : 'false'}>
+        <div className="landing-stage" data-moving={rotation.moving && !rotation.reducedMotion ? 'true' : 'false'}
+          data-auto-motion={rotation.autoMotion} data-auto-direction={rotation.autoDirection > 0 ? 'next' : 'previous'}>
           {Array.from({ length: count }, (_, index) => {
             const offset = (index - selected + count) % count;
             let position = offset === 0 ? 'center' : offset === 1 ? 'right' : offset === count - 1 ? 'left' : 'hidden';
@@ -133,10 +134,12 @@ export default function Home() {
               if (travel.direction > 0 && previousOffset === count - 1) position = 'exit-left';
               if (travel.direction < 0 && previousOffset === 1) position = 'exit-right';
             }
+            const incoming = position === 'hidden' && rotation.autoMotion !== 'off'
+              && (rotation.autoDirection > 0 ? offset === 2 : offset === count - 2);
             const project = projects[index];
             const key = project?.link || 'studio';
             const title = offset === 0 && utility ? utility === 'calendar' ? 'Calendar' : 'Text Editor' : project?.name || 'CSS Theme Studio';
-            return <SceneCard key={key} cardKey={key} position={position} active={offset === 0} title={title}
+            return <SceneCard key={key} cardKey={key} position={position} incoming={incoming} active={offset === 0} title={title}
               blocked={utilityOpen} expanded={expanded?.key === key && expanded.utility === utility}
               onSelect={selectCard} onExpand={expandCard} onExit={() => setExpanded(null)}>
               {offset === 0 && utility ? <section aria-label={utility === 'calendar' ? 'Calendar utility' : 'Text editor utility'} className="landing-utility">

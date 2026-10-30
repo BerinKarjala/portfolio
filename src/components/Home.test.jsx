@@ -90,6 +90,16 @@ describe('idle carousel rotation', () => {
     centered('HTML Page Builder');
   });
 
+  it('starts continuous automatic motion immediately while keeping the initial project selected until the first cycle finishes', async () => {
+    await scene();
+    const stage = document.querySelector('.landing-stage');
+    expect(stage.dataset.autoMotion).toBe('running');
+    centered('Sudoku Solver');
+    advance(12000);
+    centered('Minesweeper');
+    expect(stage.dataset.autoMotion).toBe('running');
+  });
+
   it('supports an explicit pause and keeps keyboard interaction stable until rotation is restarted', async () => {
     await scene();
     fireEvent.click(document.querySelector('.landing-card--center'));
