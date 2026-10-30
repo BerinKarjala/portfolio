@@ -63,13 +63,30 @@ test('all collapsed project cards use the reduced Studio card size', async ({ pa
     await expect(page.getByRole('link', { name: 'Open Sudoku Solver' })).toBeVisible();
     const sizes = await page.locator('[data-carousel-card]').evaluateAll(nodes => nodes.map(node => {
       const { width, height } = node.getBoundingClientRect();
-      return { width, height };
+      const surface = node.querySelector('.landing-card-surface');
+      return { width, height, contentHeight: surface.scrollHeight, availableHeight: surface.clientHeight };
     }));
     for (const size of sizes) {
       expect(size.width).toBeCloseTo(sizes[0].width, 0);
       expect(size.height).toBeCloseTo(sizes[0].height, 0);
+      expect(size.contentHeight).toBeLessThanOrEqual(size.availableHeight + 1);
     }
     expect(sizes[0].width).toBeCloseTo(viewport.width >= 800 ? 200 : 160, 0);
+    if (viewport.width >= 800) {
+      const geometry = await page.evaluate(() => ({
+        cards: [...document.querySelectorAll('.landing-card:not(.landing-card--hidden)')].map(node => {
+          const rect = node.getBoundingClientRect();
+          return {left: rect.left, right: rect.right};
+        }),
+        arrows: [...document.querySelectorAll('[data-rotation-control]')].map(node => {
+          const rect = node.getBoundingClientRect();
+          return {left: rect.left, right: rect.right};
+        }),
+      }));
+      for (const arrow of geometry.arrows) for (const card of geometry.cards) {
+        expect(arrow.right <= card.left || arrow.left >= card.right).toBe(true);
+      }
+    }
   }
 });
 

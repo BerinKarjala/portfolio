@@ -4,6 +4,15 @@ Current owner direction supersedes the historical target-TV requirements below:
 online TV browsers and devices are outside the project's scope. Phone, tablet,
 and desktop web layouts remain in scope.
 
+The current moon and carousel revision also supersedes historical sizing and
+idle timing below. The moon diameter is 65px smaller than the prior responsive
+size; its callout stays to its left and may leave the viewport while dragging.
+Project cards share the reduced Four Seasons Studio dimensions, with a 160px
+minimum width on narrow phones for usable controls. The idle carousel advances
+continuously over each 12-second interval, pausing for interaction and honoring
+reduced motion. The phone minimum is an implementation assumption for owner
+review, not a separate approved requirement.
+
 The October 25 carousel refinements at the end of this document supersede the
 original carousel timing, bottom controls, and fullscreen behavior below. Earlier
 sections retain the original implementation and its historical evidence.
