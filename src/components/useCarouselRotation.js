@@ -19,6 +19,7 @@ export default function useCarouselRotation({blocked, count, advance}) {
   const pending = useRef(null);
   const motionTimer = useRef(null);
   const inMotion = useRef(false);
+  const pointerDown = useRef(false);
   const hold = useCallback(() => {pending.current = null; setHeld(true);}, []);
   const slide = useCallback(function start(delta) {
     const state = current.current;
@@ -50,7 +51,7 @@ export default function useCarouselRotation({blocked, count, advance}) {
     const media = window.matchMedia?.('(prefers-reduced-motion: reduce)');
     const motion = () => setReducedMotion(media?.matches ?? false);
     const visibility = () => setVisible(document.visibilityState !== 'hidden');
-    const release = () => setPressed(false);
+    const release = () => {pointerDown.current = false; setPressed(false);};
     media?.addEventListener('change', motion);
     document.addEventListener('visibilitychange', visibility);
     window.addEventListener('pointerup', release);
@@ -95,10 +96,10 @@ export default function useCarouselRotation({blocked, count, advance}) {
     rotating, moving, reducedMotion, hold, command, autoDirection,
     autoMotion: autoEnabled ? (rotating ? 'running' : 'paused') : 'off',
     interactions: {
-      onFocusCapture: event => {if (event.target.closest('[data-carousel-card]') && !event.target.closest('[data-rotation-control]')) hold();},
+      onFocusCapture: event => {if (!pointerDown.current && event.target.closest('[data-carousel-card]') && !event.target.closest('[data-rotation-control]')) hold();},
       onPointerOver: event => {if (event.pointerType !== 'touch' && event.target.closest('[data-carousel-stage]')) setHovered(true);},
       onPointerOut: event => {if (!event.relatedTarget?.closest?.('[data-carousel-stage]')) setHovered(false);},
-      onPointerDown: event => {if (event.target.closest('[data-carousel-card]')) setPressed(true);},
+      onPointerDown: event => {if (event.target.closest('[data-carousel-card]')) {pointerDown.current = true; setPressed(true);}},
     },
   };
 }

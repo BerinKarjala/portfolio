@@ -16,7 +16,7 @@ function setup(props = {}) {
   const advance = vi.fn();
   function Harness({blocked = false, count = 4}) {
     const rotation = useCarouselRotation({blocked, count, advance});
-    return <div {...rotation.interactions} data-carousel-stage>
+    return <div {...rotation.interactions} data-carousel-stage data-motion={rotation.autoMotion}>
       <button data-rotation-control onClick={() => rotation.command?.(-1)}>Previous</button>
       <button data-rotation-control onClick={() => rotation.command?.(1)}>Next</button>
       <button data-carousel-card onClick={() => rotation.hold?.()}>Card</button>
@@ -90,6 +90,19 @@ it('pauses when the pointer enters the stage before it reaches a moving card', (
   tick(2000); expect(advance).not.toHaveBeenCalled();
   fireEvent.pointerOut(stage, {pointerType: 'mouse'});
   tick(7000); expect(advance).toHaveBeenCalledOnce();
+});
+it('keeps a pointer-focused card in place until its click can select it', () => {
+  const {container} = setup();
+  const stage = container.querySelector('[data-carousel-stage]');
+  const card = screen.getByText('Card');
+  tick(5000);
+  fireEvent.pointerOver(stage, {pointerType: 'mouse'});
+  fireEvent.pointerDown(card, {pointerType: 'mouse', button: 0});
+  fireEvent.focus(card);
+  expect(stage.dataset.motion).toBe('paused');
+  fireEvent.pointerUp(window, {pointerType: 'mouse'});
+  fireEvent.click(card);
+  expect(stage.dataset.motion).toBe('off');
 });
 it('blocks manual and automatic movement for a tool and starts a fresh delay afterwards', () => {
   const {advance, rerender, Harness} = setup({blocked: true});
