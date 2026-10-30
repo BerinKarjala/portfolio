@@ -4,6 +4,7 @@
   padding: clamp(3rem, 8vh, 7rem) 0 0;
   display: flex;
   background-attachment: scroll;
+  overflow-x: clip;
 }
 .landing-gallery { width: 100%; min-width: 0; display: flex; flex-direction: column; container-type: inline-size; }
 .landing-stage-frame { --landing-card-width: min(12.5rem, max(10rem, calc(50cqw - 64px))); --landing-card-height: 13.5rem; position: relative; width: min(100%, 74rem); margin: 0 auto 6rem; flex-shrink: 0; }
@@ -59,7 +60,7 @@
    tail inside the art frame, preserving image ratio and writing-set overflow. */
 .landing-desk-art { position: relative; aspect-ratio: 2172 / 680; overflow: clip; }
 .landing-desk-art > img { position: absolute; top: 0; left: 0; display: block; width: 100%; height: auto; }
-.landing-writing-set { position: absolute; left: 65%; top: 25%; width: min(clamp(5rem, 9vw, 10rem), 38vw); height: min(clamp(5rem, 9vw, 10rem), 38vw); pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; }
+.landing-writing-set { position: absolute; left: 65%; top: 25%; width: min(clamp(5rem, 9vw, 10rem), 26vw); height: min(clamp(5rem, 9vw, 10rem), 26vw); pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; }
 .landing-writing-set:active { cursor: grabbing; }
 .landing-writing-set img { position: absolute; user-select: none; }
 .landing-inkwell { width: 100%; bottom: 0; }

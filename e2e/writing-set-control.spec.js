@@ -7,9 +7,9 @@ test.beforeEach(async ({page}) => {
 test('dragging the inkwell steers the carousel and glides back to its resting place', async ({page}) => {
   await page.setViewportSize({width: 1200, height: 900});
   await page.clock.install({time: new Date('2026-10-27T12:00:00Z')});
+  await page.clock.pauseAt(new Date('2026-10-27T12:01:00Z'));
   await page.goto('/');
   await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
-  await page.clock.pauseAt(new Date('2026-10-27T12:00:01Z'));
   const inkwell = page.getByRole('button', {name: 'Open text editor with the inkwell'});
   const card = page.locator('[data-card-key="/projects/SudokuSolver"]');
   const stage = page.locator('.landing-stage');
@@ -18,11 +18,13 @@ test('dragging the inkwell steers the carousel and glides back to its resting pl
   await page.mouse.move(x, y); await page.mouse.down();
   await page.mouse.move(1200 - home.width / 2, y, {steps: 8});
   await expect(stage).toHaveAttribute('data-auto-motion', 'running');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1201);
   const start = (await card.boundingBox()).x;
   await page.clock.runFor(800);
   const right = (await card.boundingBox()).x;
   expect(right).toBeGreaterThan(start + 20);
   await page.mouse.move(home.width / 2, y, {steps: 8});
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1201);
   const reversed = (await card.boundingBox()).x;
   expect(Math.abs(reversed - right)).toBeLessThan(2);
   await page.clock.runFor(800);
