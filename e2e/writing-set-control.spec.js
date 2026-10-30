@@ -7,11 +7,15 @@ test.beforeEach(async ({page}) => {
 test('dragging the inkwell steers the carousel and glides back to its resting place', async ({page}) => {
   await page.setViewportSize({width: 1200, height: 900});
   await page.clock.install({time: new Date('2026-10-27T12:00:00Z')});
-  await page.clock.pauseAt(new Date('2026-10-27T12:01:00Z'));
   await page.goto('/');
   await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
+  // Let the app initialize before freezing timers; use a future time derived
+  // from the live test clock so slow browser startup cannot put it in the past.
+  await page.clock.pauseAt(new Date(await page.evaluate(() => Date.now()) + 60000));
+  await page.clock.runFor(50);
   const inkwell = page.getByRole('button', {name: 'Open text editor with the inkwell'});
-  const card = page.locator('[data-card-key="/projects/SudokuSolver"]');
+  const selectedKey = await page.locator('.landing-card--center').getAttribute('data-card-key');
+  const card = page.locator(`[data-card-key="${selectedKey}"]`);
   const stage = page.locator('.landing-stage');
   const home = await inkwell.boundingBox();
   const x = home.x + home.width / 2, y = home.y + home.height / 2;
