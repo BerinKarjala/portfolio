@@ -38,6 +38,7 @@
     "eslint": "^10.11.0"
   },
   "overrides": {
+    "minimatch": "11.0.1",
     "braces": "npm:@dieub/braces-depth-guard@3.0.3-pn.3",
     "@sanity/runtime-cli": {
       "adm-zip": "0.6.1"
