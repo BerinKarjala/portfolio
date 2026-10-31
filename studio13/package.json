@@ -13,7 +13,7 @@
   "scripts": {
     "start": "sanity dev",
     "build": "sanity build",
-    "test:dependencies": "node --test scripts/dependency-security.check.cjs scripts/zod-security.check.cjs",
+    "test:dependencies": "node --test scripts/dependency-security.check.cjs scripts/zod-security.check.cjs scripts/minimatch-security.check.cjs",
     "postinstall": "node scripts/fix-argparse-compat.cjs",
     "cors:list": "sanity cors list",
     "cors:add-local": "sanity cors add http://127.0.0.1:5173 --credentials && sanity cors add http://localhost:5173 --credentials"
@@ -38,6 +38,7 @@
     "eslint": "^10.11.0"
   },
   "overrides": {
+    "minimatch": "11.0.1",
     "braces": "npm:@dieub/braces-depth-guard@3.0.3-pn.3",
     "@sanity/runtime-cli": {
       "adm-zip": "0.6.1"
