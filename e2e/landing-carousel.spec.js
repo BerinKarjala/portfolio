@@ -15,8 +15,36 @@ async function settle(page) {
   });
 }
 
+async function deskFrontEdge(page) {
+  return page.locator('.landing-desk-art').evaluate(art => {
+    const image = art.querySelector('img');
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth;
+    canvas.height = 1;
+    const ctx = canvas.getContext('2d');
+    // Sample the broad visible front face, accounting for transparent margins.
+    const row = Math.round(image.naturalHeight * 620 / 724);
+    ctx.drawImage(image, 0, row, image.naturalWidth, 1, 0, 0, image.naturalWidth, 1);
+    const pixels = ctx.getImageData(0, 0, image.naturalWidth, 1).data;
+    let first = -1, last = -1;
+    for (let x = 0; x < image.naturalWidth; x++) {
+      if (pixels[x * 4 + 3] < 128) continue;
+      if (first === -1) first = x;
+      last = x;
+    }
+    const box = image.getBoundingClientRect();
+    const frame = art.getBoundingClientRect();
+    const cover = getComputedStyle(image).objectFit === 'cover';
+    const scale = cover ? Math.max(box.width / image.naturalWidth, box.height / image.naturalHeight) : box.width / image.naturalWidth;
+    const imageLeft = box.left + (box.width - image.naturalWidth * scale) / 2;
+    const left = Math.max(frame.left, box.left, imageLeft + first * scale);
+    const right = Math.min(frame.right, box.right, imageLeft + (last + 1) * scale);
+    return {width: right - left, center: (left + right) / 2};
+  });
+}
+
 for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900], [1920, 1080]]) {
-  test(`desktop desk is 75% wide and its writing set is reachable at ${width}x${height}`, async ({page}) => {
+  test(`desktop desk front is 95% wide and its writing set is reachable at ${width}x${height}`, async ({page}) => {
     await page.setViewportSize({width, height});
     await page.emulateMedia({reducedMotion: 'reduce'});
     await page.goto('/');
@@ -32,7 +60,9 @@ for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900], [1920, 108
     expect(Math.abs(bounds.desk.bottom - height)).toBeLessThanOrEqual(2);
     expect(bounds.desk.top).toBeLessThan(height);
     const deskWidth = bounds.desk.right - bounds.desk.left;
-    expect(Math.abs(deskWidth - width * .75)).toBeLessThanOrEqual(1);
+    const edge = await deskFrontEdge(page);
+    expect(Math.abs(edge.width - width * .95)).toBeLessThanOrEqual(2);
+    expect(Math.abs(edge.center - width / 2)).toBeLessThanOrEqual(2);
     const inkwellCenter = (bounds.inkwell.left + bounds.inkwell.right) / 2;
     expect(Math.abs(inkwellCenter - (bounds.desk.left + deskWidth * .65))).toBeLessThan(2);
     const inkWidth = bounds.inkwell.right - bounds.inkwell.left;
@@ -75,6 +105,9 @@ for (const [width, height] of [[320, 740], [390, 844], [768, 1024], [1200, 550],
     });
     expect(position.ink).toBeCloseTo(.85, 2);
     expect(Math.abs(position.deskBottom - position.viewportBottom)).toBeLessThanOrEqual(2);
+    const edge = await deskFrontEdge(page);
+    expect(Math.abs(edge.width - width * .95)).toBeLessThanOrEqual(2);
+    expect(Math.abs(edge.center - width / 2)).toBeLessThanOrEqual(2);
     const inkwell = page.getByRole('button', {name: 'Open text editor with the inkwell'});
     await inkwell.scrollIntoViewIfNeeded();
     await inkwell.dblclick();
