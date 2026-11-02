@@ -34,7 +34,15 @@ for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900], [1920, 108
     const deskWidth = bounds.desk.right - bounds.desk.left;
     expect(Math.abs(deskWidth - width * .75)).toBeLessThanOrEqual(1);
     const inkwellCenter = (bounds.inkwell.left + bounds.inkwell.right) / 2;
-    expect(Math.abs(inkwellCenter - (bounds.desk.left + deskWidth / 2))).toBeLessThan(2);
+    expect(Math.abs(inkwellCenter - (bounds.desk.left + deskWidth * .65))).toBeLessThan(2);
+    const inkWidth = bounds.inkwell.right - bounds.inkwell.left;
+    const inkHeight = bounds.inkwell.bottom - bounds.inkwell.top;
+    // The asset's nib ends near the lower-left of its transparent canvas.
+    const tipX = bounds.quill.left + (bounds.quill.right - bounds.quill.left) * .125;
+    const tipY = bounds.quill.bottom - (bounds.quill.bottom - bounds.quill.top) * .015;
+    expect(Math.abs(tipX - inkwellCenter)).toBeLessThan(inkWidth * .12);
+    expect(tipY).toBeGreaterThan(bounds.inkwell.top + inkHeight * .14);
+    expect(tipY).toBeLessThan(bounds.inkwell.top + inkHeight * .32);
     if (bounds.desk.bottom > height + 1) {
       await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
       expect(await page.locator('.landing-desk').evaluate(node => node.getBoundingClientRect().bottom)).toBeLessThanOrEqual(height + 1);
@@ -103,6 +111,7 @@ test('the quill appears above the cards without capturing carousel gestures', as
   await page.goto('/');
   await settle(page);
   await page.getByRole('button', {name: 'Open text editor with the inkwell'}).focus();
+  for (let step = 0; step < 14; step++) await page.keyboard.down('ArrowLeft');
   for (let step = 0; step < 12; step++) await page.keyboard.down('ArrowUp');
   const overlap = await page.evaluate(() => {
     const quill = document.querySelector('.landing-quill');
