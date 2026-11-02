@@ -34,6 +34,15 @@ export default defineType({
       validation: (Rule) =>
         Rule.uri({
           scheme: ["http", "https"],
+          allowRelative: true,
+        }).custom((value) => {
+          if (typeof value !== "string" || value === "") return true;
+
+          // Browsers can treat these as external URLs even when they look like paths.
+          if (/[\\\u0000-\u001f\u007f]/.test(value) || value.trimStart().startsWith("//")) {
+            return "Use an internal path or a full HTTP(S) URL without backslashes or control characters.";
+          }
+          return true;
         }),
     }),
   ],

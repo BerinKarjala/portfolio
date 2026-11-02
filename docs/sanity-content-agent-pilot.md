@@ -15,9 +15,10 @@ documents or drafts have been created, changed, or published.
   target project `umy7f73e`, dataset `production`; the frontend uses the CDN.
 - The repository's [`project` schema](../studio13/schemas/project.js) defines
   `name` and `description` as required, an optional `thumbnail` with `alt`,
-  and an optional `link` with HTTP/HTTPS URI validation. No project SEO title,
-  meta-description, or keyword fields are defined there. Repository source does
-  not prove which schema is registered or deployed.
+  and an optional `link`. This branch proposes validation for internal paths
+  and HTTP/HTTPS URLs. No project SEO title, meta-description, or keyword fields
+  are defined there. Repository source does not prove which schema is registered
+  or deployed.
 - On 2026-11-02, Sanity Manage showed the `Berin Karjala` organization
   (`oA1XjC8YD`) containing the active `Studio13` project (`umy7f73e`), on the
   **Developer (Legacy)** plan. Its dataset list showed `production` as public
@@ -63,19 +64,41 @@ The query was:
 | `c3e9c324-e055-4146-9335-55e2d7e28e29` | Minesweeper | None of `name`, `description`, `link`, `thumbnail.asset` reference, or `thumbnail.alt` | Description has a grammatical error and inconsistent capitalization of JavaScript; review wording against verified project behavior. |
 
 Both links are relative application routes, `/projects/SudokuSolver` and
-`/projects/Minesweeper`. They are present, but the repository's URL rule does
-not set `allowRelative`. [Sanity's URL documentation](https://www.sanity.io/docs/studio/url-type)
+`/projects/Minesweeper`. They are present, but the baseline repository URL rule
+did not set `allowRelative`. [Sanity's URL documentation](https://www.sanity.io/docs/studio/url-type)
 states that relative URLs are disallowed by default. An offline check using
 the repository's project schema and Sanity 6.20.0's validator confirmed that
 synthetic records containing each existing route fail with `Not a valid URL`;
 an HTTPS URL passed, and a `javascript:` URL failed. This check did not access
 or modify CMS data and was not a test in a deployed Studio. Such
 [validation errors can block publication](https://www.sanity.io/docs/studio/validation).
-Resolve the validation mismatch before a content pilot; do not silently rewrite
-the records. The asset references and alt values
+The branch-only change now accepts those paths without rewriting the records;
+it has not been deployed. The asset references and alt values
 are present, but this query did not verify the images or their suitability.
 The descriptions and alt values may need editorial judgment; that is distinct
 from a missing-field finding.
+
+## Branch-only link validation
+
+The owner approved preparing the validation change on the feature branch. The
+new rule accepts relative paths and HTTP/HTTPS URLs while rejecting unsafe
+schemes, protocol-relative URLs, backslashes, and control characters. The link
+remains optional. This changes the repository schema only, not existing data or
+the hosted Studio.
+
+The new `test:project-links` command runs a single-worker, offline regression
+test against the project schema and Sanity's document validator; Studio CI
+runs it before the build. Before the fix, all five initial relative-path cases
+failed with `Not a valid URL`. Afterward, those cases and the original HTTP(S),
+optional-value, unsafe-scheme, and disguised-external-path cases passed.
+
+The local test used Node `v22.21.1` and Sanity 6.20.0 dependencies from the
+original checkout. Because that local dependency tree is missing a
+`framer-motion` file, an in-memory module-resolution hook supplied Sanity's
+schema helpers from `@sanity/types`; the actual project schema, Sanity schema
+compiler, and document validator were exercised with an offline client. This
+is not an unmodified Studio runtime test. CI must run the same test without
+that local hook and with the repository's pinned Node version.
 
 This snapshot reflects public data at the time of the query, not an exhaustive
 audit of drafts, historical versions, image content, destination health, or
@@ -178,11 +201,11 @@ and does not replace the cloud release checks or preview.
 
 ## Next operator steps
 
-1. Reconcile the inspected deployed Studio's schema and navigation with the
-   repository, address the relative-link validation mismatch with the owner's
-   direction, independently verify any existing drafts, and agree on the
-   connection and recovery approach before any production Studio deployment
-   or account-setting change.
+1. Verify the branch-only link-validation change in cloud CI; reconcile the
+   inspected deployed Studio's schema and navigation with the repository,
+   independently verify any existing drafts, and agree on the connection and
+   recovery approach before any production Studio deployment or account-setting
+   change.
 2. Once the compatible Studio and schema are connected, use the handover
    playbook's report-only inventory prompt. Compare its
    selected document IDs, field states, and published/draft context with a
