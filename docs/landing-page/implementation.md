@@ -13,11 +13,12 @@ continuously over each 12-second interval, pausing for interaction and honoring
 reduced motion. The phone minimum is an implementation assumption for owner
 review, not a separate approved requirement.
 
-The desktop tabletop spans 75% of the viewport width. The quill and inkwell sit
-together near the front edge of the tabletop; short screens can scroll to reach
-the writing set and the rest of the tabletop. Phone and tablet layouts retain their
-height-aware sizing, and longer content remains scrollable. On desktop, the
-project cards sit closer to the navigation and the desk sits closer to the cards.
+The desktop tabletop spans 75% of the viewport width. The front of the desk sits
+at the viewport's bottom edge when the scene fits. The quill and inkwell sit
+together near the front edge of the tabletop; very short screens and open tools
+can scroll to keep content and the writing set reachable. Phone and tablet
+layouts retain their height-aware sizing. On desktop, the project cards sit
+closer to the navigation.
 The quill is drawn in front of the cards without intercepting their interactions;
 the inkwell remains available below them. An open editor or calendar stays in
 front of the quill so its contents remain readable.

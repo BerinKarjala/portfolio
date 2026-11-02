@@ -29,8 +29,7 @@ for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900], [1920, 108
       return {header: rect('header'), desk: rect('.landing-desk'), inkwell: rect('.landing-inkwell'), quill: rect('.landing-quill'), card: rect('.landing-card--center')};
     });
     expect(bounds.card.top - bounds.header.bottom).toBeLessThanOrEqual(40);
-    expect(bounds.desk.top).toBeGreaterThanOrEqual(bounds.card.bottom);
-    expect(bounds.desk.top - bounds.card.bottom).toBeLessThanOrEqual(56);
+    expect(Math.abs(bounds.desk.bottom - height)).toBeLessThanOrEqual(2);
     expect(bounds.desk.top).toBeLessThan(height);
     const deskWidth = bounds.desk.right - bounds.desk.left;
     expect(Math.abs(deskWidth - width * .75)).toBeLessThanOrEqual(1);
@@ -55,7 +54,7 @@ for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900], [1920, 108
   });
 }
 
-for (const [width, height] of [[320, 740], [768, 1024], [1200, 550], [1440, 900], [1920, 1080]]) {
+for (const [width, height] of [[320, 740], [390, 844], [768, 1024], [1200, 550], [1440, 900], [1920, 1080], [3840, 2160]]) {
   test(`the writing set rests near the front of the desk at ${width}x${height}`, async ({page}) => {
     await page.setViewportSize({width, height});
     await page.emulateMedia({reducedMotion: 'reduce'});
@@ -64,9 +63,33 @@ for (const [width, height] of [[320, 740], [768, 1024], [1200, 550], [1440, 900]
     const position = await page.evaluate(() => {
       const desk = document.querySelector('.landing-desk').getBoundingClientRect();
       const ink = document.querySelector('.landing-inkwell').getBoundingClientRect();
-      return (ink.bottom - desk.top) / desk.height;
+      return {ink: (ink.bottom - desk.top) / desk.height, deskBottom: desk.bottom, viewportBottom: innerHeight};
     });
-    expect(position).toBeCloseTo(.85, 2);
+    expect(position.ink).toBeCloseTo(.85, 2);
+    expect(Math.abs(position.deskBottom - position.viewportBottom)).toBeLessThanOrEqual(2);
+    const inkwell = page.getByRole('button', {name: 'Open text editor with the inkwell'});
+    await inkwell.scrollIntoViewIfNeeded();
+    await inkwell.dblclick();
+    await expect(page.getByRole('textbox', {name: 'Writing area'})).toBeVisible();
+  });
+}
+
+for (const [width, height] of [[320, 400], [1200, 400], [3840, 600]]) {
+  test(`a ${width}x${height} viewport can scroll to the desk and inkwell`, async ({page}) => {
+    await page.setViewportSize({width, height});
+    await page.emulateMedia({reducedMotion: 'reduce'});
+    await page.goto('/');
+    await settle(page);
+    const bounds = await page.evaluate(() => {
+      const header = document.querySelector('header').getBoundingClientRect();
+      const desk = document.querySelector('.landing-desk').getBoundingClientRect();
+      const ink = document.querySelector('.landing-inkwell').getBoundingClientRect();
+      const card = document.querySelector('.landing-card--center').getBoundingClientRect();
+      return {deskTop: desk.top, headerBottom: header.bottom, inkTop: ink.top, cardBottom: card.bottom, scrollHeight: document.documentElement.scrollHeight};
+    });
+    expect(bounds.scrollHeight).toBeGreaterThan(height);
+    expect(bounds.deskTop).toBeGreaterThanOrEqual(bounds.headerBottom);
+    expect(bounds.inkTop).toBeGreaterThanOrEqual(bounds.cardBottom);
     const inkwell = page.getByRole('button', {name: 'Open text editor with the inkwell'});
     await inkwell.scrollIntoViewIfNeeded();
     await inkwell.dblclick();
@@ -75,7 +98,7 @@ for (const [width, height] of [[320, 740], [768, 1024], [1200, 550], [1440, 900]
 }
 
 test('the quill appears above the cards without capturing carousel gestures', async ({page}) => {
-  await page.setViewportSize({width: 1440, height: 900});
+  await page.setViewportSize({width: 1200, height: 550});
   await page.emulateMedia({reducedMotion: 'reduce'});
   await page.goto('/');
   await settle(page);

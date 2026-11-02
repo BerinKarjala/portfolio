@@ -6,7 +6,7 @@
   background-attachment: scroll;
   overflow-x: clip;
 }
-.landing-gallery { width: 100%; min-width: 0; display: flex; flex-direction: column; container-type: inline-size; }
+.landing-gallery { --landing-desk-min-height: calc(15rem * 680 / 724); --landing-ink-clearance: calc(min(clamp(5rem, 9vw, 10rem), 26vw) + 3rem); position: relative; width: 100%; min-width: 0; display: flex; flex-direction: column; container-type: inline-size; }
 .landing-stage-frame { --landing-card-width: min(12.5rem, max(10rem, calc(50cqw - 64px))); --landing-card-height: 13.5rem; position: relative; width: min(100%, 74rem); margin: 0 auto 6rem; flex-shrink: 0; }
 .landing-stage { --landing-left: -160%; --landing-right: 60%; --landing-far-left: -270%; --landing-far-right: 170%; position: relative; z-index: 1; width: 100%; min-height: 0; padding-block: .5rem; overflow-x: clip; overflow-y: visible; }
 .landing-card { position: absolute; top: .5rem; left: 50%; width: var(--landing-card-width); border: 1px solid #369466; border-radius: 1.5rem; background: linear-gradient(135deg, #005733, #003820); box-shadow: 0 1rem 3rem #001e1570, inset 0 1px 2px #a5f3c640; overflow-wrap: anywhere; transition: transform var(--landing-slide-duration) ease-in-out, opacity var(--landing-slide-duration) ease-in-out; }
@@ -56,6 +56,11 @@
 .landing-scene :focus-visible { outline: 3px solid #fff5d5; outline-offset: 4px; }
 .landing-scene button:disabled { opacity: .65; cursor: default; }
 .landing-desk { position: relative; width: min(100%, 90rem); margin: auto auto 0; pointer-events: none; }
+/* Keep the desk at the scene's lower edge while reserving enough space below
+   the cards for the inkwell. Utilities return to flow and can grow normally. */
+.landing-gallery:not(:has(.landing-stage-frame--utility)) { min-height: var(--landing-desk-min-height); }
+.landing-gallery:not(:has(.landing-stage-frame--utility)) .landing-stage-frame { margin-bottom: var(--landing-ink-clearance); }
+.landing-gallery:not(:has(.landing-stage-frame--utility)) .landing-desk { position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto; }
 /* The unchanged 2172×724 asset's alpha ends at row 679. Clip its transparent
    tail inside the art frame, preserving image ratio and writing-set overflow. */
 .landing-desk-art { position: relative; aspect-ratio: 2172 / 680; overflow: clip; }
@@ -72,13 +77,15 @@
 .landing-writing-reset { pointer-events: auto; position: absolute; right: .5rem; bottom: .5rem; padding: .5rem; min-height: 44px; border: 1px solid #8fd4a7; border-radius: .5rem; background: #003b27; }
 /* Fit the desk to shorter tablet viewports; taller content can still scroll. */
 @media (min-width: 45.001rem) {
+  .landing-gallery { --landing-desk-min-height: min(31.308vw, 28.18rem); --landing-ink-clearance: calc(clamp(5rem, 9vw, 10rem) + 4rem); }
   .landing-stage-frame { margin-bottom: 3.5rem; }
   .landing-desk { width: min(100%, 90rem, max(24rem, calc((100svh - var(--landing-header-height, 0px) - 22rem) * 3.1941))); }
   .landing-writing-set, .landing-quill-layer { width: min(clamp(5rem, 9vw, 10rem), 26vw, 23%); height: auto; aspect-ratio: 1; }
 }
-/* On desktop, keep the tabletop at the requested viewport width and in flow. */
+/* On desktop, keep the tabletop at the requested viewport width. */
 @media (min-width: 64rem) {
   .landing-scene.forest-bg { padding-top: clamp(1rem, 2vh, 1.5rem); }
+  .landing-gallery { --landing-desk-min-height: 23.481vw; --landing-ink-clearance: calc(clamp(5rem, 9vw, 10rem) + 3.523vw + .5rem); }
   .landing-stage-frame { margin-bottom: 2.5rem; }
   .landing-desk { width: 75vw; margin: 0 auto; }
 }
