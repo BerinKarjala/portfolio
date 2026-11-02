@@ -310,7 +310,7 @@ test('selection latches, arrow hover resumes the chosen direction, and utilities
   await previous.hover(); await previous.click();
   await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
   await page.clock.runFor(1700); // Finish the manual transition before the idle cycle starts.
-  await expect(page.locator('[data-carousel-stage]')).toHaveAttribute('data-auto-motion', 'running');
+  await expect(page.locator('.landing-stage')).toHaveAttribute('data-auto-motion', 'running');
   await page.clock.runFor(100); // Flush React's post-commit timer registration.
   await page.clock.fastForward(12000);
   await expect(page.getByRole('heading', {name: 'CSS Theme Studio', exact: true})).toBeVisible();
