@@ -13,14 +13,21 @@ continuously over each 12-second interval, pausing for interaction and honoring
 reduced motion. The phone minimum is an implementation assumption for owner
 review, not a separate approved requirement.
 
-The desk and writing set should be visible in the initial desktop viewport when
-space permits. The desktop tabletop scales with available viewport height and
-the carousel gap is reduced; longer content and short screens remain scrollable.
+The desktop tabletop spans 75% of the viewport width. The front of the desk sits
+at the viewport's bottom edge when the scene fits. The quill and inkwell sit
+together near the front edge of the tabletop; very short screens and open tools
+can scroll to keep content and the writing set reachable. Phone and tablet
+layouts retain their height-aware sizing. On desktop, the project cards sit
+closer to the navigation.
+The quill is drawn in front of the cards without intercepting their interactions;
+the inkwell remains available below them. An open editor or calendar stays in
+front of the quill so its contents remain readable.
 
 The current writing-set interaction supersedes the historical click and drag
 description below. The quill and inkwell move together and rest near the desk's
 center, slightly to the side matching the normal slow carousel direction. When
-the carousel is stopped, they rest at the center. While held, their horizontal position steers the carousel in
+the carousel is deliberately held, they rest at the center. Hovering over the
+carousel temporarily pauses it without moving the writing set. While held, their horizontal position steers the carousel in
 the same visual direction, from the normal 12-second pace near the screen center
 to approximately 3 seconds per card at either screen edge. Reversing direction
 retraces the current motion rather than jumping. On release, the set glides back

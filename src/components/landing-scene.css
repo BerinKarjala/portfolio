@@ -6,9 +6,9 @@
   background-attachment: scroll;
   overflow-x: clip;
 }
-.landing-gallery { width: 100%; min-width: 0; display: flex; flex-direction: column; container-type: inline-size; }
-.landing-stage-frame { --landing-card-width: min(12.5rem, max(10rem, calc(50cqw - 64px))); --landing-card-height: 13.5rem; position: relative; z-index: 1; width: min(100%, 74rem); margin: 0 auto 6rem; flex-shrink: 0; }
-.landing-stage { --landing-left: -160%; --landing-right: 60%; --landing-far-left: -270%; --landing-far-right: 170%; position: relative; width: 100%; min-height: 0; padding-block: .5rem; overflow-x: clip; overflow-y: visible; }
+.landing-gallery { --landing-desk-min-height: calc(15rem * 680 / 724); --landing-ink-clearance: calc(min(clamp(5rem, 9vw, 10rem), 26vw) + 3rem); position: relative; width: 100%; min-width: 0; display: flex; flex-direction: column; container-type: inline-size; }
+.landing-stage-frame { --landing-card-width: min(12.5rem, max(10rem, calc(50cqw - 64px))); --landing-card-height: 13.5rem; position: relative; width: min(100%, 74rem); margin: 0 auto 6rem; flex-shrink: 0; }
+.landing-stage { --landing-left: -160%; --landing-right: 60%; --landing-far-left: -270%; --landing-far-right: 170%; position: relative; z-index: 1; width: 100%; min-height: 0; padding-block: .5rem; overflow-x: clip; overflow-y: visible; }
 .landing-card { position: absolute; top: .5rem; left: 50%; width: var(--landing-card-width); border: 1px solid #369466; border-radius: 1.5rem; background: linear-gradient(135deg, #005733, #003820); box-shadow: 0 1rem 3rem #001e1570, inset 0 1px 2px #a5f3c640; overflow-wrap: anywhere; transition: transform var(--landing-slide-duration) ease-in-out, opacity var(--landing-slide-duration) ease-in-out; }
 /* Prepare the three visible transform layers before the next step, avoiding
    a full-scene repaint when WebKit promotes the centered card mid-animation. */
@@ -51,27 +51,43 @@
 .landing-select-preview { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit; background: transparent; border: 0; cursor: pointer; touch-action: pan-x pinch-zoom; }
 .landing-controls { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: calc(var(--landing-card-width) + var(--landing-card-width) + var(--landing-card-width) + var(--landing-card-width) + var(--landing-card-width) + 128px); max-width: calc(100% - 1rem); display: flex; justify-content: space-between; pointer-events: none; z-index: 3; }
 .landing-controls button { pointer-events: auto; flex: 0 0 44px; min-width: 44px; min-height: 44px; border: 1px solid #8fd4a7; border-radius: .75rem; background: #003b27; color: #eff8e7; font-size: 24px; }
-.landing-gallery-status { position: absolute; top: 100%; left: 0; width: 100%; min-height: 3rem; pointer-events: none; }
+.landing-gallery-status { position: absolute; z-index: 3; top: 100%; left: 0; width: 100%; min-height: 3rem; pointer-events: none; }
 .landing-status { background: #002e20; color: #eff8e7; border-radius: .5rem; padding: .5rem 1rem; width: fit-content; max-width: calc(100% - 2rem); margin: .5rem auto 0; text-align: center; font-size: .8rem; }
 .landing-scene :focus-visible { outline: 3px solid #fff5d5; outline-offset: 4px; }
 .landing-scene button:disabled { opacity: .65; cursor: default; }
 .landing-desk { position: relative; width: min(100%, 90rem); margin: auto auto 0; pointer-events: none; }
+/* Keep the desk at the scene's lower edge while reserving enough space below
+   the cards for the inkwell. Utilities return to flow and can grow normally. */
+.landing-gallery:not(:has(.landing-stage-frame--utility)) { min-height: var(--landing-desk-min-height); }
+.landing-gallery:not(:has(.landing-stage-frame--utility)) .landing-stage-frame { margin-bottom: var(--landing-ink-clearance); }
+.landing-gallery:not(:has(.landing-stage-frame--utility)) .landing-desk { position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto; }
 /* The unchanged 2172×724 asset's alpha ends at row 679. Clip its transparent
    tail inside the art frame, preserving image ratio and writing-set overflow. */
 .landing-desk-art { position: relative; aspect-ratio: 2172 / 680; overflow: clip; }
 .landing-desk-art > img { position: absolute; top: 0; left: 0; display: block; width: 100%; height: auto; }
-.landing-writing-set { position: absolute; left: calc(50% + var(--writing-home-offset, 0%)); top: 25%; width: min(clamp(5rem, 9vw, 10rem), 26vw); height: min(clamp(5rem, 9vw, 10rem), 26vw); pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; transition: left 1.2s ease-out; }
+.landing-writing-set, .landing-quill-layer { position: absolute; left: calc(50% + var(--writing-home-offset, 0%)); bottom: 15%; width: min(clamp(5rem, 9vw, 10rem), 26vw); height: min(clamp(5rem, 9vw, 10rem), 26vw); transition: left 1.2s ease-out; }
+.landing-writing-set { pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; }
+.landing-quill-layer { z-index: 2; pointer-events: none; }
+/* Keep an open editor or calendar readable where it overlaps the feather. */
+.landing-gallery:has(.landing-stage-frame--utility) .landing-quill-layer { z-index: 0; }
 .landing-writing-set:active { cursor: grabbing; }
-.landing-writing-set img { position: absolute; user-select: none; }
+.landing-writing-set img, .landing-quill-layer img { position: absolute; user-select: none; }
 .landing-inkwell { width: 100%; bottom: 0; }
 .landing-quill { width: 160%; max-width: none; left: 21%; bottom: 40%; }
 .landing-writing-reset { pointer-events: auto; position: absolute; right: .5rem; bottom: .5rem; padding: .5rem; min-height: 44px; border: 1px solid #8fd4a7; border-radius: .5rem; background: #003b27; }
-/* Keep the whole desk and its launcher in view on typical desktop heights.
-   When content needs more room it remains in normal flow and can scroll. */
+/* Fit the desk to shorter tablet viewports; taller content can still scroll. */
 @media (min-width: 45.001rem) {
+  .landing-gallery { --landing-desk-min-height: min(31.308vw, 28.18rem); --landing-ink-clearance: calc(clamp(5rem, 9vw, 10rem) + 4rem); }
   .landing-stage-frame { margin-bottom: 3.5rem; }
   .landing-desk { width: min(100%, 90rem, max(24rem, calc((100svh - var(--landing-header-height, 0px) - 22rem) * 3.1941))); }
-  .landing-writing-set { width: min(clamp(5rem, 9vw, 10rem), 26vw, 23%); height: auto; aspect-ratio: 1; }
+  .landing-writing-set, .landing-quill-layer { width: min(clamp(5rem, 9vw, 10rem), 26vw, 23%); height: auto; aspect-ratio: 1; }
+}
+/* On desktop, keep the tabletop at the requested viewport width. */
+@media (min-width: 64rem) {
+  .landing-scene.forest-bg { padding-top: clamp(1rem, 2vh, 1.5rem); }
+  .landing-gallery { --landing-desk-min-height: 23.481vw; --landing-ink-clearance: calc(clamp(5rem, 9vw, 10rem) + 3.523vw + .5rem); }
+  .landing-stage-frame { margin-bottom: 2.5rem; }
+  .landing-desk { width: 75vw; margin: 0 auto; }
 }
 .landing-stage-frame--utility { --landing-card-width: min(calc(100cqw - .5rem), 30rem); }
 .landing-stage-frame:has(.landing-calendar) { --landing-card-width: min(calc(100cqw - 2px), 28rem); }
@@ -104,7 +120,7 @@
   .landing-calendar .calendar-dates { padding-left: 0; padding-right: 0; }
 }
 @media (min-width: 30rem) { .landing-card:has(.landing-calendar) .landing-card-surface:not(:modal) { padding: 1rem; } }
-@media (prefers-reduced-motion: reduce) { .landing-card, .landing-writing-set { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .landing-card, .landing-writing-set, .landing-quill-layer { transition: none; } }
 @media (forced-colors: active) { .landing-card { border: 2px solid CanvasText; } }
 html[data-studio-theme] .studio-canvas :is(.landing-card, .landing-card-surface--expanded:modal, .landing-status, .calendar-dates, .calendar-selected) { background: var(--studio-surface); color: var(--studio-text); }
 html[data-studio-theme] .studio-canvas .landing-calendar .calendar-dates button { background: transparent; color: var(--studio-text) !important; }

@@ -90,9 +90,13 @@ export default function WritingSet({ deskRef, onSteer = () => {}, homeOffset = 0
   }, []);
   const { onContextMenu: unusedContextMenu, ...handlers } = gesture.handlers;
   const moved = gesture.position.x !== 0 || gesture.position.y !== 0;
+  const position = { '--writing-home-offset': `${homeOffset}%`, transform: `translateX(-50%) translate(${gesture.position.x}px, ${gesture.position.y}px)` };
   return <>
+    <div className="landing-quill-layer" aria-hidden="true" style={position}>
+      <img className="landing-quill" src={quill} alt="" width="400" height="600" draggable="false" />
+    </div>
     <button ref={node => {element.current = node; editorLauncher.current = node;}} className="landing-writing-set" aria-label="Open text editor with the inkwell" aria-describedby={description} title="Drag to steer the projects. Double-click the inkwell to write."
-      style={{ '--writing-home-offset': `${homeOffset}%`, transform: `translateX(-50%) translate(${gesture.position.x}px, ${gesture.position.y}px)` }} {...handlers}
+      style={position} {...handlers}
       onPointerDown={event => {stopReturn(); handlers.onPointerDown(event);}}
       onDoubleClick={event => {
         if (Date.now() - lastTouchOpen.current > 600 && gesture.clickAllowed() && (event.target === event.currentTarget || event.target.closest?.('.landing-inkwell'))) openEditor(event.currentTarget);
@@ -106,7 +110,6 @@ export default function WritingSet({ deskRef, onSteer = () => {}, homeOffset = 0
         if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {onSteer(null); returnHome(gesture.currentPosition());}
       }}
       onBlur={() => {onSteer(null); returnHome(gesture.currentPosition());}}>
-      <img className="landing-quill" src={quill} alt="" width="400" height="600" draggable="false" />
       <img className="landing-inkwell" src={inkwell} alt="" width="240" height="240" draggable="false" />
     </button>
     <span id={description} className="sr-only">Double-click or double-tap the inkwell to write. Drag the writing set left or right to steer the project carousel. Use arrow keys to steer and Enter or Space to write.</span>

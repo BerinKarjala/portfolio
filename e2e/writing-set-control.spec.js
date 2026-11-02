@@ -20,6 +20,23 @@ test('the resting writing set reflects slow direction and a stopped carousel', a
   await expect.poll(async () => Math.abs(await offset())).toBeLessThan(.01);
 });
 
+test('hovering the carousel pauses it without moving the inkwell', async ({page}) => {
+  await page.setViewportSize({width: 1200, height: 900});
+  await page.goto('/');
+  const stage = page.locator('.landing-stage');
+  const inkwell = page.getByRole('button', {name: 'Open text editor with the inkwell'});
+  await expect(stage).toHaveAttribute('data-auto-motion', 'running');
+  const original = await inkwell.boundingBox();
+  const bounds = await stage.boundingBox();
+  await page.mouse.move(bounds.x + 10, bounds.y + 10);
+  await expect(stage).toHaveAttribute('data-auto-motion', 'paused');
+  await page.waitForTimeout(1400);
+  expect(Math.abs((await inkwell.boundingBox()).x - original.x)).toBeLessThan(1);
+  await page.mouse.move(0, 0);
+  await expect(stage).toHaveAttribute('data-auto-motion', 'running');
+  expect(Math.abs((await inkwell.boundingBox()).x - original.x)).toBeLessThan(1);
+});
+
 test('dragging the inkwell steers the carousel and glides back to its resting place', async ({page}) => {
   await page.setViewportSize({width: 1200, height: 900});
   await page.goto('/');

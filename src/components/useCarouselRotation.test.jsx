@@ -105,6 +105,17 @@ it('pauses the current automatic cycle on hover and resumes the remaining time',
   tick(6999); expect(advance).not.toHaveBeenCalled();
   tick(1); expect(advance).toHaveBeenCalledOnce();
 });
+it('keeps the writing set in place while hovering temporarily pauses the carousel', () => {
+  const {container} = setup();
+  const stage = container.querySelector('[data-carousel-stage]');
+  const restingPosition = stage.dataset.writingHome;
+  fireEvent.pointerOver(stage, {pointerType: 'mouse'});
+  expect(stage.dataset.motion).toBe('paused');
+  expect(stage.dataset.writingHome).toBe(restingPosition);
+  fireEvent.pointerOut(stage, {pointerType: 'mouse'});
+  expect(stage.dataset.motion).toBe('running');
+  expect(stage.dataset.writingHome).toBe(restingPosition);
+});
 it('pauses when the pointer enters the stage before it reaches a moving card', () => {
   const {advance, container} = setup();
   const stage = container.querySelector('[data-carousel-stage]');
