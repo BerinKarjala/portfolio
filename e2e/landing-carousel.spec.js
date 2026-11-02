@@ -82,6 +82,31 @@ test('the quill appears above the cards without capturing carousel gestures', as
   await expect(page.getByRole('dialog', {name: 'Sudoku Solver'})).toHaveAttribute('aria-modal', 'true');
   await expect(page.getByRole('textbox', {name: 'Writing area'})).toHaveCount(0);
 });
+
+test('the open editor remains above the quill', async ({page}) => {
+  await page.setViewportSize({width: 1200, height: 900});
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.goto('/');
+  await settle(page);
+  await page.getByRole('button', {name: 'Open text editor with the inkwell'}).dblclick();
+  await expect(page.getByRole('textbox', {name: 'Writing area'})).toBeVisible();
+  const quillInFront = await page.evaluate(() => {
+    const quill = document.querySelector('.landing-quill');
+    const utility = document.querySelector('.landing-utility');
+    const a = quill.getBoundingClientRect(), b = utility.getBoundingClientRect();
+    for (let y = Math.max(a.top, b.top + 12); y < Math.min(a.bottom, b.bottom - 12, innerHeight); y += 4) {
+      for (let x = Math.max(a.left, b.left + 12); x < Math.min(a.right, b.right - 12, innerWidth); x += 4) {
+        if (!document.elementFromPoint(x, y)?.closest('.landing-utility')) continue;
+        quill.style.pointerEvents = 'auto';
+        const inFront = document.elementFromPoint(x, y) === quill;
+        quill.style.removeProperty('pointer-events');
+        return inFront;
+      }
+    }
+    return null;
+  });
+  expect(quillInFront).toBe(false);
+});
 async function openCalendar(page) {
   const moon = page.getByRole('button', {name: 'Moon and weather'});
   if (await moon.getAttribute('aria-expanded') !== 'true') await moon.click();

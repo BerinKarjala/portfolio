@@ -19,7 +19,8 @@ scroll to reveal the rest of the tabletop. Phone and tablet layouts retain their
 height-aware sizing, and longer content remains scrollable. On desktop, the
 project cards sit closer to the navigation and the desk sits closer to the cards.
 The quill is drawn in front of the cards without intercepting their interactions;
-the inkwell remains available below them.
+the inkwell remains available below them. An open editor or calendar stays in
+front of the quill so its contents remain readable.
 
 The current writing-set interaction supersedes the historical click and drag
 description below. The quill and inkwell move together and rest near the desk's

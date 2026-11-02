@@ -63,6 +63,8 @@
 .landing-writing-set, .landing-quill-layer { position: absolute; left: calc(50% + var(--writing-home-offset, 0%)); top: 25%; width: min(clamp(5rem, 9vw, 10rem), 26vw); height: min(clamp(5rem, 9vw, 10rem), 26vw); transition: left 1.2s ease-out; }
 .landing-writing-set { pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; }
 .landing-quill-layer { z-index: 2; pointer-events: none; }
+/* Keep an open editor or calendar readable where it overlaps the feather. */
+.landing-gallery:has(.landing-stage-frame--utility) .landing-quill-layer { z-index: 0; }
 .landing-writing-set:active { cursor: grabbing; }
 .landing-writing-set img, .landing-quill-layer img { position: absolute; user-select: none; }
 .landing-inkwell { width: 100%; bottom: 0; }
