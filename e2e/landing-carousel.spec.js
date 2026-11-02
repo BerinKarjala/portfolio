@@ -34,6 +34,7 @@ for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900]]) {
       expect(part.bottom).toBeLessThanOrEqual(height + 1);
     }
     const deskWidth = bounds.desk.right - bounds.desk.left;
+    expect(Math.abs(deskWidth - width * .75)).toBeLessThanOrEqual(1);
     const inkwellCenter = (bounds.inkwell.left + bounds.inkwell.right) / 2;
     expect(Math.abs(inkwellCenter - (bounds.desk.left + deskWidth / 2))).toBeLessThan(2);
     await page.getByRole('button', {name: 'Expand Sudoku Solver'}).click();
