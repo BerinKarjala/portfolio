@@ -79,7 +79,10 @@ future records. Repeat the query and reconcile with Studio before acting.
 After the owner's Studio screenshot, the Dashboard still showed **Studio
 action required**. Its setup page listed Studio13 with unknown compatibility,
 no version, and its **Show in Dashboard** checkbox unchecked; zero studios
-were included. No Dashboard setting was changed during this check.
+were included. An unauthenticated HEAD request to the hosted Studio's
+`/static/create-manifest.json` returned HTTP 404 on 2026-11-02. That does not
+by itself establish the complete server-side schema registration state. No
+Dashboard setting was changed during this check.
 
 For a Sanity-hosted Studio, the setup page and
 [Sanity's Dashboard guidance](https://www.sanity.io/docs/dashboard/dashboard-configure)
@@ -91,11 +94,14 @@ does not by itself establish that these prerequisites are satisfied.
 The owner's screenshot showed a **Post** section in the deployed Studio,
 while the repository's [schema index](../studio13/schemas/index.js) does not
 register a `post` type and its [desk structure](../studio13/deskStructure.js)
-adds a **Landing Page** entry. An unauthenticated count on 2026-11-02 returned
-zero published `post` documents; it does not rule out drafts or historical
-content. Redeploying the repository version could therefore change the owner's
-editing interface. It must not be assumed to delete existing documents, or to
-preserve every existing editing capability without comparison.
+adds a **Landing Page** entry. Repository commit
+[`b162b5f`](https://github.com/BerinKarjala/portfolio/commit/b162b5f122f4b0493c43f1cde24c7e366860acbe)
+explicitly removed the blog schema, so do not restore it without an owner
+decision. An unauthenticated count on 2026-11-02 returned zero published
+`post` documents; it does not rule out drafts or historical content.
+Redeploying the repository version could therefore change the owner's editing
+interface. It must not be assumed to delete existing documents, or to preserve
+every existing editing capability without comparison.
 
 Before any production Studio deployment, inspect the signed-in Studio and its
 drafts, reconcile the deployed and repository schemas and desired navigation,
