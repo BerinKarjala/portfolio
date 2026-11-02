@@ -166,7 +166,7 @@ export default function Home() {
         </div>
         <div className="landing-desk" ref={deskRef}>
           <div className="landing-desk-art"><img src={desk} alt="" width="2172" height="724" decoding="async" /></div>
-          <WritingSet deskRef={deskRef} onSteer={setSteering} />
+          <WritingSet deskRef={deskRef} onSteer={setSteering} homeOffset={rotation.writingHomeOffset} />
         </div>
       </section>
     </main>

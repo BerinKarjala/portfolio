@@ -4,6 +4,22 @@ test.beforeEach(async ({page}) => {
   await page.route('**/*sanity.io/**', route => route.fulfill({json: {result: []}}));
 });
 
+test('the resting writing set reflects slow direction and a stopped carousel', async ({page}) => {
+  await page.setViewportSize({width: 1200, height: 900});
+  await page.goto('/');
+  await expect(page.getByRole('button', {name: 'Open text editor with the inkwell'})).toBeVisible();
+  const offset = () => page.evaluate(() => {
+    const desk = document.querySelector('.landing-desk').getBoundingClientRect();
+    const ink = document.querySelector('.landing-inkwell').getBoundingClientRect();
+    return ((ink.left + ink.right) / 2 - (desk.left + desk.right) / 2) / desk.width;
+  });
+  await expect.poll(offset).toBeLessThan(-.06);
+  await page.getByRole('button', {name: 'Previous project'}).click();
+  await expect.poll(offset).toBeGreaterThan(.06);
+  await page.locator('.landing-card--center').focus();
+  await expect.poll(async () => Math.abs(await offset())).toBeLessThan(.01);
+});
+
 test('dragging the inkwell steers the carousel and glides back to its resting place', async ({page}) => {
   await page.setViewportSize({width: 1200, height: 900});
   await page.goto('/');
