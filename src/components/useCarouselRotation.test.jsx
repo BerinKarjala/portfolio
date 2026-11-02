@@ -16,7 +16,7 @@ function setup(props = {}) {
   const advance = vi.fn();
   function Harness({blocked = false, count = 4, steering = null}) {
     const rotation = useCarouselRotation({blocked, count, advance, steering});
-    return <div ref={rotation.stageRef} {...rotation.interactions} data-carousel-stage data-motion={rotation.autoMotion}>
+    return <div ref={rotation.stageRef} {...rotation.interactions} data-carousel-stage data-motion={rotation.autoMotion} data-writing-home={rotation.writingHomeOffset}>
       <button data-rotation-control onClick={() => rotation.command?.(-1)}>Previous</button>
       <button data-rotation-control onClick={() => rotation.command?.(1)}>Next</button>
       <button data-carousel-card onClick={() => rotation.hold?.()}>Card</button>
@@ -24,6 +24,16 @@ function setup(props = {}) {
   }
   return {advance, ...render(<Harness {...props}/>), Harness};
 }
+it('shows the slow carousel direction near the middle and centers the writing set when held', () => {
+  const {container} = setup();
+  const stage = container.querySelector('[data-carousel-stage]');
+  expect(Number(stage.dataset.writingHome)).toBeLessThan(0);
+  fireEvent.click(screen.getByText('Previous'));
+  expect(Number(stage.dataset.writingHome)).toBeGreaterThan(0);
+  tick(1600);
+  fireEvent.focus(screen.getByText('Card'));
+  expect(Number(stage.dataset.writingHome)).toBe(0);
+});
 it('uses a twelve-second slide-start cadence', () => {
   expect(ROTATION_INTERVAL).toBe(12000);
   const {advance} = setup();

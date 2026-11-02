@@ -7,7 +7,7 @@ import useObjectGesture from './useObjectGesture';
 const RETURN_DURATION = 1200;
 const TAP_WINDOW = 350;
 
-export default function WritingSet({ deskRef, onSteer = () => {} }) {
+export default function WritingSet({ deskRef, onSteer = () => {}, homeOffset = 0 }) {
   const { openEditor, editorLauncher } = useScene();
   const element = useRef(null);
   const rendered = useRef({x: 0, y: 0});
@@ -92,7 +92,7 @@ export default function WritingSet({ deskRef, onSteer = () => {} }) {
   const moved = gesture.position.x !== 0 || gesture.position.y !== 0;
   return <>
     <button ref={node => {element.current = node; editorLauncher.current = node;}} className="landing-writing-set" aria-label="Open text editor with the inkwell" aria-describedby={description} title="Drag to steer the projects. Double-click the inkwell to write."
-      style={{ transform: `translateX(-50%) translate(${gesture.position.x}px, ${gesture.position.y}px)` }} {...handlers}
+      style={{ '--writing-home-offset': `${homeOffset}%`, transform: `translateX(-50%) translate(${gesture.position.x}px, ${gesture.position.y}px)` }} {...handlers}
       onPointerDown={event => {stopReturn(); handlers.onPointerDown(event);}}
       onDoubleClick={event => {
         if (Date.now() - lastTouchOpen.current > 600 && gesture.clickAllowed() && (event.target === event.currentTarget || event.target.closest?.('.landing-inkwell'))) openEditor(event.currentTarget);

@@ -14,6 +14,35 @@ async function settle(page) {
     await Promise.all([...document.querySelectorAll('.landing-card--center img,.landing-desk img')].map(image => image.decode().catch(() => {})));
   });
 }
+
+for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900]]) {
+  test(`desktop desk and writing set are visible without scrolling at ${width}x${height}`, async ({page}) => {
+    await page.setViewportSize({width, height});
+    await page.emulateMedia({reducedMotion: 'reduce'});
+    await page.goto('/');
+    await settle(page);
+    const bounds = await page.evaluate(() => {
+      const rect = selector => {
+        const {top, bottom, left, right} = document.querySelector(selector).getBoundingClientRect();
+        return {top, bottom, left, right};
+      };
+      return {desk: rect('.landing-desk'), inkwell: rect('.landing-inkwell'), quill: rect('.landing-quill'), card: rect('.landing-card--center')};
+    });
+    expect(bounds.desk.top).toBeGreaterThanOrEqual(bounds.card.bottom);
+    for (const part of [bounds.desk, bounds.inkwell, bounds.quill]) {
+      expect(part.top).toBeGreaterThanOrEqual(0);
+      expect(part.bottom).toBeLessThanOrEqual(height + 1);
+    }
+    const deskWidth = bounds.desk.right - bounds.desk.left;
+    const inkwellCenter = (bounds.inkwell.left + bounds.inkwell.right) / 2;
+    expect(Math.abs(inkwellCenter - (bounds.desk.left + deskWidth / 2))).toBeLessThan(2);
+    await page.getByRole('button', {name: 'Expand Sudoku Solver'}).click();
+    await expect(page.getByRole('dialog', {name: 'Sudoku Solver'})).toHaveAttribute('aria-modal', 'true');
+    await page.getByRole('button', {name: 'Exit full screen'}).click();
+    await page.getByRole('button', {name: 'Open text editor with the inkwell'}).dblclick();
+    await expect(page.getByRole('textbox', {name: 'Writing area'})).toBeVisible();
+  });
+}
 async function openCalendar(page) {
   const moon = page.getByRole('button', {name: 'Moon and weather'});
   if (await moon.getAttribute('aria-expanded') !== 'true') await moon.click();
