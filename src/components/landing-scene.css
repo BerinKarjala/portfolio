@@ -73,7 +73,7 @@
 .landing-writing-set:active { cursor: grabbing; }
 .landing-writing-set img, .landing-quill-layer img { position: absolute; user-select: none; }
 .landing-inkwell { width: 100%; bottom: 0; }
-.landing-quill { width: 160%; max-width: none; left: 21%; bottom: 40%; }
+.landing-quill { width: 160%; max-width: none; left: 30%; bottom: 73%; }
 .landing-writing-reset { pointer-events: auto; position: absolute; right: .5rem; bottom: .5rem; padding: .5rem; min-height: 44px; border: 1px solid #8fd4a7; border-radius: .5rem; background: #003b27; }
 /* Fit the desk to shorter tablet viewports; taller content can still scroll. */
 @media (min-width: 45.001rem) {
@@ -88,6 +88,7 @@
   .landing-gallery { --landing-desk-min-height: 23.481vw; --landing-ink-clearance: calc(clamp(5rem, 9vw, 10rem) + 3.523vw + .5rem); }
   .landing-stage-frame { margin-bottom: 2.5rem; }
   .landing-desk { width: 75vw; margin: 0 auto; }
+  .landing-writing-set, .landing-quill-layer { left: calc(65% + var(--writing-home-offset, 0%)); }
 }
 .landing-stage-frame--utility { --landing-card-width: min(calc(100cqw - .5rem), 30rem); }
 .landing-stage-frame:has(.landing-calendar) { --landing-card-width: min(calc(100cqw - 2px), 28rem); }

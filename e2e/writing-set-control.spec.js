@@ -67,7 +67,11 @@ test('dragging the inkwell steers the carousel and glides back to its resting pl
   expect(right).toBeGreaterThan(reversed + 20);
   await page.mouse.up();
   await expect(page.getByRole('textbox', {name: 'Writing area'})).toHaveCount(0);
-  await expect.poll(async () => Math.abs((await inkwell.boundingBox()).x - home.x)).toBeLessThan(1);
+  await expect.poll(async () => {
+    const ink = await inkwell.boundingBox();
+    const desk = await page.locator('.landing-desk').boundingBox();
+    return Math.abs(ink.x + ink.width / 2 - (desk.x + desk.width * .57));
+  }).toBeLessThan(1);
   const returned = await inkwell.boundingBox();
   expect(Math.abs(returned.y - home.y)).toBeLessThan(1);
   const slowStart = (await card.boundingBox()).x;
