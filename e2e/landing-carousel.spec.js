@@ -14,6 +14,27 @@ async function settle(page) {
     await Promise.all([...document.querySelectorAll('.landing-card--center img,.landing-desk img')].map(image => image.decode().catch(() => {})));
   });
 }
+
+for (const height of [690, 900]) {
+  test(`desktop desk and writing set are visible without scrolling at ${height}px high`, async ({page}) => {
+    await page.setViewportSize({width: 1440, height});
+    await page.emulateMedia({reducedMotion: 'reduce'});
+    await page.goto('/');
+    await settle(page);
+    const bounds = await page.evaluate(() => {
+      const rect = selector => {
+        const {top, bottom} = document.querySelector(selector).getBoundingClientRect();
+        return {top, bottom};
+      };
+      return {desk: rect('.landing-desk'), inkwell: rect('.landing-inkwell'), quill: rect('.landing-quill'), card: rect('.landing-card--center')};
+    });
+    expect(bounds.desk.top).toBeGreaterThanOrEqual(bounds.card.bottom);
+    for (const part of [bounds.desk, bounds.inkwell, bounds.quill]) {
+      expect(part.top).toBeGreaterThanOrEqual(0);
+      expect(part.bottom).toBeLessThanOrEqual(height);
+    }
+  });
+}
 async function openCalendar(page) {
   const moon = page.getByRole('button', {name: 'Moon and weather'});
   if (await moon.getAttribute('aria-expanded') !== 'true') await moon.click();
