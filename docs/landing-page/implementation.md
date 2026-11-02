@@ -13,8 +13,12 @@ continuously over each 12-second interval, pausing for interaction and honoring
 reduced motion. The phone minimum is an implementation assumption for owner
 review, not a separate approved requirement.
 
+The desk and writing set should be visible in the initial desktop viewport when
+space permits. The desktop tabletop scales with available viewport height and
+the carousel gap is reduced; longer content and short screens remain scrollable.
+
 The current writing-set interaction supersedes the historical click and drag
-description below. The quill and inkwell start at the middle-right of the desk
+description below. The quill and inkwell start on the left side of the desk
 and move together. While held, their horizontal position steers the carousel in
 the same visual direction, from the normal 12-second pace near the screen center
 to approximately 3 seconds per card at either screen edge. Reversing direction

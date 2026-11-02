@@ -7,7 +7,7 @@
   overflow-x: clip;
 }
 .landing-gallery { width: 100%; min-width: 0; display: flex; flex-direction: column; container-type: inline-size; }
-.landing-stage-frame { --landing-card-width: min(12.5rem, max(10rem, calc(50cqw - 64px))); --landing-card-height: 13.5rem; position: relative; width: min(100%, 74rem); margin: 0 auto 6rem; flex-shrink: 0; }
+.landing-stage-frame { --landing-card-width: min(12.5rem, max(10rem, calc(50cqw - 64px))); --landing-card-height: 13.5rem; position: relative; z-index: 1; width: min(100%, 74rem); margin: 0 auto 6rem; flex-shrink: 0; }
 .landing-stage { --landing-left: -160%; --landing-right: 60%; --landing-far-left: -270%; --landing-far-right: 170%; position: relative; width: 100%; min-height: 0; padding-block: .5rem; overflow-x: clip; overflow-y: visible; }
 .landing-card { position: absolute; top: .5rem; left: 50%; width: var(--landing-card-width); border: 1px solid #369466; border-radius: 1.5rem; background: linear-gradient(135deg, #005733, #003820); box-shadow: 0 1rem 3rem #001e1570, inset 0 1px 2px #a5f3c640; overflow-wrap: anywhere; transition: transform var(--landing-slide-duration) ease-in-out, opacity var(--landing-slide-duration) ease-in-out; }
 /* Prepare the three visible transform layers before the next step, avoiding
@@ -60,12 +60,19 @@
    tail inside the art frame, preserving image ratio and writing-set overflow. */
 .landing-desk-art { position: relative; aspect-ratio: 2172 / 680; overflow: clip; }
 .landing-desk-art > img { position: absolute; top: 0; left: 0; display: block; width: 100%; height: auto; }
-.landing-writing-set { position: absolute; left: 65%; top: 25%; width: min(clamp(5rem, 9vw, 10rem), 26vw); height: min(clamp(5rem, 9vw, 10rem), 26vw); pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; }
+.landing-writing-set { position: absolute; left: 18%; top: 25%; width: min(clamp(5rem, 9vw, 10rem), 26vw); height: min(clamp(5rem, 9vw, 10rem), 26vw); pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; }
 .landing-writing-set:active { cursor: grabbing; }
 .landing-writing-set img { position: absolute; user-select: none; }
 .landing-inkwell { width: 100%; bottom: 0; }
 .landing-quill { width: 160%; max-width: none; left: 21%; bottom: 40%; }
 .landing-writing-reset { pointer-events: auto; position: absolute; right: .5rem; bottom: .5rem; padding: .5rem; min-height: 44px; border: 1px solid #8fd4a7; border-radius: .5rem; background: #003b27; }
+/* Keep the whole desk and its launcher in view on typical desktop heights.
+   When content needs more room it remains in normal flow and can scroll. */
+@media (min-width: 45.001rem) {
+  .landing-stage-frame { margin-bottom: 3.5rem; }
+  .landing-desk { width: min(100%, 90rem, max(24rem, calc((100svh - var(--landing-header-height, 0px) - 22rem) * 3.1941))); }
+  .landing-writing-set { width: min(clamp(5rem, 9vw, 10rem), 26vw, 23%); height: auto; aspect-ratio: 1; }
+}
 .landing-stage-frame--utility { --landing-card-width: min(calc(100cqw - .5rem), 30rem); }
 .landing-stage-frame:has(.landing-calendar) { --landing-card-width: min(calc(100cqw - 2px), 28rem); }
 .landing-utility button { min-height: 44px; min-width: 44px; padding: .3rem .5rem; border: 1px solid #398761; border-radius: .5rem; background: #004b30; }

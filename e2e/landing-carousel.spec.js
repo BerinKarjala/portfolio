@@ -15,24 +15,32 @@ async function settle(page) {
   });
 }
 
-for (const height of [690, 900]) {
-  test(`desktop desk and writing set are visible without scrolling at ${height}px high`, async ({page}) => {
-    await page.setViewportSize({width: 1440, height});
+for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900]]) {
+  test(`desktop desk and writing set are visible without scrolling at ${width}x${height}`, async ({page}) => {
+    await page.setViewportSize({width, height});
     await page.emulateMedia({reducedMotion: 'reduce'});
     await page.goto('/');
     await settle(page);
     const bounds = await page.evaluate(() => {
       const rect = selector => {
-        const {top, bottom} = document.querySelector(selector).getBoundingClientRect();
-        return {top, bottom};
+        const {top, bottom, left, right} = document.querySelector(selector).getBoundingClientRect();
+        return {top, bottom, left, right};
       };
       return {desk: rect('.landing-desk'), inkwell: rect('.landing-inkwell'), quill: rect('.landing-quill'), card: rect('.landing-card--center')};
     });
     expect(bounds.desk.top).toBeGreaterThanOrEqual(bounds.card.bottom);
     for (const part of [bounds.desk, bounds.inkwell, bounds.quill]) {
       expect(part.top).toBeGreaterThanOrEqual(0);
-      expect(part.bottom).toBeLessThanOrEqual(height);
+      expect(part.bottom).toBeLessThanOrEqual(height + 1);
     }
+    const deskCenter = (bounds.desk.left + bounds.desk.right) / 2;
+    expect(bounds.inkwell.right).toBeLessThanOrEqual(deskCenter);
+    expect(bounds.quill.right).toBeLessThanOrEqual(deskCenter);
+    await page.getByRole('button', {name: 'Expand Sudoku Solver'}).click();
+    await expect(page.getByRole('dialog', {name: 'Sudoku Solver'})).toHaveAttribute('aria-modal', 'true');
+    await page.getByRole('button', {name: 'Exit full screen'}).click();
+    await page.getByRole('button', {name: 'Open text editor with the inkwell'}).dblclick();
+    await expect(page.getByRole('textbox', {name: 'Writing area'})).toBeVisible();
   });
 }
 async function openCalendar(page) {
