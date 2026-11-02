@@ -18,15 +18,30 @@ documents or drafts have been created, changed, or published.
   and an optional `link` with HTTP/HTTPS URI validation. No project SEO title,
   meta-description, or keyword fields are defined there. Repository source does
   not prove which schema is registered or deployed.
-- Actual organization, account role, plan, credits, deployed Studio version,
-  schema registration, existing drafts, and an isolated non-production target
-  remain **unverified**. Do not infer them from the repository configuration.
-- On 2026-11-02, an authenticated Sanity Dashboard showed the account label
-  `Berin Karjala` and a Content Agent navigation item. Its home screen showed
-  no recent apps and a developer setup guide with three steps remaining.
-  These observations do not establish that the intended project's Studio or
-  schema is unavailable. The shared browser connection was lost before the
-  project, organization, permissions, and credits could be verified.
+- On 2026-11-02, Sanity Manage showed the `Berin Karjala` organization
+  (`oA1XjC8YD`) containing the active `Studio13` project (`umy7f73e`), on the
+  **Developer (Legacy)** plan. Its dataset list showed `production` as public
+  and as the only existing dataset; usage showed one of two dataset slots used.
+  An available slot is not an approved or configured test environment.
+- The organization and project members screens both identified the current
+  user as an **Administrator**. The AI usage screen showed **0 of 1,000 AI
+  credits used** for the month to date on 2026-11-02; Content Agent queries
+  and actions each showed zero. This is a usage reading, not a guarantee about
+  future availability or pricing.
+- The authenticated Dashboard showed a Content Agent navigation item and no
+  recent apps. Its developer setup guide listed three steps remaining. The
+  Content Agent panel reported **Studio action required**: use Studio 5.1.0 or
+  later and open the Studio to connect it. This message does not establish the
+  version of the deployed Studio or prove exactly why connection is incomplete.
+  Manage lists `https://berinkarjala.sanity.studio` as Sanity-hosted, last
+  updated on 2025-09-02, with version `N/A` and an empty manifest cell. The
+  repository's [`studio13/package.json`](../studio13/package.json) declares
+  Sanity `^6.20.0`, but that alone does not prove what is deployed or registered.
+  Opening the hosted Studio showed a separate sign-in dialog; GitHub sign-in
+  was selected, but no completed Studio session was observed.
+- Deployed Studio version, registered schema, existing drafts, and an isolated
+  non-production target remain **unverified**.
+  Do not infer them from the repository configuration or available capacity.
 - The public-data inventory below is an independent, read-only baseline for
   comparison with a later Content Agent inventory. It is not an agent result,
   an authenticated draft audit, or evidence of absent drafts.
@@ -79,7 +94,7 @@ future records. Repeat the query and reconcile with Studio before acting.
 
 | Handover case | Status | Evidence or blocker |
 | --- | --- | --- |
-| CA-01 access and context | BLOCKED | Dashboard sign-in and navigation observed, but the shared browser connection was lost before project context, role, deployed Studio, schema registration, plan, and credits could be verified. |
+| CA-01 access and context | BLOCKED | Organization and project administrator roles, active project, plan, production dataset, and AI usage verified in Manage. Content Agent requests a connected compatible Studio; its deployed version and registered schema remain unverified. |
 | CA-02 inventory fixtures | BLOCKED | No verified, allowlisted non-production target, configured Studio workspace, or fixtures. The published baseline above is not this fixture test. |
 | CA-03 schema and unknown metadata | NOT RUN | Repository schema inspected; registered schema and agent response not verified. |
 | CA-04 editorial accuracy and untrusted content | BLOCKED | Requires the agent and controlled synthetic fixtures. |
@@ -88,7 +103,7 @@ future records. Repeat the query and reconcile with Studio before acting.
 | CA-07 confirm draft in isolation | BLOCKED | No explicitly verified, allowlisted non-production target and workspace. |
 | CA-08 display and fallbacks | NOT RUN | Source inspected; no controlled-data browser test or approved isolated preview performed. |
 | CA-09 publication and recovery rehearsal | BLOCKED | No verified isolated target or tested recovery method. |
-| CA-10 usage and failure handling | BLOCKED | Credit readings are unavailable. No agent prompts were sent. |
+| CA-10 usage and failure handling | NOT RUN | Baseline usage is 0 of 1,000 credits for the month to date. No agent prompts were sent; a before/after pilot comparison is pending. |
 | CA-11 code and preview release | PENDING | Obtain applicable exact-head CI and Netlify preview evidence for this documentation change. |
 
 The local browser smoke launcher was attempted on 2026-11-02 at 20:31 UTC
