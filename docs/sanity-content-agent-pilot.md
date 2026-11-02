@@ -65,12 +65,14 @@ The query was:
 Both links are relative application routes, `/projects/SudokuSolver` and
 `/projects/Minesweeper`. They are present, but the repository's URL rule does
 not set `allowRelative`. [Sanity's URL documentation](https://www.sanity.io/docs/studio/url-type)
-states that relative URLs are disallowed by default; this indicates the
-existing links would fail that rule in the newer Studio. Such
-[validation errors can block publication](https://www.sanity.io/docs/studio/validation),
-although this specific behavior has not yet been tested in the newer deployed
-Studio. Resolve the validation mismatch before a content
-pilot; do not silently rewrite the records. The asset references and alt values
+states that relative URLs are disallowed by default. An offline check using
+the repository's project schema and Sanity 6.20.0's validator confirmed that
+synthetic records containing each existing route fail with `Not a valid URL`;
+an HTTPS URL passed, and a `javascript:` URL failed. This check did not access
+or modify CMS data and was not a test in a deployed Studio. Such
+[validation errors can block publication](https://www.sanity.io/docs/studio/validation).
+Resolve the validation mismatch before a content pilot; do not silently rewrite
+the records. The asset references and alt values
 are present, but this query did not verify the images or their suitability.
 The descriptions and alt values may need editorial judgment; that is distinct
 from a missing-field finding.
