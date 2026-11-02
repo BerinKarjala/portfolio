@@ -16,12 +16,16 @@ review, not a separate approved requirement.
 The desktop tabletop spans 75% of the viewport width. Its writing set sits near
 the top of the desk so it remains visible when space permits; short screens can
 scroll to reveal the rest of the tabletop. Phone and tablet layouts retain their
-height-aware sizing, and longer content remains scrollable.
+height-aware sizing, and longer content remains scrollable. On desktop, the
+project cards sit closer to the navigation and the desk sits closer to the cards.
+The quill is drawn in front of the cards without intercepting their interactions;
+the inkwell remains available below them.
 
 The current writing-set interaction supersedes the historical click and drag
 description below. The quill and inkwell move together and rest near the desk's
 center, slightly to the side matching the normal slow carousel direction. When
-the carousel is stopped, they rest at the center. While held, their horizontal position steers the carousel in
+the carousel is deliberately held, they rest at the center. Hovering over the
+carousel temporarily pauses it without moving the writing set. While held, their horizontal position steers the carousel in
 the same visual direction, from the normal 12-second pace near the screen center
 to approximately 3 seconds per card at either screen edge. Reversing direction
 retraces the current motion rather than jumping. On release, the set glides back

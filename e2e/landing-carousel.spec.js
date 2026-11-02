@@ -26,9 +26,11 @@ for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900], [1920, 108
         const {top, bottom, left, right} = document.querySelector(selector).getBoundingClientRect();
         return {top, bottom, left, right};
       };
-      return {desk: rect('.landing-desk'), inkwell: rect('.landing-inkwell'), quill: rect('.landing-quill'), card: rect('.landing-card--center')};
+      return {header: rect('header'), desk: rect('.landing-desk'), inkwell: rect('.landing-inkwell'), quill: rect('.landing-quill'), card: rect('.landing-card--center')};
     });
+    expect(bounds.card.top - bounds.header.bottom).toBeLessThanOrEqual(40);
     expect(bounds.desk.top).toBeGreaterThanOrEqual(bounds.card.bottom);
+    expect(bounds.desk.top - bounds.card.bottom).toBeLessThanOrEqual(56);
     expect(bounds.desk.top).toBeLessThan(height);
     for (const part of [bounds.inkwell, bounds.quill]) {
       expect(part.top).toBeGreaterThanOrEqual(0);
@@ -50,6 +52,36 @@ for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900], [1920, 108
     await expect(page.getByRole('textbox', {name: 'Writing area'})).toBeVisible();
   });
 }
+
+test('the quill appears above the cards without capturing carousel gestures', async ({page}) => {
+  await page.setViewportSize({width: 1200, height: 900});
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.goto('/');
+  await settle(page);
+  const overlap = await page.evaluate(() => {
+    const quill = document.querySelector('.landing-quill');
+    const card = document.querySelector('.landing-card--center');
+    const a = quill.getBoundingClientRect(), b = card.getBoundingClientRect();
+    for (let y = Math.max(a.top, b.top + 12); y < Math.min(a.bottom, b.bottom - 12); y += 4) {
+      for (let x = Math.max(a.left, b.left + 12); x < Math.min(a.right, b.right - 12); x += 4) {
+        const target = document.elementFromPoint(x, y);
+        if (!target?.closest('.landing-card--center') || !target.closest('[data-card-gesture]') || target.closest('button, a')) continue;
+        // Temporarily include the transparent quill image in hit testing to
+        // check paint order, then restore its non-interactive behavior.
+        quill.style.pointerEvents = 'auto';
+        const quillInFront = document.elementFromPoint(x, y) === quill;
+        quill.style.removeProperty('pointer-events');
+        return {x, y, quillInFront};
+      }
+    }
+    return null;
+  });
+  expect(overlap).not.toBeNull();
+  expect(overlap.quillInFront).toBe(true);
+  await page.mouse.dblclick(overlap.x, overlap.y);
+  await expect(page.getByRole('dialog', {name: 'Sudoku Solver'})).toHaveAttribute('aria-modal', 'true');
+  await expect(page.getByRole('textbox', {name: 'Writing area'})).toHaveCount(0);
+});
 async function openCalendar(page) {
   const moon = page.getByRole('button', {name: 'Moon and weather'});
   if (await moon.getAttribute('aria-expanded') !== 'true') await moon.click();
@@ -62,10 +94,11 @@ async function deskEdge(page) {
     end: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight),
     width: document.documentElement.scrollWidth,
     viewport: innerWidth,
+    viewportHeight: innerHeight,
     art: document.querySelector('.landing-desk-art').getBoundingClientRect().height,
     image: document.querySelector('.landing-desk-art img').getBoundingClientRect().height,
   }));
-  expect(Math.abs(dimensions.end - dimensions.desk)).toBeLessThanOrEqual(2);
+  expect(Math.abs(dimensions.end - Math.max(dimensions.desk, dimensions.viewportHeight))).toBeLessThanOrEqual(2);
   expect(dimensions.width).toBeLessThanOrEqual(dimensions.viewport + 1);
   expect(dimensions.art / dimensions.image).toBeCloseTo(680 / 724, 3);
 }
