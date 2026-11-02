@@ -16,7 +16,7 @@ async function settle(page) {
 }
 
 for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900], [1920, 1080]]) {
-  test(`desktop desk is 75% wide and its writing set is visible at ${width}x${height}`, async ({page}) => {
+  test(`desktop desk is 75% wide and its writing set is reachable at ${width}x${height}`, async ({page}) => {
     await page.setViewportSize({width, height});
     await page.emulateMedia({reducedMotion: 'reduce'});
     await page.goto('/');
@@ -32,10 +32,6 @@ for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900], [1920, 108
     expect(bounds.desk.top).toBeGreaterThanOrEqual(bounds.card.bottom);
     expect(bounds.desk.top - bounds.card.bottom).toBeLessThanOrEqual(56);
     expect(bounds.desk.top).toBeLessThan(height);
-    for (const part of [bounds.inkwell, bounds.quill]) {
-      expect(part.top).toBeGreaterThanOrEqual(0);
-      expect(part.bottom).toBeLessThanOrEqual(height + 1);
-    }
     const deskWidth = bounds.desk.right - bounds.desk.left;
     expect(Math.abs(deskWidth - width * .75)).toBeLessThanOrEqual(1);
     const inkwellCenter = (bounds.inkwell.left + bounds.inkwell.right) / 2;
@@ -48,16 +44,43 @@ for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900], [1920, 108
     await page.getByRole('button', {name: 'Expand Sudoku Solver'}).click();
     await expect(page.getByRole('dialog', {name: 'Sudoku Solver'})).toHaveAttribute('aria-modal', 'true');
     await page.getByRole('button', {name: 'Exit full screen'}).click();
+    await page.getByRole('button', {name: 'Open text editor with the inkwell'}).scrollIntoViewIfNeeded();
+    for (const selector of ['.landing-inkwell', '.landing-quill']) {
+      const part = await page.locator(selector).boundingBox();
+      expect(part.y).toBeGreaterThanOrEqual(0);
+      expect(part.y + part.height).toBeLessThanOrEqual(height + 1);
+    }
     await page.getByRole('button', {name: 'Open text editor with the inkwell'}).dblclick();
     await expect(page.getByRole('textbox', {name: 'Writing area'})).toBeVisible();
   });
 }
 
+for (const [width, height] of [[320, 740], [768, 1024], [1200, 550], [1440, 900], [1920, 1080]]) {
+  test(`the writing set rests near the front of the desk at ${width}x${height}`, async ({page}) => {
+    await page.setViewportSize({width, height});
+    await page.emulateMedia({reducedMotion: 'reduce'});
+    await page.goto('/');
+    await settle(page);
+    const position = await page.evaluate(() => {
+      const desk = document.querySelector('.landing-desk').getBoundingClientRect();
+      const ink = document.querySelector('.landing-inkwell').getBoundingClientRect();
+      return (ink.bottom - desk.top) / desk.height;
+    });
+    expect(position).toBeCloseTo(.85, 2);
+    const inkwell = page.getByRole('button', {name: 'Open text editor with the inkwell'});
+    await inkwell.scrollIntoViewIfNeeded();
+    await inkwell.dblclick();
+    await expect(page.getByRole('textbox', {name: 'Writing area'})).toBeVisible();
+  });
+}
+
 test('the quill appears above the cards without capturing carousel gestures', async ({page}) => {
-  await page.setViewportSize({width: 1200, height: 900});
+  await page.setViewportSize({width: 1440, height: 900});
   await page.emulateMedia({reducedMotion: 'reduce'});
   await page.goto('/');
   await settle(page);
+  await page.getByRole('button', {name: 'Open text editor with the inkwell'}).focus();
+  for (let step = 0; step < 12; step++) await page.keyboard.down('ArrowUp');
   const overlap = await page.evaluate(() => {
     const quill = document.querySelector('.landing-quill');
     const card = document.querySelector('.landing-card--center');
@@ -84,12 +107,14 @@ test('the quill appears above the cards without capturing carousel gestures', as
 });
 
 test('the open editor remains above the quill', async ({page}) => {
-  await page.setViewportSize({width: 1200, height: 900});
+  await page.setViewportSize({width: 1440, height: 900});
   await page.emulateMedia({reducedMotion: 'reduce'});
   await page.goto('/');
   await settle(page);
   await page.getByRole('button', {name: 'Open text editor with the inkwell'}).dblclick();
   await expect(page.getByRole('textbox', {name: 'Writing area'})).toBeVisible();
+  await page.getByRole('button', {name: 'Open text editor with the inkwell'}).focus();
+  for (let step = 0; step < 12; step++) await page.keyboard.down('ArrowUp');
   const quillInFront = await page.evaluate(() => {
     const quill = document.querySelector('.landing-quill');
     const utility = document.querySelector('.landing-utility');

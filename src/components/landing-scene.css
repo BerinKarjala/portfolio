@@ -60,7 +60,7 @@
    tail inside the art frame, preserving image ratio and writing-set overflow. */
 .landing-desk-art { position: relative; aspect-ratio: 2172 / 680; overflow: clip; }
 .landing-desk-art > img { position: absolute; top: 0; left: 0; display: block; width: 100%; height: auto; }
-.landing-writing-set, .landing-quill-layer { position: absolute; left: calc(50% + var(--writing-home-offset, 0%)); top: 25%; width: min(clamp(5rem, 9vw, 10rem), 26vw); height: min(clamp(5rem, 9vw, 10rem), 26vw); transition: left 1.2s ease-out; }
+.landing-writing-set, .landing-quill-layer { position: absolute; left: calc(50% + var(--writing-home-offset, 0%)); bottom: 15%; width: min(clamp(5rem, 9vw, 10rem), 26vw); height: min(clamp(5rem, 9vw, 10rem), 26vw); transition: left 1.2s ease-out; }
 .landing-writing-set { pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; }
 .landing-quill-layer { z-index: 2; pointer-events: none; }
 /* Keep an open editor or calendar readable where it overlaps the feather. */
@@ -76,13 +76,11 @@
   .landing-desk { width: min(100%, 90rem, max(24rem, calc((100svh - var(--landing-header-height, 0px) - 22rem) * 3.1941))); }
   .landing-writing-set, .landing-quill-layer { width: min(clamp(5rem, 9vw, 10rem), 26vw, 23%); height: auto; aspect-ratio: 1; }
 }
-/* On desktop, keep the tabletop at the requested viewport width. The writing
-   set sits near its upper edge and the remaining desk stays in normal flow. */
+/* On desktop, keep the tabletop at the requested viewport width and in flow. */
 @media (min-width: 64rem) {
   .landing-scene.forest-bg { padding-top: clamp(1rem, 2vh, 1.5rem); }
   .landing-stage-frame { margin-bottom: 2.5rem; }
   .landing-desk { width: 75vw; margin: 0 auto; }
-  .landing-writing-set, .landing-quill-layer { top: 0; }
 }
 .landing-stage-frame--utility { --landing-card-width: min(calc(100cqw - .5rem), 30rem); }
 .landing-stage-frame:has(.landing-calendar) { --landing-card-width: min(calc(100cqw - 2px), 28rem); }

@@ -13,9 +13,9 @@ continuously over each 12-second interval, pausing for interaction and honoring
 reduced motion. The phone minimum is an implementation assumption for owner
 review, not a separate approved requirement.
 
-The desktop tabletop spans 75% of the viewport width. Its writing set sits near
-the top of the desk so it remains visible when space permits; short screens can
-scroll to reveal the rest of the tabletop. Phone and tablet layouts retain their
+The desktop tabletop spans 75% of the viewport width. The quill and inkwell sit
+together near the front edge of the tabletop; short screens can scroll to reach
+the writing set and the rest of the tabletop. Phone and tablet layouts retain their
 height-aware sizing, and longer content remains scrollable. On desktop, the
 project cards sit closer to the navigation and the desk sits closer to the cards.
 The quill is drawn in front of the cards without intercepting their interactions;
