@@ -85,8 +85,9 @@ test('the quill appears above the cards without capturing carousel gestures', as
     const quill = document.querySelector('.landing-quill');
     const card = document.querySelector('.landing-card--center');
     const a = quill.getBoundingClientRect(), b = card.getBoundingClientRect();
-    for (let y = Math.max(a.top, b.top + 12); y < Math.min(a.bottom, b.bottom - 12); y += 4) {
-      for (let x = Math.max(a.left, b.left + 12); x < Math.min(a.right, b.right - 12); x += 4) {
+    // Stay inside the image edge: engines round fractional hit-test coordinates differently.
+    for (let y = Math.max(a.top + 4, b.top + 12); y < Math.min(a.bottom - 4, b.bottom - 12); y += 4) {
+      for (let x = Math.max(a.left + 4, b.left + 12); x < Math.min(a.right - 4, b.right - 12); x += 4) {
         const target = document.elementFromPoint(x, y);
         if (!target?.closest('.landing-card--center') || !target.closest('[data-card-gesture]') || target.closest('button, a')) continue;
         // Temporarily include the transparent quill image in hit testing to
@@ -119,8 +120,8 @@ test('the open editor remains above the quill', async ({page}) => {
     const quill = document.querySelector('.landing-quill');
     const utility = document.querySelector('.landing-utility');
     const a = quill.getBoundingClientRect(), b = utility.getBoundingClientRect();
-    for (let y = Math.max(a.top, b.top + 12); y < Math.min(a.bottom, b.bottom - 12, innerHeight); y += 4) {
-      for (let x = Math.max(a.left, b.left + 12); x < Math.min(a.right, b.right - 12, innerWidth); x += 4) {
+    for (let y = Math.max(a.top + 4, b.top + 12); y < Math.min(a.bottom - 4, b.bottom - 12, innerHeight); y += 4) {
+      for (let x = Math.max(a.left + 4, b.left + 12); x < Math.min(a.right - 4, b.right - 12, innerWidth); x += 4) {
         if (!document.elementFromPoint(x, y)?.closest('.landing-utility')) continue;
         quill.style.pointerEvents = 'auto';
         const inFront = document.elementFromPoint(x, y) === quill;
