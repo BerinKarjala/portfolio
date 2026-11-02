@@ -31,16 +31,15 @@ documents or drafts have been created, changed, or published.
 - The authenticated Dashboard showed a Content Agent navigation item and no
   recent apps. Its developer setup guide listed three steps remaining. The
   Content Agent panel reported **Studio action required**: use Studio 5.1.0 or
-  later and open the Studio to connect it. This message does not establish the
-  version of the deployed Studio or prove exactly why connection is incomplete.
-  Manage lists `https://berinkarjala.sanity.studio` as Sanity-hosted, last
-  updated on 2025-09-02, with version `N/A` and an empty manifest cell. The
-  repository's [`studio13/package.json`](../studio13/package.json) declares
-  Sanity `^6.20.0`, but that alone does not prove what is deployed or registered.
-  The owner supplied a screenshot of a signed-in hosted Studio; the separate
-  Studio tab shared with the operator still showed its sign-in dialog.
-- Deployed Studio version, registered schema, existing drafts, and an isolated
-  non-production target remain **unverified**.
+  later and open the Studio to connect it.
+- Manage lists `https://berinkarjala.sanity.studio` as Sanity-hosted, last
+  updated on 2025-09-02, with version `N/A` and an empty manifest cell. In the
+  signed-in deployed Studio, its upgrade panel reported installed
+  `@sanity/core` and `@sanity/base` versions **2.26.0**. The repository's
+  [`studio13/package.json`](../studio13/package.json) declares Sanity `^6.20.0`;
+  that source version has not been deployed to the hosted Studio by this pilot.
+- Registered schema, an independently confirmed inventory of existing drafts,
+  and an isolated non-production target remain **unverified**.
   Do not infer them from the repository configuration or available capacity.
 - The public-data inventory below is an independent, read-only baseline for
   comparison with a later Content Agent inventory. It is not an agent result,
@@ -64,11 +63,17 @@ The query was:
 | `c3e9c324-e055-4146-9335-55e2d7e28e29` | Minesweeper | None of `name`, `description`, `link`, `thumbnail.asset` reference, or `thumbnail.alt` | Description has a grammatical error and inconsistent capitalization of JavaScript; review wording against verified project behavior. |
 
 Both links are relative application routes, `/projects/SudokuSolver` and
-`/projects/Minesweeper`. They are present; compare them with the registered
-Studio's validation and verify destinations separately before proposing a link
-change. The asset references and alt values are present, but this query did not
-verify the images or their suitability. The descriptions and alt values may
-need editorial judgment; that is distinct from a missing-field finding.
+`/projects/Minesweeper`. They are present, but the repository's URL rule does
+not set `allowRelative`. [Sanity's URL documentation](https://www.sanity.io/docs/studio/url-type)
+states that relative URLs are disallowed by default; this indicates the
+existing links would fail that rule in the newer Studio. Such
+[validation errors can block publication](https://www.sanity.io/docs/studio/validation),
+although this specific behavior has not yet been tested in the newer deployed
+Studio. Resolve the validation mismatch before a content
+pilot; do not silently rewrite the records. The asset references and alt values
+are present, but this query did not verify the images or their suitability.
+The descriptions and alt values may need editorial judgment; that is distinct
+from a missing-field finding.
 
 This snapshot reflects public data at the time of the query, not an exhaustive
 audit of drafts, historical versions, image content, destination health, or
@@ -76,10 +81,10 @@ future records. Repeat the query and reconcile with Studio before acting.
 
 ## Dashboard connection and deployment assessment
 
-After the owner's Studio screenshot, the Dashboard still showed **Studio
-action required**. Its setup page listed Studio13 with unknown compatibility,
-no version, and its **Show in Dashboard** checkbox unchecked; zero studios
-were included. An unauthenticated HEAD request to the hosted Studio's
+After the owner signed in to the hosted Studio, the Dashboard still showed
+**Studio action required**. Its setup page listed Studio13 with unknown
+compatibility, no version, and its **Show in Dashboard** checkbox unchecked;
+zero studios were included. An unauthenticated HEAD request to the hosted Studio's
 `/static/create-manifest.json` returned HTTP 404 on 2026-11-02. That does not
 by itself establish the complete server-side schema registration state. No
 Dashboard setting was changed during this check.
@@ -91,8 +96,8 @@ manifest. The [Content Agent prerequisites](https://www.sanity.io/docs/content-a
 specify Studio 5.1.0 or newer. Signing in to an older or unregistered Studio
 does not by itself establish that these prerequisites are satisfied.
 
-The owner's screenshot showed a **Post** section in the deployed Studio,
-while the repository's [schema index](../studio13/schemas/index.js) does not
+The signed-in Studio showed a **Post** section with no documents, while the
+repository's [schema index](../studio13/schemas/index.js) does not
 register a `post` type and its [desk structure](../studio13/deskStructure.js)
 adds a **Landing Page** entry. Repository commit
 [`b162b5f`](https://github.com/BerinKarjala/portfolio/commit/b162b5f122f4b0493c43f1cde24c7e366860acbe)
@@ -102,6 +107,22 @@ decision. An unauthenticated count on 2026-11-02 returned zero published
 Redeploying the repository version could therefore change the owner's editing
 interface. It must not be assumed to delete existing documents, or to preserve
 every existing editing capability without comparison.
+
+The deployed Studio listed both existing project documents as **Untitled**.
+Their editor fields included Title, Date, Place, Description, Project type,
+Link, and Tags; Developer info reported the actual `name` and `thumbnail`
+fields as unknown on both records. These fields are present in the repository's
+current project schema and must not be removed from the documents. Both
+documents displayed disabled Publish and Discard changes actions when
+inspected; that UI observation is not an independent exhaustive draft audit.
+No field, draft, or document action was changed.
+
+Historical commit
+[`4e119dc`](https://github.com/BerinKarjala/portfolio/commit/4e119dcdeb786acd09076489a7c3cc5865d66f43)
+declares Sanity 2.26-era dependencies and contains the same visible legacy
+project fields. The hosted JavaScript asset also reported a 2022-02-28
+Last-Modified date. This is a source-comparison candidate, not proof that the
+commit produced the deployed Studio or a verified rollback path.
 
 Before any production Studio deployment, inspect the signed-in Studio and its
 drafts, reconcile the deployed and repository schemas and desired navigation,
@@ -132,9 +153,9 @@ read-only assessment. A successful code preview does not deploy the Studio.
 
 | Handover case | Status | Evidence or blocker |
 | --- | --- | --- |
-| CA-01 access and context | BLOCKED | Organization and project administrator roles, active project, plan, production dataset, and AI usage verified in Manage. Content Agent requests a connected compatible Studio; its deployed version and registered schema remain unverified. |
+| CA-01 access and context | BLOCKED | Organization and project administrator roles, active project, plan, production dataset, AI usage, and deployed Studio 2.26.0 verified. Content Agent requires a compatible connected Studio and registered schema. |
 | CA-02 inventory fixtures | BLOCKED | No verified, allowlisted non-production target, configured Studio workspace, or fixtures. The published baseline above is not this fixture test. |
-| CA-03 schema and unknown metadata | NOT RUN | Repository schema inspected; registered schema and agent response not verified. |
+| CA-03 schema and unknown metadata | BLOCKED | Deployed Studio schema differs from the repository; registered schema and agent response not verified. |
 | CA-04 editorial accuracy and untrusted content | BLOCKED | Requires the agent and controlled synthetic fixtures. |
 | CA-05 proposal and discard | BLOCKED | Requires the agent and an appropriate isolated test record. |
 | CA-06 existing draft protection | BLOCKED | Requires the agent and an isolated fixture with an existing draft. |
@@ -155,10 +176,11 @@ and does not replace the cloud release checks or preview.
 
 ## Next operator steps
 
-1. Share the signed-in hosted Studio for direct inspection, including its
-   existing drafts. Compare its actual schema and navigation with the
-   repository and agree on the connection and recovery approach before any
-   production Studio deployment or account-setting change.
+1. Reconcile the inspected deployed Studio's schema and navigation with the
+   repository, address the relative-link validation mismatch with the owner's
+   direction, independently verify any existing drafts, and agree on the
+   connection and recovery approach before any production Studio deployment
+   or account-setting change.
 2. Once the compatible Studio and schema are connected, use the handover
    playbook's report-only inventory prompt. Compare its
    selected document IDs, field states, and published/draft context with a
