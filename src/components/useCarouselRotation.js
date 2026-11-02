@@ -8,6 +8,7 @@ export default function useCarouselRotation({blocked, count, advance, steering =
   const [hovered, setHovered] = useState(false);
   const [pressed, setPressed] = useState(false);
   const [moving, setMoving] = useState(false);
+  const [restDirection, setRestDirection] = useState(1);
   const [cycle, setCycle] = useState(0);
   const [visible, setVisible] = useState(() => document.visibilityState !== 'hidden');
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
@@ -43,6 +44,7 @@ export default function useCarouselRotation({blocked, count, advance, steering =
   const command = useCallback(delta => {
     if (current.current.blocked || current.current.count < 2) return;
     direction.current = delta < 0 ? -1 : 1;
+    setRestDirection(direction.current);
     progress.current = 0;
     setHeld(false);
     setHovered(false);
@@ -83,6 +85,11 @@ export default function useCarouselRotation({blocked, count, advance, steering =
   const speed = steeringActive ? 1 + 3 * Math.abs(amount) : 1;
   const autoEnabled = (!held || steeringActive) && !blocked && visible && !reducedMotion && count > 1 && !moving;
   const rotating = autoEnabled && (steeringActive || (!hovered && !pressed));
+  // Freeze the home position while a pointer steers, so it cannot shift under
+  // the pointer. The normal slow pace rests just to its direction's side;
+  // a stopped carousel rests at the neutral center.
+  const writingHome = useRef(-8);
+  if (!steeringActive) writingHome.current = rotating || moving ? -8 * restDirection : 0;
   const paint = useCallback(value => {
     const node = stageRef.current;
     if (!node) return;
@@ -95,7 +102,7 @@ export default function useCarouselRotation({blocked, count, advance, steering =
     if (steeringActive) {
       setHeld(false);
       if (amount !== 0) direction.current = -Math.sign(amount);
-    }
+    } else setRestDirection(direction.current);
   }, [steeringActive, amount]);
   useLayoutEffect(() => { paint(progress.current); }, [cycle, paint]);
   useEffect(() => { if (!autoEnabled) {progress.current = 0; paint(0);} }, [autoEnabled, paint]);
@@ -123,7 +130,7 @@ export default function useCarouselRotation({blocked, count, advance, steering =
     };
   }, [rotating, cycle, flowDirection, speed, paint]);
   return {
-    rotating, moving, reducedMotion, hold, command, stageRef,
+    rotating, moving, reducedMotion, hold, command, stageRef, writingHomeOffset: writingHome.current,
     autoMotion: autoEnabled ? (rotating ? 'running' : 'paused') : 'off',
     interactions: {
       onFocusCapture: event => {if (!pointerDown.current && event.target.closest('[data-carousel-card]') && !event.target.closest('[data-rotation-control]')) hold();},

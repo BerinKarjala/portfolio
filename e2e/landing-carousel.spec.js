@@ -33,9 +33,9 @@ for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900]]) {
       expect(part.top).toBeGreaterThanOrEqual(0);
       expect(part.bottom).toBeLessThanOrEqual(height + 1);
     }
-    const deskCenter = (bounds.desk.left + bounds.desk.right) / 2;
-    expect(bounds.inkwell.right).toBeLessThanOrEqual(deskCenter);
-    expect(bounds.quill.right).toBeLessThanOrEqual(deskCenter);
+    const deskWidth = bounds.desk.right - bounds.desk.left;
+    const inkwellCenter = (bounds.inkwell.left + bounds.inkwell.right) / 2;
+    expect(Math.abs(inkwellCenter - (bounds.desk.left + deskWidth / 2))).toBeLessThan(2);
     await page.getByRole('button', {name: 'Expand Sudoku Solver'}).click();
     await expect(page.getByRole('dialog', {name: 'Sudoku Solver'})).toHaveAttribute('aria-modal', 'true');
     await page.getByRole('button', {name: 'Exit full screen'}).click();

@@ -18,8 +18,9 @@ space permits. The desktop tabletop scales with available viewport height and
 the carousel gap is reduced; longer content and short screens remain scrollable.
 
 The current writing-set interaction supersedes the historical click and drag
-description below. The quill and inkwell start on the left side of the desk
-and move together. While held, their horizontal position steers the carousel in
+description below. The quill and inkwell move together and rest near the desk's
+center, slightly to the side matching the normal slow carousel direction. When
+the carousel is stopped, they rest at the center. While held, their horizontal position steers the carousel in
 the same visual direction, from the normal 12-second pace near the screen center
 to approximately 3 seconds per card at either screen edge. Reversing direction
 retraces the current motion rather than jumping. On release, the set glides back

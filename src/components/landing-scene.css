@@ -60,7 +60,7 @@
    tail inside the art frame, preserving image ratio and writing-set overflow. */
 .landing-desk-art { position: relative; aspect-ratio: 2172 / 680; overflow: clip; }
 .landing-desk-art > img { position: absolute; top: 0; left: 0; display: block; width: 100%; height: auto; }
-.landing-writing-set { position: absolute; left: 18%; top: 25%; width: min(clamp(5rem, 9vw, 10rem), 26vw); height: min(clamp(5rem, 9vw, 10rem), 26vw); pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; }
+.landing-writing-set { position: absolute; left: calc(50% + var(--writing-home-offset, 0%)); top: 25%; width: min(clamp(5rem, 9vw, 10rem), 26vw); height: min(clamp(5rem, 9vw, 10rem), 26vw); pointer-events: auto; touch-action: pinch-zoom; background: transparent; border: 0; padding: 0; cursor: grab; transition: left 1.2s ease-out; }
 .landing-writing-set:active { cursor: grabbing; }
 .landing-writing-set img { position: absolute; user-select: none; }
 .landing-inkwell { width: 100%; bottom: 0; }
@@ -104,7 +104,7 @@
   .landing-calendar .calendar-dates { padding-left: 0; padding-right: 0; }
 }
 @media (min-width: 30rem) { .landing-card:has(.landing-calendar) .landing-card-surface:not(:modal) { padding: 1rem; } }
-@media (prefers-reduced-motion: reduce) { .landing-card { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .landing-card, .landing-writing-set { transition: none; } }
 @media (forced-colors: active) { .landing-card { border: 2px solid CanvasText; } }
 html[data-studio-theme] .studio-canvas :is(.landing-card, .landing-card-surface--expanded:modal, .landing-status, .calendar-dates, .calendar-selected) { background: var(--studio-surface); color: var(--studio-text); }
 html[data-studio-theme] .studio-canvas .landing-calendar .calendar-dates button { background: transparent; color: var(--studio-text) !important; }
