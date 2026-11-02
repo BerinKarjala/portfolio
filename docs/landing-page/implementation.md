@@ -13,9 +13,10 @@ continuously over each 12-second interval, pausing for interaction and honoring
 reduced motion. The phone minimum is an implementation assumption for owner
 review, not a separate approved requirement.
 
-The desk and writing set should be visible in the initial desktop viewport when
-space permits. The desktop tabletop scales with available viewport height and
-the carousel gap is reduced; longer content and short screens remain scrollable.
+The desktop tabletop spans 75% of the viewport width. Its writing set sits near
+the top of the desk so it remains visible when space permits; short screens can
+scroll to reveal the rest of the tabletop. Phone and tablet layouts retain their
+height-aware sizing, and longer content remains scrollable.
 
 The current writing-set interaction supersedes the historical click and drag
 description below. The quill and inkwell move together and rest near the desk's

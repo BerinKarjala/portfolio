@@ -15,8 +15,8 @@ async function settle(page) {
   });
 }
 
-for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900]]) {
-  test(`desktop desk and writing set are visible without scrolling at ${width}x${height}`, async ({page}) => {
+for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900], [1920, 1080]]) {
+  test(`desktop desk is 75% wide and its writing set is visible at ${width}x${height}`, async ({page}) => {
     await page.setViewportSize({width, height});
     await page.emulateMedia({reducedMotion: 'reduce'});
     await page.goto('/');
@@ -29,7 +29,8 @@ for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900]]) {
       return {desk: rect('.landing-desk'), inkwell: rect('.landing-inkwell'), quill: rect('.landing-quill'), card: rect('.landing-card--center')};
     });
     expect(bounds.desk.top).toBeGreaterThanOrEqual(bounds.card.bottom);
-    for (const part of [bounds.desk, bounds.inkwell, bounds.quill]) {
+    expect(bounds.desk.top).toBeLessThan(height);
+    for (const part of [bounds.inkwell, bounds.quill]) {
       expect(part.top).toBeGreaterThanOrEqual(0);
       expect(part.bottom).toBeLessThanOrEqual(height + 1);
     }
@@ -37,6 +38,11 @@ for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900]]) {
     expect(Math.abs(deskWidth - width * .75)).toBeLessThanOrEqual(1);
     const inkwellCenter = (bounds.inkwell.left + bounds.inkwell.right) / 2;
     expect(Math.abs(inkwellCenter - (bounds.desk.left + deskWidth / 2))).toBeLessThan(2);
+    if (bounds.desk.bottom > height + 1) {
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      expect(await page.locator('.landing-desk').evaluate(node => node.getBoundingClientRect().bottom)).toBeLessThanOrEqual(height + 1);
+      await page.evaluate(() => window.scrollTo(0, 0));
+    }
     await page.getByRole('button', {name: 'Expand Sudoku Solver'}).click();
     await expect(page.getByRole('dialog', {name: 'Sudoku Solver'})).toHaveAttribute('aria-modal', 'true');
     await page.getByRole('button', {name: 'Exit full screen'}).click();
