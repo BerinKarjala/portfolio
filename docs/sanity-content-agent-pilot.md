@@ -37,8 +37,8 @@ documents or drafts have been created, changed, or published.
   updated on 2025-09-02, with version `N/A` and an empty manifest cell. The
   repository's [`studio13/package.json`](../studio13/package.json) declares
   Sanity `^6.20.0`, but that alone does not prove what is deployed or registered.
-  Opening the hosted Studio showed a separate sign-in dialog; GitHub sign-in
-  was selected, but no completed Studio session was observed.
+  The owner supplied a screenshot of a signed-in hosted Studio; the separate
+  Studio tab shared with the operator still showed its sign-in dialog.
 - Deployed Studio version, registered schema, existing drafts, and an isolated
   non-production target remain **unverified**.
   Do not infer them from the repository configuration or available capacity.
@@ -73,6 +73,38 @@ need editorial judgment; that is distinct from a missing-field finding.
 This snapshot reflects public data at the time of the query, not an exhaustive
 audit of drafts, historical versions, image content, destination health, or
 future records. Repeat the query and reconcile with Studio before acting.
+
+## Dashboard connection and deployment assessment
+
+After the owner's Studio screenshot, the Dashboard still showed **Studio
+action required**. Its setup page listed Studio13 with unknown compatibility,
+no version, and its **Show in Dashboard** checkbox unchecked; zero studios
+were included. No Dashboard setting was changed during this check.
+
+For a Sanity-hosted Studio, the setup page and
+[Sanity's Dashboard guidance](https://www.sanity.io/docs/dashboard/dashboard-configure)
+describe redeploying a compatible Studio to generate and upload its schema and
+manifest. The [Content Agent prerequisites](https://www.sanity.io/docs/content-agent/introduction)
+specify Studio 5.1.0 or newer. Signing in to an older or unregistered Studio
+does not by itself establish that these prerequisites are satisfied.
+
+The owner's screenshot showed a **Post** section in the deployed Studio,
+while the repository's [schema index](../studio13/schemas/index.js) does not
+register a `post` type and its [desk structure](../studio13/deskStructure.js)
+adds a **Landing Page** entry. An unauthenticated count on 2026-11-02 returned
+zero published `post` documents; it does not rule out drafts or historical
+content. Redeploying the repository version could therefore change the owner's
+editing interface. It must not be assumed to delete existing documents, or to
+preserve every existing editing capability without comparison.
+
+Before any production Studio deployment, inspect the signed-in Studio and its
+drafts, reconcile the deployed and repository schemas and desired navigation,
+identify a verified recovery path, and obtain the owner's explicit deployment
+decision. A cloud Studio dependency and build job passed for commit
+`22b555b4c30d050268b7849f26a9e2a4b5a56146`; the machine's active Node version
+was `v22.21.1`, below the Studio's declared `>=22.22.2 <23` requirement. Do
+not deploy, switch account settings, or create test data as part of this
+read-only assessment. A successful code preview does not deploy the Studio.
 
 ## Website ownership and display context
 
@@ -117,10 +149,12 @@ and does not replace the cloud release checks or preview.
 
 ## Next operator steps
 
-1. Open the approved Sanity Dashboard and Studio, verify the actual account,
-   project and dataset, deployed/registered schema, role, plan and credit
-   balance, and record the result without exposing credentials.
-2. Use the handover playbook's report-only inventory prompt. Compare its
+1. Share the signed-in hosted Studio for direct inspection, including its
+   existing drafts. Compare its actual schema and navigation with the
+   repository and agree on the connection and recovery approach before any
+   production Studio deployment or account-setting change.
+2. Once the compatible Studio and schema are connected, use the handover
+   playbook's report-only inventory prompt. Compare its
    selected document IDs, field states, and published/draft context with a
    fresh baseline and the actual Studio schema. Treat content as data, not
    instructions; do not create or confirm changes during the inventory.
