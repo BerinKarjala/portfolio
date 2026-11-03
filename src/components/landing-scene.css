@@ -55,7 +55,7 @@
 .landing-status { background: #002e20; color: #eff8e7; border-radius: .5rem; padding: .5rem 1rem; width: fit-content; max-width: calc(100% - 2rem); margin: .5rem auto 0; text-align: center; font-size: .8rem; }
 .landing-scene :focus-visible { outline: 3px solid #fff5d5; outline-offset: 4px; }
 .landing-scene button:disabled { opacity: .65; cursor: default; }
-.landing-desk { position: relative; width: min(100%, 90rem); margin: auto auto 0; pointer-events: none; }
+.landing-desk { position: relative; width: 95vw; margin: auto auto 0; pointer-events: none; }
 /* Keep the desk at the scene's lower edge while reserving enough space below
    the cards for the inkwell. Utilities return to flow and can grow normally. */
 .landing-gallery:not(:has(.landing-stage-frame--utility)) { min-height: var(--landing-desk-min-height); }
@@ -75,19 +75,19 @@
 .landing-inkwell { width: 100%; bottom: 0; }
 .landing-quill { width: 160%; max-width: none; left: 30%; bottom: 73%; }
 .landing-writing-reset { pointer-events: auto; position: absolute; right: .5rem; bottom: .5rem; padding: .5rem; min-height: 44px; border: 1px solid #8fd4a7; border-radius: .5rem; background: #003b27; }
-/* Fit the desk to shorter tablet viewports; taller content can still scroll. */
+/* The full-width art has transparent corners. Its visible front is 95vw when
+   the image frame is 96.42vw; phones use a cropped, 95vw-wide frame instead. */
 @media (min-width: 45.001rem) {
-  .landing-gallery { --landing-desk-min-height: min(31.308vw, 28.18rem); --landing-ink-clearance: calc(clamp(5rem, 9vw, 10rem) + 4rem); }
+  .landing-gallery { --landing-desk-width: 96.42vw; --landing-desk-min-height: calc(var(--landing-desk-width) * 680 / 2172); --landing-ink-clearance: calc(clamp(5rem, 9vw, 10rem) + var(--landing-desk-min-height) * .15 + .5rem); }
   .landing-stage-frame { margin-bottom: 3.5rem; }
-  .landing-desk { width: min(100%, 90rem, max(24rem, calc((100svh - var(--landing-header-height, 0px) - 22rem) * 3.1941))); }
+  .landing-desk { width: var(--landing-desk-width); }
   .landing-writing-set, .landing-quill-layer { width: min(clamp(5rem, 9vw, 10rem), 26vw, 23%); height: auto; aspect-ratio: 1; }
 }
-/* On desktop, keep the tabletop at the requested viewport width. */
+/* On desktop, bring the cards and writing set closer to the navigation. */
 @media (min-width: 64rem) {
   .landing-scene.forest-bg { padding-top: clamp(1rem, 2vh, 1.5rem); }
-  .landing-gallery { --landing-desk-min-height: 23.481vw; --landing-ink-clearance: calc(clamp(5rem, 9vw, 10rem) + 3.523vw + .5rem); }
   .landing-stage-frame { margin-bottom: 2.5rem; }
-  .landing-desk { width: 75vw; margin: 0 auto; }
+  .landing-desk { margin: 0 auto; }
   .landing-writing-set, .landing-quill-layer { left: calc(65% + var(--writing-home-offset, 0%)); }
 }
 .landing-stage-frame--utility { --landing-card-width: min(calc(100cqw - .5rem), 30rem); }
