@@ -13,23 +13,26 @@ continuously over each 12-second interval, pausing for interaction and honoring
 reduced motion. The phone minimum is an implementation assumption for owner
 review, not a separate approved requirement.
 
-The desktop tabletop spans 75% of the viewport width. The front of the desk sits
-at the viewport's bottom edge when the scene fits. The quill and inkwell sit
+The desk's visible front spans 95% of the viewport width. Its front sits at the
+viewport's bottom edge when the scene fits. The quill and inkwell sit
 together near the front edge of the tabletop; very short screens and open tools
-can scroll to keep content and the writing set reachable. Phone and tablet
-layouts retain their height-aware sizing. On desktop, the project cards sit
-closer to the navigation.
-The quill is drawn in front of the cards without intercepting their interactions;
-the inkwell remains available below them. An open editor or calendar stays in
-front of the quill so its contents remain readable.
+can scroll to keep content and the writing set reachable. Phone layouts crop the
+tabletop to retain its depth. On desktop, the project cards sit closer to the
+navigation.
+The quill tip sits inside the inkwell opening. The feather is drawn in front of
+the cards without intercepting their interactions; the inkwell remains available
+below them. An open editor or calendar stays in front of the quill so its contents
+remain readable.
 
 The current writing-set interaction supersedes the historical click and drag
-description below. The quill and inkwell move together and rest near the desk's
-center, slightly to the side matching the normal slow carousel direction. When
-the carousel is deliberately held, they rest at the center. Hovering over the
-carousel temporarily pauses it without moving the writing set. While held, their horizontal position steers the carousel in
-the same visual direction, from the normal 12-second pace near the screen center
-to approximately 3 seconds per card at either screen edge. Reversing direction
+description below. The quill and inkwell move together and rest to the right of
+the desktop's center, shifted slightly toward the side that represents the slow
+carousel direction. When the carousel is deliberately held, they return to that
+resting position. Hovering over the carousel temporarily pauses it without moving
+the writing set. While held, their horizontal position steers the carousel in
+the opposite visual direction: farther right moves the cards left faster, and
+farther left moves them right faster. The pace ranges from the normal 12 seconds
+near the screen center to approximately 3 seconds per card at either edge. Reversing direction
 retraces the current motion rather than jumping. On release, the set glides back
 to its resting position and the carousel resumes its slow idle pace. A double
 click or double touch tap on the inkwell opens the editor; Enter and Space remain
