@@ -149,6 +149,15 @@ documents displayed disabled Publish and Discard changes actions when
 inspected; that UI observation is not an independent exhaustive draft audit.
 No field, draft, or document action was changed.
 
+An anonymous published-perspective query on 2026-11-03 also returned one
+`author` document, `8559eb2d-79f8-4c6d-936b-d3383355b1e9`, with defined
+`name`, `slug`, `image`, and `bio` fields and nine `certificates` entries.
+The repository's [author schema](../studio13/schemas/author.js) exposes `bio`
+and `certificates` but not `name`, `slug`, or `image`; redeploying it may make
+the latter values appear as unknown fields. Do not remove those values. The
+historical source candidate below is not proof of the deployed author schema,
+and neither author drafts nor the intended future editor fields are verified.
+
 Historical commit
 [`4e119dc`](https://github.com/BerinKarjala/portfolio/commit/4e119dcdeb786acd09076489a7c3cc5865d66f43)
 declares Sanity 2.26-era dependencies and contains the same visible legacy
@@ -211,6 +220,9 @@ read-only assessment. A successful code preview does not deploy the Studio.
   cards but keeps bundled thumbnails. The Projects page also replaces their
   thumbnails and alt text with bundled previews. A CMS thumbnail-alt edit for
   either record therefore does not establish a change to the displayed image.
+- [`About.jsx`](../src/components/About.jsx) reads the published author's
+  biography and certificates, so changes to those fields can affect the About
+  page. The anonymous count above does not validate the rendered content.
 - The [Page Builder gallery helper](../src/features/page-builder/gallery.js)
   supplies a code-owned fallback when there is no matching CMS project. The
   CSS Studio gallery entry is also code-owned. These are not additional Sanity
@@ -225,7 +237,7 @@ read-only assessment. A successful code preview does not deploy the Studio.
 | --- | --- | --- |
 | CA-01 access and context | BLOCKED | Organization and project administrator roles, active project, plan, production dataset, AI usage, and deployed Studio 2.26.0 verified. Content Agent requires a compatible connected Studio and registered schema. |
 | CA-02 inventory fixtures | BLOCKED | No verified, allowlisted non-production target, configured Studio workspace, or fixtures. The published baseline above is not this fixture test. |
-| CA-03 schema and unknown metadata | BLOCKED | Deployed Studio schema differs from the repository; registered schema and agent response not verified. |
+| CA-03 schema and unknown metadata | BLOCKED | Deployed Studio schema differs from the repository; project and author field preservation, registered schema, and agent response need verification. |
 | CA-04 editorial accuracy and untrusted content | BLOCKED | Requires the agent and controlled synthetic fixtures. |
 | CA-05 proposal and discard | BLOCKED | Requires the agent and an appropriate isolated test record. |
 | CA-06 existing draft protection | BLOCKED | Requires the agent and an isolated fixture with an existing draft. |
