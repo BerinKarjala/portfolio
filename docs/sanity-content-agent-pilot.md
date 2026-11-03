@@ -78,6 +78,13 @@ are present, but this query did not verify the images or their suitability.
 The descriptions and alt values may need editorial judgment; that is distinct
 from a missing-field finding.
 
+A second anonymous query on 2026-11-03 used the `published` perspective. It
+returned the same two IDs and unchanged `_updatedAt` values. For both published
+records, the historical editor fields `title`, `date`, `place`, `projectType`,
+and `tags` were absent or null; `name`, `description`, `link`, `thumbnail`, and
+`thumbnail.alt` were defined. This does not describe existing drafts, releases,
+or historical revisions, and does not prove the exact deployed source.
+
 ## Branch-only link validation
 
 The owner approved preparing the validation change on the feature branch. The
@@ -148,6 +155,44 @@ declares Sanity 2.26-era dependencies and contains the same visible legacy
 project fields. The hosted JavaScript asset also reported a 2022-02-28
 Last-Modified date. This is a source-comparison candidate, not proof that the
 commit produced the deployed Studio or a verified rollback path.
+
+## Recovery and draft-audit preparation
+
+Dataset recovery and Studio-application rollback are separate concerns:
+
+- Sanity's [dataset export guidance](https://www.sanity.io/docs/content-lake/exporting-data)
+  describes an authenticated point-in-time export including accessible drafts
+  and asset binaries by default. Exports consume API quota, may contain private
+  unpublished content, and can complete while reporting missing assets. Before
+  an export, agree on a secure destination and retention with the owner; do not
+  put the archive in the repository or overwrite another file. Check the
+  archive, draft/document coverage, asset warnings, and references. No export
+  or restore has been performed in this pilot.
+- An export is not a tested restore. Rehearse recovery only against a verified
+  isolated target; do not import or replace production data during a test.
+  [Sanity's backup service](https://www.sanity.io/docs/content-lake/backups) is a
+  paid feature and is disabled by default, but its availability and state for
+  this dataset have not been verified.
+- An exported dataset would not establish how to roll back the hosted Studio
+  application. The historical source candidate above is not a verified build
+  or redeployment method. Sanity supports
+  [multiple Studio deployment targets](https://www.sanity.io/docs/studio/deployment),
+  but a separate Studio pointed at `production` would still expose production
+  content and edits. Do not create, register, deploy, or reconfigure a Studio
+  without the owner's separate decision and a verified target.
+
+For the read-only draft audit, use an authenticated client with permission to
+read drafts, the [raw perspective](https://www.sanity.io/docs/content-lake/perspectives),
+and the non-CDN API. Start with metadata rather than draft content:
+
+```groq
+*[_id in path("drafts.**")] | order(_id asc){_id, _type, _updatedAt}
+```
+
+Compare draft IDs with published records and inspect any selected draft before
+proposing edits. This query only audits ordinary draft IDs; release versions and
+historical revisions require separate consideration. It has not been run by
+this pilot, and an anonymous empty result would not establish absence of drafts.
 
 Before any production Studio deployment, inspect the signed-in Studio and its
 drafts, reconcile the deployed and repository schemas and desired navigation,
