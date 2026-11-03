@@ -86,10 +86,10 @@ export default function useCarouselRotation({blocked, count, advance, steering =
   const autoEnabled = (!held || steeringActive) && !blocked && visible && !reducedMotion && count > 1 && !moving;
   const rotating = autoEnabled && (steeringActive || (!hovered && !pressed));
   // Freeze the home position while a pointer steers, so it cannot shift under
-  // the pointer. The normal slow pace rests just to its direction's side;
-  // a stopped carousel rests at the neutral center.
+  // the pointer. Temporary hover/press pauses leave the set in place; a
+  // deliberately held or otherwise stopped carousel rests at the center.
   const writingHome = useRef(-8);
-  if (!steeringActive) writingHome.current = rotating || moving ? -8 * restDirection : 0;
+  if (!steeringActive) writingHome.current = autoEnabled || moving ? -8 * restDirection : 0;
   const paint = useCallback(value => {
     const node = stageRef.current;
     if (!node) return;

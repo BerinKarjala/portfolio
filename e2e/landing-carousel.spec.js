@@ -15,8 +15,8 @@ async function settle(page) {
   });
 }
 
-for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900]]) {
-  test(`desktop desk and writing set are visible without scrolling at ${width}x${height}`, async ({page}) => {
+for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900], [1920, 1080]]) {
+  test(`desktop desk is 75% wide and its writing set is reachable at ${width}x${height}`, async ({page}) => {
     await page.setViewportSize({width, height});
     await page.emulateMedia({reducedMotion: 'reduce'});
     await page.goto('/');
@@ -26,23 +26,136 @@ for (const [width, height] of [[1200, 550], [1440, 690], [1440, 900]]) {
         const {top, bottom, left, right} = document.querySelector(selector).getBoundingClientRect();
         return {top, bottom, left, right};
       };
-      return {desk: rect('.landing-desk'), inkwell: rect('.landing-inkwell'), quill: rect('.landing-quill'), card: rect('.landing-card--center')};
+      return {header: rect('header'), desk: rect('.landing-desk'), inkwell: rect('.landing-inkwell'), quill: rect('.landing-quill'), card: rect('.landing-card--center')};
     });
-    expect(bounds.desk.top).toBeGreaterThanOrEqual(bounds.card.bottom);
-    for (const part of [bounds.desk, bounds.inkwell, bounds.quill]) {
-      expect(part.top).toBeGreaterThanOrEqual(0);
-      expect(part.bottom).toBeLessThanOrEqual(height + 1);
-    }
+    expect(bounds.card.top - bounds.header.bottom).toBeLessThanOrEqual(40);
+    expect(Math.abs(bounds.desk.bottom - height)).toBeLessThanOrEqual(2);
+    expect(bounds.desk.top).toBeLessThan(height);
     const deskWidth = bounds.desk.right - bounds.desk.left;
+    expect(Math.abs(deskWidth - width * .75)).toBeLessThanOrEqual(1);
     const inkwellCenter = (bounds.inkwell.left + bounds.inkwell.right) / 2;
     expect(Math.abs(inkwellCenter - (bounds.desk.left + deskWidth / 2))).toBeLessThan(2);
+    if (bounds.desk.bottom > height + 1) {
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      expect(await page.locator('.landing-desk').evaluate(node => node.getBoundingClientRect().bottom)).toBeLessThanOrEqual(height + 1);
+      await page.evaluate(() => window.scrollTo(0, 0));
+    }
     await page.getByRole('button', {name: 'Expand Sudoku Solver'}).click();
     await expect(page.getByRole('dialog', {name: 'Sudoku Solver'})).toHaveAttribute('aria-modal', 'true');
     await page.getByRole('button', {name: 'Exit full screen'}).click();
+    await page.getByRole('button', {name: 'Open text editor with the inkwell'}).scrollIntoViewIfNeeded();
+    for (const selector of ['.landing-inkwell', '.landing-quill']) {
+      const part = await page.locator(selector).boundingBox();
+      expect(part.y).toBeGreaterThanOrEqual(0);
+      expect(part.y + part.height).toBeLessThanOrEqual(height + 1);
+    }
     await page.getByRole('button', {name: 'Open text editor with the inkwell'}).dblclick();
     await expect(page.getByRole('textbox', {name: 'Writing area'})).toBeVisible();
   });
 }
+
+for (const [width, height] of [[320, 740], [390, 844], [768, 1024], [1200, 550], [1440, 900], [1920, 1080], [3840, 2160]]) {
+  test(`the writing set rests near the front of the desk at ${width}x${height}`, async ({page}) => {
+    await page.setViewportSize({width, height});
+    await page.emulateMedia({reducedMotion: 'reduce'});
+    await page.goto('/');
+    await settle(page);
+    const position = await page.evaluate(() => {
+      const desk = document.querySelector('.landing-desk').getBoundingClientRect();
+      const ink = document.querySelector('.landing-inkwell').getBoundingClientRect();
+      return {ink: (ink.bottom - desk.top) / desk.height, deskBottom: desk.bottom, viewportBottom: innerHeight};
+    });
+    expect(position.ink).toBeCloseTo(.85, 2);
+    expect(Math.abs(position.deskBottom - position.viewportBottom)).toBeLessThanOrEqual(2);
+    const inkwell = page.getByRole('button', {name: 'Open text editor with the inkwell'});
+    await inkwell.scrollIntoViewIfNeeded();
+    await inkwell.dblclick();
+    await expect(page.getByRole('textbox', {name: 'Writing area'})).toBeVisible();
+  });
+}
+
+for (const [width, height] of [[320, 400], [1200, 400], [3840, 600]]) {
+  test(`a ${width}x${height} viewport can scroll to the desk and inkwell`, async ({page}) => {
+    await page.setViewportSize({width, height});
+    await page.emulateMedia({reducedMotion: 'reduce'});
+    await page.goto('/');
+    await settle(page);
+    const bounds = await page.evaluate(() => {
+      const header = document.querySelector('header').getBoundingClientRect();
+      const desk = document.querySelector('.landing-desk').getBoundingClientRect();
+      const ink = document.querySelector('.landing-inkwell').getBoundingClientRect();
+      const card = document.querySelector('.landing-card--center').getBoundingClientRect();
+      return {deskTop: desk.top, headerBottom: header.bottom, inkTop: ink.top, cardBottom: card.bottom, scrollHeight: document.documentElement.scrollHeight};
+    });
+    expect(bounds.scrollHeight).toBeGreaterThan(height);
+    expect(bounds.deskTop).toBeGreaterThanOrEqual(bounds.headerBottom);
+    expect(bounds.inkTop).toBeGreaterThanOrEqual(bounds.cardBottom);
+    const inkwell = page.getByRole('button', {name: 'Open text editor with the inkwell'});
+    await inkwell.scrollIntoViewIfNeeded();
+    await inkwell.dblclick();
+    await expect(page.getByRole('textbox', {name: 'Writing area'})).toBeVisible();
+  });
+}
+
+test('the quill appears above the cards without capturing carousel gestures', async ({page}) => {
+  await page.setViewportSize({width: 1200, height: 550});
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.goto('/');
+  await settle(page);
+  await page.getByRole('button', {name: 'Open text editor with the inkwell'}).focus();
+  for (let step = 0; step < 12; step++) await page.keyboard.down('ArrowUp');
+  const overlap = await page.evaluate(() => {
+    const quill = document.querySelector('.landing-quill');
+    const card = document.querySelector('.landing-card--center');
+    const a = quill.getBoundingClientRect(), b = card.getBoundingClientRect();
+    // Stay inside the image edge: engines round fractional hit-test coordinates differently.
+    for (let y = Math.max(a.top + 4, b.top + 12); y < Math.min(a.bottom - 4, b.bottom - 12); y += 4) {
+      for (let x = Math.max(a.left + 4, b.left + 12); x < Math.min(a.right - 4, b.right - 12); x += 4) {
+        const target = document.elementFromPoint(x, y);
+        if (!target?.closest('.landing-card--center') || !target.closest('[data-card-gesture]') || target.closest('button, a')) continue;
+        // Temporarily include the transparent quill image in hit testing to
+        // check paint order, then restore its non-interactive behavior.
+        quill.style.pointerEvents = 'auto';
+        const quillInFront = document.elementFromPoint(x, y) === quill;
+        quill.style.removeProperty('pointer-events');
+        return {x, y, quillInFront};
+      }
+    }
+    return null;
+  });
+  expect(overlap).not.toBeNull();
+  expect(overlap.quillInFront).toBe(true);
+  await page.mouse.dblclick(overlap.x, overlap.y);
+  await expect(page.getByRole('dialog', {name: 'Sudoku Solver'})).toHaveAttribute('aria-modal', 'true');
+  await expect(page.getByRole('textbox', {name: 'Writing area'})).toHaveCount(0);
+});
+
+test('the open editor remains above the quill', async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.goto('/');
+  await settle(page);
+  await page.getByRole('button', {name: 'Open text editor with the inkwell'}).dblclick();
+  await expect(page.getByRole('textbox', {name: 'Writing area'})).toBeVisible();
+  await page.getByRole('button', {name: 'Open text editor with the inkwell'}).focus();
+  for (let step = 0; step < 12; step++) await page.keyboard.down('ArrowUp');
+  const quillInFront = await page.evaluate(() => {
+    const quill = document.querySelector('.landing-quill');
+    const utility = document.querySelector('.landing-utility');
+    const a = quill.getBoundingClientRect(), b = utility.getBoundingClientRect();
+    for (let y = Math.max(a.top + 4, b.top + 12); y < Math.min(a.bottom - 4, b.bottom - 12, innerHeight); y += 4) {
+      for (let x = Math.max(a.left + 4, b.left + 12); x < Math.min(a.right - 4, b.right - 12, innerWidth); x += 4) {
+        if (!document.elementFromPoint(x, y)?.closest('.landing-utility')) continue;
+        quill.style.pointerEvents = 'auto';
+        const inFront = document.elementFromPoint(x, y) === quill;
+        quill.style.removeProperty('pointer-events');
+        return inFront;
+      }
+    }
+    return null;
+  });
+  expect(quillInFront).toBe(false);
+});
 async function openCalendar(page) {
   const moon = page.getByRole('button', {name: 'Moon and weather'});
   if (await moon.getAttribute('aria-expanded') !== 'true') await moon.click();
@@ -55,10 +168,11 @@ async function deskEdge(page) {
     end: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight),
     width: document.documentElement.scrollWidth,
     viewport: innerWidth,
+    viewportHeight: innerHeight,
     art: document.querySelector('.landing-desk-art').getBoundingClientRect().height,
     image: document.querySelector('.landing-desk-art img').getBoundingClientRect().height,
   }));
-  expect(Math.abs(dimensions.end - dimensions.desk)).toBeLessThanOrEqual(2);
+  expect(Math.abs(dimensions.end - Math.max(dimensions.desk, dimensions.viewportHeight))).toBeLessThanOrEqual(2);
   expect(dimensions.width).toBeLessThanOrEqual(dimensions.viewport + 1);
   expect(dimensions.art / dimensions.image).toBeCloseTo(680 / 724, 3);
 }
@@ -196,6 +310,8 @@ test('selection latches, arrow hover resumes the chosen direction, and utilities
   await previous.hover(); await previous.click();
   await expect(page.getByRole('link', {name: 'Open Sudoku Solver'})).toBeVisible();
   await page.clock.runFor(1700); // Finish the manual transition before the idle cycle starts.
+  await expect(page.locator('.landing-stage')).toHaveAttribute('data-auto-motion', 'running');
+  await page.clock.runFor(100); // Flush React's post-commit timer registration.
   await page.clock.fastForward(12000);
   await expect(page.getByRole('heading', {name: 'CSS Theme Studio', exact: true})).toBeVisible();
   await page.clock.runFor(100); // Flush React's post-commit timer registration.
