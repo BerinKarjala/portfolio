@@ -79,17 +79,16 @@ export default function useCarouselRotation({blocked, count, advance, steering =
   }, [blocked, reducedMotion, visible]);
   const steeringActive = steering !== null && Number.isFinite(steering);
   const amount = steeringActive ? Math.max(-1, Math.min(1, steering)) : 0;
-  // Positive steering moves cards visually right; the previous-project slot
-  // is the rightward direction in the carousel's indexing convention.
-  const flowDirection = steeringActive && amount !== 0 ? -Math.sign(amount) : direction.current;
+  // Positive steering moves the cards left, toward the next project.
+  const flowDirection = steeringActive && amount !== 0 ? Math.sign(amount) : direction.current;
   const speed = steeringActive ? 1 + 3 * Math.abs(amount) : 1;
   const autoEnabled = (!held || steeringActive) && !blocked && visible && !reducedMotion && count > 1 && !moving;
   const rotating = autoEnabled && (steeringActive || (!hovered && !pressed));
   // Freeze the home position while a pointer steers, so it cannot shift under
   // the pointer. Temporary hover/press pauses leave the set in place; a
   // deliberately held or otherwise stopped carousel rests at the center.
-  const writingHome = useRef(-8);
-  if (!steeringActive) writingHome.current = autoEnabled || moving ? -8 * restDirection : 0;
+  const writingHome = useRef(8);
+  if (!steeringActive) writingHome.current = autoEnabled || moving ? 8 * restDirection : 0;
   const paint = useCallback(value => {
     const node = stageRef.current;
     if (!node) return;
@@ -101,7 +100,7 @@ export default function useCarouselRotation({blocked, count, advance, steering =
   useEffect(() => {
     if (steeringActive) {
       setHeld(false);
-      if (amount !== 0) direction.current = -Math.sign(amount);
+      if (amount !== 0) direction.current = Math.sign(amount);
     } else setRestDirection(direction.current);
   }, [steeringActive, amount]);
   useLayoutEffect(() => { paint(progress.current); }, [cycle, paint]);

@@ -24,12 +24,12 @@ function setup(props = {}) {
   }
   return {advance, ...render(<Harness {...props}/>), Harness};
 }
-it('shows the slow carousel direction near the middle and centers the writing set when held', () => {
+it('places the writing set to the right for leftward motion and to the left for rightward motion', () => {
   const {container} = setup();
   const stage = container.querySelector('[data-carousel-stage]');
-  expect(Number(stage.dataset.writingHome)).toBeLessThan(0);
-  fireEvent.click(screen.getByText('Previous'));
   expect(Number(stage.dataset.writingHome)).toBeGreaterThan(0);
+  fireEvent.click(screen.getByText('Previous'));
+  expect(Number(stage.dataset.writingHome)).toBeLessThan(0);
   tick(1600);
   fireEvent.focus(screen.getByText('Card'));
   expect(Number(stage.dataset.writingHome)).toBe(0);
@@ -46,15 +46,22 @@ it('steers smoothly in either direction at up to four times idle speed', () => {
   rerender(<Harness steering={1}/>);
   tick(1500);
   expect(advance).not.toHaveBeenCalled();
-  // Reversing from halfway through a rightward step retraces that distance
-  // before reaching the next leftward card; it must not jump on direction change.
+  // Reversing from halfway through a leftward step retraces that distance
+  // before reaching the next rightward card; it must not jump on direction change.
   rerender(<Harness steering={-1}/>);
   tick(4499); expect(advance).not.toHaveBeenCalled();
-  tick(1); expect(advance).toHaveBeenLastCalledWith(1);
+  tick(1); expect(advance).toHaveBeenLastCalledWith(-1);
   rerender(<Harness steering={null}/>);
   tick(11999); expect(advance).toHaveBeenCalledTimes(1);
   tick(1); expect(advance).toHaveBeenCalledTimes(2);
-  expect(advance).toHaveBeenLastCalledWith(1);
+  expect(advance).toHaveBeenLastCalledWith(-1);
+});
+it.each([
+  [1, 3000, 1], [.5, 4800, 1], [0, 12000, 1], [-.5, 4800, -1], [-1, 3000, -1],
+])('uses position %s to set direction and %sms cadence', (steering, interval, direction) => {
+  const {advance} = setup({steering});
+  tick(interval - 1); expect(advance).not.toHaveBeenCalled();
+  tick(1); expect(advance).toHaveBeenLastCalledWith(direction);
 });
 it('holds a selected card through blur and resumes left immediately and on later cycles', () => {
   const {advance} = setup();

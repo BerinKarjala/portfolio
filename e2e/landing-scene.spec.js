@@ -234,7 +234,11 @@ test('the writing set moves together, returns home and supports keyboard activat
   expect(moved.x).toBeGreaterThanOrEqual(-1);
   expect(moved.y + moved.height).toBeLessThanOrEqual(desk.y + desk.height * .85 + 1);
   await page.mouse.up();
-  await expect.poll(async () => Math.abs((await object.boundingBox()).x - box.x)).toBeLessThan(1);
+  // A leftward drag reverses the carousel, so the home position shifts left.
+  await expect.poll(async () => {
+    const returned = await object.boundingBox();
+    return Math.abs(returned.x + returned.width / 2 - (desk.x + desk.width * .57));
+  }).toBeLessThan(1);
   await object.focus(); await object.press('ArrowRight');
   await object.press('Enter');
   await expect(page.getByRole('textbox', { name: 'Writing area' })).toBeVisible();

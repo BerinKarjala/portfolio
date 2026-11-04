@@ -13,11 +13,11 @@ test('the resting writing set reflects slow direction and a stopped carousel', a
     const ink = document.querySelector('.landing-inkwell').getBoundingClientRect();
     return ((ink.left + ink.right) / 2 - (desk.left + desk.right) / 2) / desk.width;
   });
-  await expect.poll(offset).toBeLessThan(-.06);
+  await expect.poll(offset).toBeGreaterThan(.21);
   await page.getByRole('button', {name: 'Previous project'}).click();
-  await expect.poll(offset).toBeGreaterThan(.06);
+  await expect.poll(offset).toBeLessThan(.09);
   await page.locator('.landing-card--center').focus();
-  await expect.poll(async () => Math.abs(await offset())).toBeLessThan(.01);
+  await expect.poll(async () => Math.abs((await offset()) - .15)).toBeLessThan(.01);
 });
 
 test('hovering the carousel pauses it without moving the inkwell', async ({page}) => {
@@ -53,27 +53,31 @@ test('dragging the inkwell steers the carousel and glides back to its resting pl
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1201);
   const start = (await card.boundingBox()).x;
   await page.waitForTimeout(800);
-  const right = (await card.boundingBox()).x;
-  expect(right).toBeGreaterThan(start + 20);
+  const left = (await card.boundingBox()).x;
+  expect(left).toBeLessThan(start - 20);
   const reversalStarted = performance.now();
   await page.mouse.move(home.width / 2, y, {steps: 8});
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1201);
   const reversed = (await card.boundingBox()).x;
   // Reversal may take real time; allow the distance a card can physically
   // travel during that time, but no instantaneous jump to another position.
-  expect(Math.abs(reversed - right)).toBeLessThan(5 + (performance.now() - reversalStarted) * .1);
+  expect(Math.abs(reversed - left)).toBeLessThan(5 + (performance.now() - reversalStarted) * .1);
   await page.waitForTimeout(800);
-  const left = (await card.boundingBox()).x;
-  expect(left).toBeLessThan(reversed - 20);
+  const right = (await card.boundingBox()).x;
+  expect(right).toBeGreaterThan(reversed + 20);
   await page.mouse.up();
   await expect(page.getByRole('textbox', {name: 'Writing area'})).toHaveCount(0);
-  await expect.poll(async () => Math.abs((await inkwell.boundingBox()).x - home.x)).toBeLessThan(1);
+  await expect.poll(async () => {
+    const ink = await inkwell.boundingBox();
+    const desk = await page.locator('.landing-desk').boundingBox();
+    return Math.abs(ink.x + ink.width / 2 - (desk.x + desk.width * .57));
+  }).toBeLessThan(1);
   const returned = await inkwell.boundingBox();
   expect(Math.abs(returned.y - home.y)).toBeLessThan(1);
   const slowStart = (await card.boundingBox()).x;
   await page.waitForTimeout(800);
   const slowEnd = (await card.boundingBox()).x;
-  expect(Math.abs(slowEnd - slowStart)).toBeLessThan(Math.abs(reversed - left) / 2);
+  expect(Math.abs(slowEnd - slowStart)).toBeLessThan(Math.abs(reversed - right) / 2);
   expect(Math.abs(slowEnd - slowStart)).toBeGreaterThan(2);
 });
 
