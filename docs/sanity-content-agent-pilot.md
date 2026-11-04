@@ -39,8 +39,9 @@ documents or drafts have been created, changed, or published.
   `@sanity/core` and `@sanity/base` versions **2.26.0**. The repository's
   [`studio13/package.json`](../studio13/package.json) declares Sanity `^6.20.0`;
   that source version has not been deployed to the hosted Studio by this pilot.
-- Registered schema, an independently confirmed inventory of existing drafts,
-  and an isolated non-production target remain **unverified**.
+- Registered schema and an isolated non-production target remain **unverified**.
+  The authenticated draft inventory below is a point-in-time, permission-scoped
+  result and must be repeated before acting.
   Do not infer them from the repository configuration or available capacity.
 - The public-data inventory below is an independent, read-only baseline for
   comparison with a later Content Agent inventory. It is not an agent result,
@@ -154,9 +155,11 @@ An anonymous published-perspective query on 2026-11-03 also returned one
 `name`, `slug`, `image`, and `bio` fields and nine `certificates` entries.
 The repository's [author schema](../studio13/schemas/author.js) exposes `bio`
 and `certificates` but not `name`, `slug`, or `image`; redeploying it may make
-the latter values appear as unknown fields. Do not remove those values. The
-historical source candidate below is not proof of the deployed author schema,
-and neither author drafts nor the intended future editor fields are verified.
+the latter values appear as unknown fields. On 2026-11-04 UTC, the signed-in
+deployed author editor showed Name, Slug, Image, and Bio; its Developer info
+identified `certificates` as an unknown field. Publish and Discard changes were
+disabled when inspected. Do not remove either set of existing values. The
+intended future author editor fields still require the owner's decision.
 
 Historical commit
 [`4e119dc`](https://github.com/BerinKarjala/portfolio/commit/4e119dcdeb786acd09076489a7c3cc5865d66f43)
@@ -198,10 +201,17 @@ and the non-CDN API. Start with metadata rather than draft content:
 *[_id in path("drafts.**")] | order(_id asc){_id, _type, _updatedAt}
 ```
 
-Compare draft IDs with published records and inspect any selected draft before
-proposing edits. This query only audits ordinary draft IDs; release versions and
-historical revisions require separate consideration. It has not been run by
-this pilot, and an anonymous empty result would not establish absence of drafts.
+On 2026-11-04 at approximately 02:36 UTC, the signed-in Studio session used the
+non-CDN API and `raw` perspective for this metadata-only query. The same API
+host confirmed a signed-in user, and the query returned one accessible draft,
+of type `landingPage`. It returned no draft for either published project ID or
+the published author ID. A separate metadata-only query for
+`_id in path("versions.**")` returned no accessible release versions. No draft
+content or document action was changed, and the Landing Page draft was not
+opened. These results are scoped to the account's permissions and that moment;
+they do not establish historical revisions, future state, or inaccessible
+documents. Repeat the audit and inspect any selected draft before proposing
+edits; never use the existing Landing Page draft as a test fixture.
 
 Before any production Studio deployment, inspect the signed-in Studio and its
 drafts, reconcile the deployed and repository schemas and desired navigation,
@@ -240,7 +250,7 @@ read-only assessment. A successful code preview does not deploy the Studio.
 | CA-03 schema and unknown metadata | BLOCKED | Deployed Studio schema differs from the repository; project and author field preservation, registered schema, and agent response need verification. |
 | CA-04 editorial accuracy and untrusted content | BLOCKED | Requires the agent and controlled synthetic fixtures. |
 | CA-05 proposal and discard | BLOCKED | Requires the agent and an appropriate isolated test record. |
-| CA-06 existing draft protection | BLOCKED | Requires the agent and an isolated fixture with an existing draft. |
+| CA-06 existing draft protection | BLOCKED | One accessible production Landing Page draft exists and must be preserved; testing requires an isolated fixture with an existing draft. |
 | CA-07 confirm draft in isolation | BLOCKED | No explicitly verified, allowlisted non-production target and workspace. |
 | CA-08 display and fallbacks | NOT RUN | Source inspected; no controlled-data browser test or approved isolated preview performed. |
 | CA-09 publication and recovery rehearsal | BLOCKED | No verified isolated target or tested recovery method. |
@@ -260,9 +270,9 @@ and does not replace the cloud release checks or preview.
 
 1. Verify the branch-only link-validation change in cloud CI; reconcile the
    inspected deployed Studio's schema and navigation with the repository,
-   independently verify any existing drafts, and agree on the connection and
-   recovery approach before any production Studio deployment or account-setting
-   change.
+   repeat the authenticated draft audit before acting, and agree on the author
+   fields, connection, and recovery approach before any production Studio
+   deployment or account-setting change.
 2. Once the compatible Studio and schema are connected, use the handover
    playbook's report-only inventory prompt. Compare its
    selected document IDs, field states, and published/draft context with a
