@@ -108,6 +108,29 @@ compiler, and document validator were exercised with an offline client. This
 is not an unmodified Studio runtime test. CI must run the same test without
 that local hook and with the repository's pinned Node version.
 
+## Branch-only author field preservation
+
+The owner approved restoring Name, Slug, and Image in the feature branch. The
+[author schema](../studio13/schemas/author.js) now includes those optional
+fields alongside the existing Bio and Certificates fields. Slug keeps the
+legacy name source and 96-character maximum; Image retains hotspot support. The
+existing biography and certificate validation rules and author preview remain
+unchanged. This has not been deployed and changes no CMS data.
+
+The new `test:author-schema` check compiles the actual author schema with
+Sanity's built-in types and runs its validator against synthetic data. It stubs
+the JSX certificate input and answers the slug-uniqueness query in memory; it
+does not contact Sanity. The test initially detected the three missing fields
+and their unknown-field warnings. After the change, it covered the restored
+types and options, retained Bio and Certificates, optional identity fields,
+slug validation, and existing required-field rules. Sanity reports duplicate
+slugs as a warning in this validation path.
+
+The local focused run used Node `v22.21.1` and the existing Sanity 6.20.0
+dependencies, with the same temporary in-memory `sanity` resolution hook
+described above because the original local dependency tree is incomplete. CI
+runs the test without that local hook and builds the actual Studio component.
+
 This snapshot reflects public data at the time of the query, not an exhaustive
 audit of drafts, historical versions, image content, destination health, or
 future records. Repeat the query and reconcile with Studio before acting.
@@ -153,13 +176,13 @@ No field, draft, or document action was changed.
 An anonymous published-perspective query on 2026-11-03 also returned one
 `author` document, `8559eb2d-79f8-4c6d-936b-d3383355b1e9`, with defined
 `name`, `slug`, `image`, and `bio` fields and nine `certificates` entries.
-The repository's [author schema](../studio13/schemas/author.js) exposes `bio`
-and `certificates` but not `name`, `slug`, or `image`; redeploying it may make
-the latter values appear as unknown fields. On 2026-11-04 UTC, the signed-in
-deployed author editor showed Name, Slug, Image, and Bio; its Developer info
-identified `certificates` as an unknown field. Publish and Discard changes were
-disabled when inspected. Do not remove either set of existing values. The
-intended future author editor fields still require the owner's decision.
+Before the branch-only preservation change, the repository's author schema
+exposed `bio` and `certificates` but not `name`, `slug`, or `image`. On
+2026-11-04 UTC, the signed-in deployed author editor showed Name, Slug, Image,
+and Bio; its Developer info identified `certificates` as an unknown field.
+Publish and Discard changes were disabled when inspected. Do not remove either
+set of existing values; the branch now defines all five fields, but the hosted
+Studio has not been updated.
 
 Historical commit
 [`4e119dc`](https://github.com/BerinKarjala/portfolio/commit/4e119dcdeb786acd09076489a7c3cc5865d66f43)
@@ -270,9 +293,9 @@ and does not replace the cloud release checks or preview.
 
 1. Verify the branch-only link-validation change in cloud CI; reconcile the
    inspected deployed Studio's schema and navigation with the repository,
-   repeat the authenticated draft audit before acting, and agree on the author
-   fields, connection, and recovery approach before any production Studio
-   deployment or account-setting change.
+   repeat the authenticated draft audit before acting, and agree on the
+   connection and recovery approach before any production Studio deployment or
+   account-setting change.
 2. Once the compatible Studio and schema are connected, use the handover
    playbook's report-only inventory prompt. Compare its
    selected document IDs, field states, and published/draft context with a
