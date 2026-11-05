@@ -100,6 +100,43 @@ describe('idle carousel rotation', () => {
     expect(stage.dataset.autoMotion).toBe('running');
   });
 
+  it('keeps the inkwell and quill in place while dragging and releasing the moon', async () => {
+    vi.stubGlobal('PointerEvent', class extends MouseEvent {
+      constructor(type, options) {
+        super(type, options);
+        Object.assign(this, { pointerId: options.pointerId ?? 1, pointerType: options.pointerType ?? 'mouse' });
+      }
+    });
+    render(<HelmetProvider><MemoryRouter><StudioProvider><SceneProvider><LiveMoon /><HomePage /></SceneProvider></StudioProvider></MemoryRouter></HelmetProvider>);
+    await act(async () => {});
+    const moon = screen.getByRole('button', { name: 'Moon and weather' });
+    moon.setPointerCapture = vi.fn();
+    moon.releasePointerCapture = vi.fn();
+    moon.hasPointerCapture = () => true;
+    moon.closest('[data-floating-moon]').getBoundingClientRect = () => ({ left: 800, top: 8, right: 928, bottom: 136, width: 128, height: 128 });
+    const stage = document.querySelector('.landing-stage');
+    const writing = screen.getByRole('button', { name: 'Open text editor with the inkwell' });
+    const quill = document.querySelector('.landing-quill-layer');
+    const position = element => [element.style.getPropertyValue('--writing-home-offset'), element.style.transform];
+    const writingPosition = position(writing);
+    const quillPosition = position(quill);
+    expect(writingPosition[0]).not.toBe('0%');
+    const pointer = { pointerId: 1, pointerType: 'mouse', button: 0, buttons: 1, clientX: 850, clientY: 60 };
+    fireEvent.pointerDown(moon, pointer);
+    expect(stage.dataset.autoMotion).toBe('off');
+    expect(position(writing)).toEqual(writingPosition);
+    expect(position(quill)).toEqual(quillPosition);
+    fireEvent.pointerMove(moon, { ...pointer, clientX: 750, clientY: 160 });
+    advance(12000);
+    centered('Sudoku Solver');
+    expect(position(writing)).toEqual(writingPosition);
+    expect(position(quill)).toEqual(quillPosition);
+    fireEvent.pointerUp(moon, { ...pointer, clientX: 750, clientY: 160, buttons: 0 });
+    expect(stage.dataset.autoMotion).toBe('running');
+    expect(position(writing)).toEqual(writingPosition);
+    expect(position(quill)).toEqual(quillPosition);
+  });
+
   it('supports an explicit pause and keeps keyboard interaction stable until rotation is restarted', async () => {
     await scene();
     fireEvent.click(document.querySelector('.landing-card--center'));

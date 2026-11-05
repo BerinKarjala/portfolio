@@ -14,8 +14,8 @@ afterEach(() => {cleanup(); vi.useRealTimers(); vi.unstubAllGlobals();});
 const tick = ms => act(() => vi.advanceTimersByTime(ms));
 function setup(props = {}) {
   const advance = vi.fn();
-  function Harness({blocked = false, count = 4, steering = null}) {
-    const rotation = useCarouselRotation({blocked, count, advance, steering});
+  function Harness({blocked = false, count = 4, steering = null, preserveWritingHome = false}) {
+    const rotation = useCarouselRotation({blocked, count, advance, steering, preserveWritingHome});
     return <div ref={rotation.stageRef} {...rotation.interactions} data-carousel-stage data-motion={rotation.autoMotion} data-writing-home={rotation.writingHomeOffset}>
       <button data-rotation-control onClick={() => rotation.command?.(-1)}>Previous</button>
       <button data-rotation-control onClick={() => rotation.command?.(1)}>Next</button>
@@ -154,6 +154,34 @@ it('blocks manual and automatic movement for a tool and starts a fresh delay aft
   rerender(<Harness blocked={false}/>);
   tick(11999); expect(advance).not.toHaveBeenCalled();
   tick(1); expect(advance).toHaveBeenCalledOnce();
+});
+it.each([1, -1])('preserves the writing set position when interaction blocks rotation in direction %i', direction => {
+  const {advance, container, rerender, Harness} = setup();
+  if (direction < 0) {
+    fireEvent.click(screen.getByText('Previous'));
+    tick(1600);
+  }
+  const stage = container.querySelector('[data-carousel-stage]');
+  const restingPosition = stage.dataset.writingHome;
+  expect(Math.sign(Number(restingPosition))).toBe(direction);
+  advance.mockClear();
+  rerender(<Harness blocked preserveWritingHome />);
+  expect(stage.dataset.motion).toBe('off');
+  expect(stage.dataset.writingHome).toBe(restingPosition);
+  tick(24000);
+  expect(advance).not.toHaveBeenCalled();
+  expect(stage.dataset.writingHome).toBe(restingPosition);
+  rerender(<Harness blocked={false} />);
+  expect(stage.dataset.motion).toBe('running');
+  expect(stage.dataset.writingHome).toBe(restingPosition);
+});
+it('centers the writing set when a tool blocks rotation', () => {
+  const {container, rerender, Harness} = setup();
+  const stage = container.querySelector('[data-carousel-stage]');
+  expect(Number(stage.dataset.writingHome)).not.toBe(0);
+  rerender(<Harness blocked />);
+  expect(stage.dataset.motion).toBe('off');
+  expect(Number(stage.dataset.writingHome)).toBe(0);
 });
 it('honors live reduced-motion changes while retaining immediate manual stepping', () => {
   const {advance} = setup();

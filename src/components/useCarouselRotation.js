@@ -3,7 +3,7 @@ import {useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
 export const ROTATION_INTERVAL = 12000;
 export const SLIDE_DURATION = 1600;
 
-export default function useCarouselRotation({blocked, count, advance, steering = null}) {
+export default function useCarouselRotation({blocked, count, advance, steering = null, preserveWritingHome = false}) {
   const [held, setHeld] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [pressed, setPressed] = useState(false);
@@ -85,10 +85,11 @@ export default function useCarouselRotation({blocked, count, advance, steering =
   const autoEnabled = (!held || steeringActive) && !blocked && visible && !reducedMotion && count > 1 && !moving;
   const rotating = autoEnabled && (steeringActive || (!hovered && !pressed));
   // Freeze the home position while a pointer steers, so it cannot shift under
-  // the pointer. Temporary hover/press pauses leave the set in place; a
-  // deliberately held or otherwise stopped carousel rests at the center.
+  // the pointer. Temporary hover/press and moon-interaction pauses leave the
+  // set in place; a deliberately held or otherwise stopped carousel rests at
+  // the center.
   const writingHome = useRef(8);
-  if (!steeringActive) writingHome.current = autoEnabled || moving ? 8 * restDirection : 0;
+  if (!steeringActive && !preserveWritingHome) writingHome.current = autoEnabled || moving ? 8 * restDirection : 0;
   const paint = useCallback(value => {
     const node = stageRef.current;
     if (!node) return;
