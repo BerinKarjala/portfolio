@@ -22,6 +22,18 @@ const EMPTY_PROJECTS = [];
 const EMPTY_PROJECT_DESCRIPTION =
   "Project details are temporarily unavailable. Please check back shortly.";
 
+// Resolve path-relative CMS links against the site root, regardless of whether
+// this page was reached at /project or /project/. Keep external links intact.
+function projectLink(link) {
+  if (/^(?:\/|[a-z][a-z\d+.-]*:)/i.test(link)) return link;
+  try {
+    const url = new URL(link, SITE_URL);
+    return url.origin === SITE_URL ? `${url.pathname}${url.search}${url.hash}` : link;
+  } catch {
+    return link;
+  }
+}
+
 export default function Project() {
   const [projectData, setProjectData] = useState(EMPTY_PROJECTS);
   const [isLoading, setIsLoading] = useState(true);
@@ -74,9 +86,10 @@ export default function Project() {
     projectData.filter((project) => project?.name && project?.link)
   )
     .map((project) => {
-      const route = project.link.split(/[?#]/)[0].match(/\/projects\/(SudokuSolver|Minesweeper)\/?$/i);
+      const link = projectLink(project.link);
+      const route = link.split(/[?#]/)[0].match(/\/projects\/(SudokuSolver|Minesweeper)\/?$/i);
       const thumbnail = route && PROJECT_PREVIEWS[route[1].toLowerCase()];
-      return thumbnail ? { ...project, thumbnail } : project;
+      return thumbnail ? { ...project, link, thumbnail } : { ...project, link };
     });
   const projectNames = projects
     .map((project) => project?.name)

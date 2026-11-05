@@ -94,6 +94,11 @@ schemes, protocol-relative URLs, backslashes, and control characters. The link
 remains optional. This changes the repository schema only, not existing data or
 the hosted Studio.
 
+The Projects page also resolves path-relative links from the site root. This
+keeps a link such as `projects/example` pointed at the same path from both
+`/project` and `/project/`, including in a Deploy Preview. Absolute URLs remain
+unchanged. This repository change does not rewrite any Sanity documents.
+
 The new `test:project-links` command runs a single-worker, offline regression
 test against the project schema and Sanity's document validator; Studio CI
 runs it before the build. Before the fix, all five initial relative-path cases
