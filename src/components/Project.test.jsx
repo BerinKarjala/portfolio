@@ -89,6 +89,21 @@ describe("Project", () => {
     expect(screen.getByRole("link", { name: "View project: Sudoku Solver" })).not.toBeNull();
   });
 
+  it.each([
+    ["projects/custom", "/projects/custom"],
+    ["./projects/custom", "/projects/custom"],
+    ["../projects/custom?view=1#part", "/projects/custom?view=1#part"],
+    ["/projects/custom?view=1#part", "/projects/custom?view=1#part"],
+    ["https://example.com/project?view=1#part", "https://example.com/project?view=1#part"],
+  ])("renders the CMS link %s as %s", async (link, expectedHref) => {
+    fetchMock.mockResolvedValueOnce([{ name: "Custom Project", link }]);
+
+    renderProject();
+
+    const project = await screen.findByRole("link", { name: "View project: Custom Project" });
+    expect(project.getAttribute("href")).toBe(expectedHref);
+  });
+
   it("shows the updated Sudoku preview alongside the bundled Page Builder card", async () => {
     fetchMock.mockResolvedValueOnce([
       {

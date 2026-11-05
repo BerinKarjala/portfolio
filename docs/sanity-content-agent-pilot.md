@@ -310,5 +310,6 @@ and does not replace the cloud release checks or preview.
    A verified recovery method and checks of both affected website surfaces
    are needed before and after any approved publication, respectively.
 
-No new AI integration, schema field, website preview, or paid service is part
-of this initial pilot.
+No new AI integration, Content Agent-specific schema fields, website draft
+preview, or paid service is part of this initial pilot. The branch restores
+existing author fields in the repository schema, as described above.

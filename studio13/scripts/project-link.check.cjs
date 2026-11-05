@@ -36,7 +36,9 @@ async function validateLink(link) {
   };
   if (link !== undefined) document.link = link;
 
-  return validateDocument({ document, schema: await projectSchema(), client: offlineClient });
+  const result = await validateDocument({ document, schema: await projectSchema(), client: offlineClient });
+  assert.ok(result.markers.every((marker) => marker.code !== 'validation.exception'), JSON.stringify(result.markers));
+  return result;
 }
 
 test('existing and other internal paths pass project-link validation', async (t) => {

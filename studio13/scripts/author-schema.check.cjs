@@ -64,12 +64,14 @@ function exampleBio() {
 
 async function validateAuthor(fields, { slugIsUnique = true } = {}) {
   const document = { _id: 'author-test', _type: 'author', ...fields };
-  return validateDocument({
+  const result = await validateDocument({
     document,
     schema: await authorSchema(),
     client: offlineClient(slugIsUnique),
     getDocumentExists: async () => true,
   });
+  assert.ok(result.markers.every((marker) => marker.code !== 'validation.exception'), JSON.stringify(result.markers));
+  return result;
 }
 
 test('author schema exposes the existing identity fields alongside bio and certificates', async () => {
