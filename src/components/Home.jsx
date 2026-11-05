@@ -90,7 +90,11 @@ export default function Home() {
   }, [keys]);
   const studioOpen = useStudioOpen();
   const utilityOpen = studioOpen || utility !== null || moonCalendarOpen;
-  const rotation = useCarouselRotation({ blocked: utilityOpen || interacting || expanded !== null, count, advance: move, steering });
+  const rotation = useCarouselRotation({
+    blocked: utilityOpen || interacting || expanded !== null,
+    preserveWritingHome: interacting && !utilityOpen && expanded === null,
+    count, advance: move, steering,
+  });
   useEffect(() => {if (utility) {rotation.hold(); utilityHeading.current?.focus();}}, [utility, rotation.hold]);
   useEffect(() => {if (expanded && expanded.utility !== utility) setExpanded(null);}, [utility, expanded]);
   useLayoutEffect(() => {

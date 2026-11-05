@@ -29,7 +29,7 @@ test('moon dragging leaves the writing set in place and preserves its carousel c
 
   await page.mouse.move(moonX, moonY);
   await page.mouse.down();
-  await expect(stage).not.toHaveAttribute('data-auto-motion', 'running');
+  await expect(stage).toHaveAttribute('data-auto-motion', 'off');
   await page.mouse.move(60, 180, {steps: 10});
   expect(Math.abs((await moon.boundingBox()).x - moonBox.x)).toBeGreaterThan(20);
   // Outlast the writing set's 1.2 s transition and the card's 1.6 s transition:
@@ -47,7 +47,7 @@ test('moon dragging leaves the writing set in place and preserves its carousel c
   await page.mouse.move(inkX - 160, inkY, {steps: 8});
   await page.waitForTimeout(1400);
   await unchanged();
-  await expect(stage).not.toHaveAttribute('data-auto-motion', 'running');
+  await expect(stage).toHaveAttribute('data-auto-motion', 'off');
   // Return the moon under the pointer before releasing, so it does not cover
   // the inkwell while the next gesture begins.
   await page.mouse.move(moonX, moonY, {steps: 12});
