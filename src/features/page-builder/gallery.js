@@ -29,7 +29,7 @@ export function includePageBuilder(projects) {
     project._id === PAGE_BUILDER_DOCUMENT_ID || project.kind === "pageBuilder" || hasBuilderRoute(project.link);
   const cms = projects.find((project) => project._id === PAGE_BUILDER_DOCUMENT_ID) ||
     projects.find((project) => project.kind === "pageBuilder") || projects.find(isBuilder);
-  let canonicalLink = cms?.link || PAGE_BUILDER_PATH;
+  let canonicalLink = cms ? cms.link : PAGE_BUILDER_PATH;
   if (cms && hasBuilderRoute(cms.link)) {
     const url = new URL(cms.link, "https://berinkarjala.netlify.app");
     canonicalLink = `${PAGE_BUILDER_PATH}${url.search}${url.hash}`;

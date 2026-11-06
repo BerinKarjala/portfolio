@@ -12,7 +12,7 @@ export default defineType({
       name: "kind",
       title: "Project action",
       type: "string",
-      description: "Choose the built-in action for CSS Studio or Page Builder; leave empty for an ordinary project link.",
+      description: "Select CSS Studio to open its tools or Page Builder to identify that card; leave empty for an ordinary project link.",
       options: {
         list: [
           { title: "Project link", value: "link" },
