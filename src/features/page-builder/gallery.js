@@ -26,8 +26,9 @@ export function includePageBuilder(projects) {
     }
   };
   const isBuilder = (project) =>
-    project._id === PAGE_BUILDER_DOCUMENT_ID || hasBuilderRoute(project.link);
-  const cms = projects.find((project) => project._id === PAGE_BUILDER_DOCUMENT_ID) || projects.find(isBuilder);
+    project._id === PAGE_BUILDER_DOCUMENT_ID || project.kind === "pageBuilder" || hasBuilderRoute(project.link);
+  const cms = projects.find((project) => project._id === PAGE_BUILDER_DOCUMENT_ID) ||
+    projects.find((project) => project.kind === "pageBuilder") || projects.find(isBuilder);
   let canonicalLink = cms?.link || PAGE_BUILDER_PATH;
   if (cms && hasBuilderRoute(cms.link)) {
     const url = new URL(cms.link, "https://berinkarjala.netlify.app");
@@ -43,5 +44,5 @@ export function includePageBuilder(projects) {
           : DEFAULT_PROJECT.thumbnail,
       }
     : DEFAULT_PROJECT;
-  return [featured, ...projects.filter((project) => !isBuilder(project))];
+  return [featured, ...projects.filter((project) => project !== cms)];
 }

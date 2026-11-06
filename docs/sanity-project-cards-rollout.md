@@ -26,7 +26,7 @@ records, subject to a fresh authenticated duplicate and ID check:
 | Project | Proposed ID | Proposed fields |
 | --- | --- | --- |
 | CSS Theme Studio | `project-css-theme-studio` | `name`: `CSS Theme Studio`; `kind`: `cssStudio`; `description`: `Style this portfolio with seasonal and international holiday palettes. Explore CSS variables and keep your own presets.` No image currently exists on this card. Its action must continue to open Theme Studio. |
-| HTML Page Builder | `project-html-page-builder` | `name`: `HTML Page Builder`; `link`: `/projects/page-builder`; `description`: `A visual React page builder with browser-local projects, starter templates, and portable JSON backups. Open the project to explore the code and launch the workspace.` `thumbnail`: [`public/page-builder-preview.svg`](../public/page-builder-preview.svg), alt `Page Builder workspace illustration`. |
+| HTML Page Builder | `project-html-page-builder` | `name`: `HTML Page Builder`; `kind`: `pageBuilder`; `link`: `/projects/page-builder`; `description`: `A visual React page builder with browser-local projects, starter templates, and portable JSON backups. Open the project to explore the code and launch the workspace.` `thumbnail`: [`public/page-builder-preview.svg`](../public/page-builder-preview.svg), alt `Page Builder workspace illustration`. |
 
 The proposed IDs are examples, not verified vacant. Check the published,
 `drafts.` and release-version namespaces, and search by identity and link

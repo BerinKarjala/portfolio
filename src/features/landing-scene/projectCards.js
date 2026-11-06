@@ -21,7 +21,9 @@ const games = [
 ];
 
 function safeProject(project) {
-  if (typeof project?.name !== 'string' || typeof project.link !== 'string') return false;
+  if (typeof project?.name !== 'string') return false;
+  if (project.link == null || (typeof project.link === 'string' && !project.link.trim())) return true;
+  if (typeof project.link !== 'string') return false;
   if (/[\\\u0000-\u001f\u007f]/.test(project.link) || project.link.trimStart().startsWith('//')) return false;
   try {
     const url = new URL(project.link, SITE_URL);
@@ -31,6 +33,7 @@ function safeProject(project) {
 }
 
 function sameRoute(link, route) {
+  if (typeof link !== 'string' || !link.trim()) return false;
   try {
     const url = new URL(link, SITE_URL);
     return url.origin === SITE_URL && url.pathname.replace(/\/$/, '').toLowerCase() === route.toLowerCase();
@@ -41,14 +44,17 @@ function sameRoute(link, route) {
 // available until their CMS records are published or if a request fails.
 export function resolveProjectCards(data) {
   const records = Array.isArray(data) ? data : [];
-  const studio = records.find(project => project?.kind === 'cssStudio' && typeof project.name === 'string') || null;
+  const studios = records.filter(project => project?.kind === 'cssStudio' && typeof project.name === 'string');
+  const studio = studios.find(project => project._id === 'project-css-theme-studio') || studios[0] || null;
   const linked = records.filter(project => project?.kind !== 'cssStudio' && safeProject(project));
-  const reservedId = project => project._id === PAGE_BUILDER_DOCUMENT_ID || games.some(game => project._id === game._id);
+  const reservedId = project => project.kind === 'pageBuilder' || project._id === PAGE_BUILDER_DOCUMENT_ID || games.some(game => project._id === game._id);
   const isGame = (project, game) => project._id === game._id || (!reservedId(project) && sameRoute(project.link, game.link));
+  const remaining = [...linked];
   const resolvedGames = games.map(game => {
-    const cms = linked.find(project => project._id === game._id) ||
-      linked.find(project => isGame(project, game));
-    let canonicalLink = cms?.link || game.link;
+    const cms = remaining.find(project => project._id === game._id) ||
+      remaining.find(project => isGame(project, game));
+    if (cms) remaining.splice(remaining.indexOf(cms), 1);
+    let canonicalLink = cms ? (cms.link?.trim() ? cms.link : undefined) : game.link;
     if (cms && sameRoute(cms.link, game.link)) {
       const url = new URL(cms.link, SITE_URL);
       canonicalLink = `${game.link}${url.search}${url.hash}`;
@@ -61,16 +67,19 @@ export function resolveProjectCards(data) {
       thumbnail: cms?.thumbnail?.asset?.url ? cms.thumbnail : game.thumbnail,
     };
   });
-  const extras = linked.filter(project => !games.some(game => isGame(project, game)));
-  const builderAndRest = includePageBuilder(extras);
+  const builderAndRest = includePageBuilder(remaining);
   const builder = { ...builderAndRest[0], cardKey: PAGE_BUILDER_PATH };
   const otherCards = builderAndRest.slice(1).map(project => ({
     ...project,
     cardKey: project._id ? `cms:${project._id}` : project.link,
   }));
+  const otherStudios = studios.filter(project => project !== studio).map((project, index) => ({
+    ...project,
+    cardKey: project._id ? `cms:${project._id}` : `studio-extra:${index}`,
+  }));
   return {
     studio,
-    projectsPage: [builder, ...resolvedGames, ...otherCards],
-    carousel: [...resolvedGames, builder, ...otherCards],
+    projectsPage: [builder, ...resolvedGames, ...otherCards, ...otherStudios],
+    carousel: [...resolvedGames, builder, ...otherCards, ...otherStudios],
   };
 }

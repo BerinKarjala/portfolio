@@ -75,7 +75,7 @@ export default function Project() {
   const cards = resolveProjectCards(projectData);
   const projects = cards.projectsPage.map((project) => ({
     ...project,
-    link: projectLink(project.link),
+    link: typeof project.link === "string" && project.link.trim() ? projectLink(project.link) : undefined,
   }));
   const projectNames = projects
     .map((project) => project?.name)
@@ -157,13 +157,18 @@ export default function Project() {
                   </div>
                 ) : null}
                 {projects.length > 0 ? (
-                  projects.map((project) => (
-                    <a
+                  projects.map((project) => {
+                    if (project.kind === "cssStudio") {
+                      return <StudioGalleryEntry key={project.cardKey || project._id} project={project} />;
+                    }
+                    const Card = project.link ? "a" : "article";
+                    const opensBuilder = project.cardKey === PAGE_BUILDER_PATH && project.link?.split(/[?#]/)[0] === PAGE_BUILDER_PATH;
+                    return <Card
                       key={project.cardKey || project._id || `${project.name}-${project.link}`}
                       href={project.link}
-                      target={project.cardKey === PAGE_BUILDER_PATH && project.link.split(/[?#]/)[0] === PAGE_BUILDER_PATH ? undefined : "_blank"}
-                      rel={project.cardKey === PAGE_BUILDER_PATH && project.link.split(/[?#]/)[0] === PAGE_BUILDER_PATH ? undefined : "noreferrer noopener"}
-                      aria-label={`View project: ${project.name}`}
+                      target={project.link && !opensBuilder ? "_blank" : undefined}
+                      rel={project.link && !opensBuilder ? "noreferrer noopener" : undefined}
+                      aria-label={project.link ? `View project: ${project.name}` : `Project: ${project.name}`}
                       className="block h-full border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 rounded-2xl p-4 sm:p-5 shadow-lg backdrop-filter backdrop-blur-sm transition hover:bg-opacity-40 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-2 focus-visible:ring-offset-green-900"
                     >
                       <div
@@ -192,8 +197,9 @@ export default function Project() {
                       <p className="mt-2 text-green-100 text-sm leading-relaxed">
                         {project.description || EMPTY_PROJECT_DESCRIPTION}
                       </p>
-                    </a>
-                  ))
+                      {!project.link && <p>Project link unavailable.</p>}
+                    </Card>;
+                  })
                 ) : (
                   <div className="md:col-span-2 rounded-2xl border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 p-5 text-sm text-green-100 shadow-lg backdrop-filter backdrop-blur-sm">
                     {emptyStateMessage}

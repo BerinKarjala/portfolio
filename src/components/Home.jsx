@@ -126,12 +126,12 @@ export default function Home() {
               {offset === 0 && utility ? <section aria-label={utility === 'calendar' ? 'Calendar utility' : 'Text editor utility'} className="landing-utility">
                 <div className="landing-utility-heading" data-card-gesture><h2 ref={utilityHeading} tabIndex={-1}>{utility === 'calendar' ? 'Calendar' : 'Text Editor'}</h2><button onClick={closeTool} aria-label={utility === 'calendar' ? 'Close calendar' : 'Close text editor'}>×</button></div>
                 {utility === 'calendar' ? <Calendar timeZone={timeZone} /> : <TextEditor onClose={closeTool} />}
-              </section> : project ? <article>
+              </section> : project && project.kind !== 'cssStudio' ? <article>
                 <div className="landing-preview" data-card-gesture>{project.thumbnail?.asset?.url ? <img src={project.thumbnail.asset.url} alt={project.thumbnail.alt || `${project.name} preview`} width="640" height="360" loading={offset === 0 ? 'eager' : 'lazy'} decoding="async" /> : <p>Preview unavailable</p>}</div>
                 <h2 data-card-gesture>{project.name}</h2>
                 <p>{project.description || 'Explore this portfolio project.'}</p>
-                <a href={project.link} onClick={() => {if (expanded) flushSync(() => setExpanded(null));}}>Open {project.name} <span aria-hidden="true">↗</span></a>
-              </article> : <div data-card-gesture onClickCapture={event => {if (expanded && event.target.closest('button')) flushSync(() => setExpanded(null));}}><StudioGalleryEntry headingAs="h2" project={cards.studio} /></div>}
+                {project.link ? <a href={project.link} onClick={() => {if (expanded) flushSync(() => setExpanded(null));}}>Open {project.name} <span aria-hidden="true">↗</span></a> : <p>Project link unavailable.</p>}
+              </article> : <div data-card-gesture onClickCapture={event => {if (expanded && event.target.closest('button')) flushSync(() => setExpanded(null));}}><StudioGalleryEntry headingAs="h2" project={project || cards.studio} /></div>}
             </SceneCard>;
           })}
         </div>
