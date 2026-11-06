@@ -6,6 +6,18 @@ export default defineType({
   type: "document",
   fields: [
     defineField({
+      name: "kind",
+      title: "Project action",
+      type: "string",
+      description: "Leave empty for a project link, or choose CSS Theme Studio to open its tools.",
+      options: {
+        list: [
+          { title: "Project link", value: "link" },
+          { title: "CSS Theme Studio", value: "cssStudio" },
+        ],
+      },
+    }),
+    defineField({
       name: "name",
       title: "Project name",
       type: "string",

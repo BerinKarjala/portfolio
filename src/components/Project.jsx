@@ -3,20 +3,8 @@ import React, { useEffect, useState } from "react";
 import sanityClient from "../client.js";
 import Seo, { SITE_NAME, SITE_URL } from "./Seo";
 import { cancelIdle, runWhenIdle } from "../utils/idleCallback";
-import sudokuPreview from "../assets/sudoku-solver-preview.svg";
-import minesweeperPreview from "../assets/minesweeper-preview.svg";
-import { includePageBuilder, PAGE_BUILDER_PATH } from "../features/page-builder/gallery";
-
-const PROJECT_PREVIEWS = {
-  sudokusolver: {
-    asset: { url: sudokuPreview },
-    alt: "Sudoku Solver board with Solve and Reset controls",
-  },
-  minesweeper: {
-    asset: { url: minesweeperPreview },
-    alt: "Minesweeper board with instructions, flags remaining, and reset controls",
-  },
-};
+import { PAGE_BUILDER_PATH } from "../features/page-builder/gallery";
+import { resolveProjectCards } from "../features/landing-scene/projectCards";
 
 const EMPTY_PROJECTS = [];
 const EMPTY_PROJECT_DESCRIPTION =
@@ -45,6 +33,8 @@ export default function Project() {
       sanityClient
         .fetch(
           `*[_type == "project"]{
+            _id,
+            kind,
             name,
             description,
             thumbnail{
@@ -82,15 +72,11 @@ export default function Project() {
     };
   }, []);
 
-  const projects = includePageBuilder(
-    projectData.filter((project) => project?.name && project?.link)
-  )
-    .map((project) => {
-      const link = projectLink(project.link);
-      const route = link.split(/[?#]/)[0].match(/\/projects\/(SudokuSolver|Minesweeper)\/?$/i);
-      const thumbnail = route && PROJECT_PREVIEWS[route[1].toLowerCase()];
-      return thumbnail ? { ...project, link, thumbnail } : { ...project, link };
-    });
+  const cards = resolveProjectCards(projectData);
+  const projects = cards.projectsPage.map((project) => ({
+    ...project,
+    link: projectLink(project.link),
+  }));
   const projectNames = projects
     .map((project) => project?.name)
     .slice(0, 3);
@@ -164,7 +150,7 @@ export default function Project() {
                 Projects
               </h2>
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                <StudioGalleryEntry />
+                <StudioGalleryEntry project={cards.studio} />
                 {isLoading ? (
                   <div className="md:col-span-2 rounded-2xl border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 p-5 text-sm uppercase tracking-widest text-green-200 shadow-lg backdrop-filter backdrop-blur-sm">
                     Loading project entries...
