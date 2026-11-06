@@ -40,7 +40,7 @@ it('disables carousel controls while the floating calendar is open and restores 
   expect(next.disabled).toBe(false);
 });
 
-it('normalizes local application URLs and rejects unsafe CMS destinations', async () => {
+it('normalizes local application URLs and makes unsafe CMS destinations non-clickable', async () => {
   sanityClient.fetch.mockResolvedValueOnce([
     { name: 'CMS Sudoku', description: '<script>untrusted text</script>', link: 'https://berinkarjala.netlify.app/projects/SudokuSolver/' },
     { name: 'Unsafe entry', link: 'javascript:alert(1)' },
@@ -50,7 +50,7 @@ it('normalizes local application URLs and rejects unsafe CMS destinations', asyn
   expect(entry.getAttribute('href')).toBe('/projects/SudokuSolver');
   expect(screen.getByText('<script>untrusted text</script>')).not.toBeNull();
   expect(document.querySelector('a[href^="javascript:"]')).toBeNull();
-  expect(screen.queryByText('Unsafe entry')).toBeNull();
+  expect(screen.getByText('Unsafe entry').closest('[data-carousel-card]').querySelector('a[href]')).toBeNull();
 });
 
 // Rotation runs only while the scene is idle. Studio is a real nonmodal utility.
@@ -283,15 +283,17 @@ it('retains edited links of known CMS projects without duplicate fallback cards'
   expect(cards).toHaveLength(4);
 });
 
-it('shows projects with absent or empty links as non-clickable carousel cards', async () => {
+it('shows projects with absent, empty, whitespace or unsafe links as non-clickable carousel cards', async () => {
   sanityClient.fetch.mockResolvedValueOnce([
     { _id: 'no-link', name: 'No link project', description: 'No link description' },
     { _id: 'empty-link', name: 'Empty link project', description: 'Empty link description', link: '' },
+    { _id: 'space-link', name: 'Whitespace link project', description: 'Whitespace link description', link: '   ' },
+    { _id: 'unsafe-link', name: 'Unsafe link project', description: 'Unsafe link description', link: 'javascript:alert(1)' },
   ]);
   render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);
   await act(async () => {});
   const cards = [...document.querySelectorAll('[data-carousel-card]')];
-  for (const [name, description] of [['No link project', 'No link description'], ['Empty link project', 'Empty link description']]) {
+  for (const [name, description] of [['No link project', 'No link description'], ['Empty link project', 'Empty link description'], ['Whitespace link project', 'Whitespace link description'], ['Unsafe link project', 'Unsafe link description']]) {
     const matching = cards.filter(card => card.querySelector('h2')?.textContent === name);
     expect(matching).toHaveLength(1);
     expect(matching[0].textContent).toContain(description);

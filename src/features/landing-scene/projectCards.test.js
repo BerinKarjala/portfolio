@@ -12,10 +12,27 @@ describe('resolveProjectCards', () => {
     '/projects/unsafe\npath',
     'https://user:password@example.com/project',
     'javascript:alert(1)',
-  ])('rejects the unsafe ordinary project destination %s', link => {
+  ])('shows an ordinary project without an unsafe destination %s', link => {
     const { projectsPage, carousel } = resolveProjectCards([{ _id: 'unsafe', name: 'Unsafe entry', link }]);
-    expect(projectsPage.some(project => project.name === 'Unsafe entry')).toBe(false);
-    expect(carousel.some(project => project.name === 'Unsafe entry')).toBe(false);
+    for (const projects of [projectsPage, carousel]) {
+      const entries = projects.filter(project => project.name === 'Unsafe entry');
+      expect(entries).toHaveLength(1);
+      expect(entries[0].link).toBeUndefined();
+    }
+  });
+
+  it('gives an additional Page Builder record without a link the Page Builder destination', () => {
+    const { projectsPage, carousel } = resolveProjectCards([
+      { _id: builderId, kind: 'pageBuilder', name: 'Primary builder', link: '/projects/page-builder' },
+      { _id: 'other-builder', kind: 'pageBuilder', name: 'Additional builder' },
+    ]);
+    for (const projects of [projectsPage, carousel]) {
+      const primary = projects.filter(project => project.name === 'Primary builder');
+      const additional = projects.filter(project => project.name === 'Additional builder');
+      expect(primary).toHaveLength(1);
+      expect(additional).toHaveLength(1);
+      expect(additional[0].link).toBe('/projects/page-builder');
+    }
   });
 
   it.each([

@@ -137,14 +137,16 @@ describe("Project", () => {
     expect(screen.queryByRole("link", { name: "View project: HTML Page Builder" })).toBeNull();
   });
 
-  it("shows projects with absent or empty links as non-clickable cards", async () => {
+  it("shows projects with absent, empty, whitespace or unsafe links as non-clickable cards", async () => {
     fetchMock.mockResolvedValueOnce([
       { _id: "no-link", name: "No link project", description: "No link description" },
       { _id: "empty-link", name: "Empty link project", description: "Empty link description", link: "" },
+      { _id: "space-link", name: "Whitespace link project", description: "Whitespace link description", link: "   " },
+      { _id: "unsafe-link", name: "Unsafe link project", description: "Unsafe link description", link: "javascript:alert(1)" },
     ]);
     renderProject();
     await screen.findByRole("heading", { name: "No link project" });
-    for (const [name, description] of [["No link project", "No link description"], ["Empty link project", "Empty link description"]]) {
+    for (const [name, description] of [["No link project", "No link description"], ["Empty link project", "Empty link description"], ["Whitespace link project", "Whitespace link description"], ["Unsafe link project", "Unsafe link description"]]) {
       const heading = screen.getByRole("heading", { name });
       expect(screen.getByText(description)).not.toBeNull();
       expect(heading.closest("a[href]")).toBeNull();
