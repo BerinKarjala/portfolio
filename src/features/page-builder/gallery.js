@@ -27,12 +27,17 @@ export function includePageBuilder(projects) {
   };
   const isBuilder = (project) =>
     project._id === PAGE_BUILDER_DOCUMENT_ID || hasBuilderRoute(project.link);
-  const cms = projects.find(isBuilder);
+  const cms = projects.find((project) => project._id === PAGE_BUILDER_DOCUMENT_ID) || projects.find(isBuilder);
+  let canonicalLink = cms?.link || PAGE_BUILDER_PATH;
+  if (cms && hasBuilderRoute(cms.link)) {
+    const url = new URL(cms.link, "https://berinkarjala.netlify.app");
+    canonicalLink = `${PAGE_BUILDER_PATH}${url.search}${url.hash}`;
+  }
   const featured = cms
     ? {
         ...DEFAULT_PROJECT,
         ...cms,
-        link: hasBuilderRoute(cms.link) ? PAGE_BUILDER_PATH : cms.link || PAGE_BUILDER_PATH,
+        link: canonicalLink,
         thumbnail: cms.thumbnail?.asset?.url
           ? cms.thumbnail
           : DEFAULT_PROJECT.thumbnail,

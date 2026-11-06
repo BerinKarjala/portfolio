@@ -161,8 +161,8 @@ export default function Project() {
                     <a
                       key={`${project.name}-${project.link}`}
                       href={project.link}
-                      target={project.link === PAGE_BUILDER_PATH ? undefined : "_blank"}
-                      rel={project.link === PAGE_BUILDER_PATH ? undefined : "noreferrer noopener"}
+                      target={project.cardKey === PAGE_BUILDER_PATH && project.link.split(/[?#]/)[0] === PAGE_BUILDER_PATH ? undefined : "_blank"}
+                      rel={project.cardKey === PAGE_BUILDER_PATH && project.link.split(/[?#]/)[0] === PAGE_BUILDER_PATH ? undefined : "noreferrer noopener"}
                       aria-label={`View project: ${project.name}`}
                       className="block h-full border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 rounded-2xl p-4 sm:p-5 shadow-lg backdrop-filter backdrop-blur-sm transition hover:bg-opacity-40 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-2 focus-visible:ring-offset-green-900"
                     >

@@ -1,7 +1,7 @@
 import { SITE_URL } from '../../components/Seo';
 import sudoku from '../../assets/sudoku-solver-preview.svg';
 import minesweeper from '../../assets/minesweeper-preview.svg';
-import { includePageBuilder, PAGE_BUILDER_PATH } from '../page-builder/gallery';
+import { includePageBuilder, PAGE_BUILDER_DOCUMENT_ID, PAGE_BUILDER_PATH } from '../page-builder/gallery';
 
 const games = [
   {
@@ -22,7 +22,11 @@ const games = [
 
 function safeProject(project) {
   if (typeof project?.name !== 'string' || typeof project.link !== 'string') return false;
-  try { return ['https:', 'http:'].includes(new URL(project.link, SITE_URL).protocol); }
+  if (/[\\\u0000-\u001f\u007f]/.test(project.link) || project.link.trimStart().startsWith('//')) return false;
+  try {
+    const url = new URL(project.link, SITE_URL);
+    return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password;
+  }
   catch { return false; }
 }
 
@@ -39,25 +43,34 @@ export function resolveProjectCards(data) {
   const records = Array.isArray(data) ? data : [];
   const studio = records.find(project => project?.kind === 'cssStudio' && typeof project.name === 'string') || null;
   const linked = records.filter(project => project?.kind !== 'cssStudio' && safeProject(project));
-  const isGame = (project, game) => project._id === game._id || sameRoute(project.link, game.link);
+  const reservedId = project => project._id === PAGE_BUILDER_DOCUMENT_ID || games.some(game => project._id === game._id);
+  const isGame = (project, game) => project._id === game._id || (!reservedId(project) && sameRoute(project.link, game.link));
   const resolvedGames = games.map(game => {
     const cms = linked.find(project => project._id === game._id) ||
-      linked.find(project => sameRoute(project.link, game.link));
+      linked.find(project => isGame(project, game));
+    let canonicalLink = cms?.link || game.link;
+    if (cms && sameRoute(cms.link, game.link)) {
+      const url = new URL(cms.link, SITE_URL);
+      canonicalLink = `${game.link}${url.search}${url.hash}`;
+    }
     return {
       ...game,
       ...cms,
       cardKey: game.link,
-      link: cms && sameRoute(cms.link, game.link) ? game.link : cms?.link || game.link,
+      link: canonicalLink,
       thumbnail: cms?.thumbnail?.asset?.url ? cms.thumbnail : game.thumbnail,
     };
   });
   const extras = linked.filter(project => !games.some(game => isGame(project, game)));
-  const builderAndRest = includePageBuilder([...resolvedGames, ...extras]);
+  const builderAndRest = includePageBuilder(extras);
   const builder = { ...builderAndRest[0], cardKey: PAGE_BUILDER_PATH };
-  const otherCards = builderAndRest.slice(1);
+  const otherCards = builderAndRest.slice(1).map(project => ({
+    ...project,
+    cardKey: project._id ? `cms:${project._id}` : project.link,
+  }));
   return {
     studio,
-    projectsPage: [builder, ...otherCards],
-    carousel: [...otherCards.slice(0, games.length), builder, ...otherCards.slice(games.length)],
+    projectsPage: [builder, ...resolvedGames, ...otherCards],
+    carousel: [...resolvedGames, builder, ...otherCards],
   };
 }

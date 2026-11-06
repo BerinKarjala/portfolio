@@ -137,6 +137,19 @@ describe("Project", () => {
     expect(screen.queryByRole("link", { name: "View project: HTML Page Builder" })).toBeNull();
   });
 
+  it("keeps the Page Builder in the same tab when its link includes a query and fragment", async () => {
+    fetchMock.mockResolvedValueOnce([{
+      _id: "project-html-page-builder",
+      name: "HTML Page Builder",
+      link: "/projects/page-builder?view=compact#editor",
+    }]);
+    renderProject();
+    await waitFor(() => expect(screen.getByRole("link", { name: "View project: HTML Page Builder" }).getAttribute("href"))
+      .toBe("/projects/page-builder?view=compact#editor"));
+    const builder = screen.getByRole("link", { name: "View project: HTML Page Builder" });
+    expect(builder.hasAttribute("target")).toBe(false);
+  });
+
   it("uses CMS Page Builder content without creating a duplicate gallery card", async () => {
     fetchMock.mockResolvedValueOnce([{ name: "My Page Builder", link: "https://berinkarjala.netlify.app/projects/page-builder/", description: "CMS description" }, { name: "Sudoku Solver", link: "/projects/SudokuSolver" }]);
     renderProject();
