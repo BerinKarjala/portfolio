@@ -59,16 +59,31 @@ describe('resolveProjectCards', () => {
     expect(reorderedKeys).toEqual(keys);
   });
 
-  it('prefers the canonical Page Builder document over another record using its route', () => {
+  it('recognizes a Page Builder record by its action after its link changes', () => {
     const { projectsPage, carousel } = resolveProjectCards([
-      { _id: 'other-builder', name: 'Other builder', link: '/projects/page-builder' },
-      { _id: builderId, name: 'Canonical builder', description: 'Edited canonical copy', link: '/projects/page-builder' },
+      { _id: 'studio-generated-id', kind: 'pageBuilder', name: 'Edited Builder', link: '/new-builder' },
     ]);
     for (const projects of [projectsPage, carousel]) {
-      const builders = projects.filter(project => project.link === '/projects/page-builder');
-      expect(builders).toHaveLength(1);
-      expect(builders[0].name).toBe('Canonical builder');
-      expect(builders[0].description).toBe('Edited canonical copy');
+      expect(projects.filter(project => project.name === 'Edited Builder')).toHaveLength(1);
+      expect(projects.find(project => project.name === 'Edited Builder').link).toBe('/new-builder');
+      expect(projects.some(project => project.name === 'HTML Page Builder')).toBe(false);
+    }
+  });
+
+  it.each([
+    [sudokuId, 'Canonical Sudoku', 'Other Sudoku', '/projects/SudokuSolver', 'Sudoku Solver'],
+    [builderId, 'Canonical builder', 'Other builder', '/projects/page-builder', 'HTML Page Builder'],
+  ])('retains both documents when the canonical project and another share %s', (id, canonicalName, otherName, link, fallbackName) => {
+    const { projectsPage, carousel } = resolveProjectCards([
+      { _id: 'other-project', name: otherName, link },
+      { _id: id, name: canonicalName, description: 'Edited canonical copy', link },
+    ]);
+    for (const projects of [projectsPage, carousel]) {
+      expect(projects.filter(project => project.name === canonicalName)).toHaveLength(1);
+      expect(projects.filter(project => project.name === otherName)).toHaveLength(1);
+      expect(projects.find(project => project.name === canonicalName).description).toBe('Edited canonical copy');
+      expect(projects.filter(project => project.name === fallbackName)).toHaveLength(0);
+      expect(projects.filter(project => project.link === link)).toHaveLength(2);
     }
   });
 });

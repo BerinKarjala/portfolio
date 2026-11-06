@@ -282,6 +282,44 @@ it('retains edited links of known CMS projects without duplicate fallback cards'
   expect(cards.filter(card => card.querySelector('h2')?.textContent === 'HTML Page Builder')).toHaveLength(0);
   expect(cards).toHaveLength(4);
 });
+
+it('shows projects with absent or empty links as non-clickable carousel cards', async () => {
+  sanityClient.fetch.mockResolvedValueOnce([
+    { _id: 'no-link', name: 'No link project', description: 'No link description' },
+    { _id: 'empty-link', name: 'Empty link project', description: 'Empty link description', link: '' },
+  ]);
+  render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);
+  await act(async () => {});
+  const cards = [...document.querySelectorAll('[data-carousel-card]')];
+  for (const [name, description] of [['No link project', 'No link description'], ['Empty link project', 'Empty link description']]) {
+    const matching = cards.filter(card => card.querySelector('h2')?.textContent === name);
+    expect(matching).toHaveLength(1);
+    expect(matching[0].textContent).toContain(description);
+    expect(matching[0].querySelector('a[href]')).toBeNull();
+  }
+});
+
+it('shows both CMS Studio cards once and each can launch the Studio', async () => {
+  sanityClient.fetch.mockResolvedValueOnce([
+    { _id: 'studio-one', kind: 'cssStudio', name: 'First CMS Studio', description: 'First studio description' },
+    { _id: 'studio-two', kind: 'cssStudio', name: 'Second CMS Studio', description: 'Second studio description' },
+  ]);
+  render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);
+  await act(async () => {});
+  const titles = [...document.querySelectorAll('[data-carousel-card] h2')].map(heading => heading.textContent);
+  expect(titles.filter(title => title === 'First CMS Studio')).toHaveLength(1);
+  expect(titles.filter(title => title === 'Second CMS Studio')).toHaveLength(1);
+  expect(titles).not.toContain('CSS Theme Studio');
+  for (const name of ['First CMS Studio', 'Second CMS Studio']) {
+    for (let step = 0; step < titles.length && !screen.queryByRole('heading', { name }); step += 1) {
+      fireEvent.click(screen.getByRole('button', { name: 'Next project' }));
+    }
+    expect(screen.getByRole('heading', { name })).not.toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Open Theme Studio' }));
+    expect(screen.getByRole('button', { name: 'Close tools' })).not.toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Close tools' }));
+  }
+});
 it('opens the text editor in the center and retains drafts while switching utilities', () => {
   localStorage.clear();
   render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);

@@ -137,6 +137,40 @@ describe("Project", () => {
     expect(screen.queryByRole("link", { name: "View project: HTML Page Builder" })).toBeNull();
   });
 
+  it("shows projects with absent or empty links as non-clickable cards", async () => {
+    fetchMock.mockResolvedValueOnce([
+      { _id: "no-link", name: "No link project", description: "No link description" },
+      { _id: "empty-link", name: "Empty link project", description: "Empty link description", link: "" },
+    ]);
+    renderProject();
+    await screen.findByRole("heading", { name: "No link project" });
+    for (const [name, description] of [["No link project", "No link description"], ["Empty link project", "Empty link description"]]) {
+      const heading = screen.getByRole("heading", { name });
+      expect(screen.getByText(description)).not.toBeNull();
+      expect(heading.closest("a[href]")).toBeNull();
+      expect(screen.queryByRole("link", { name: `View project: ${name}` })).toBeNull();
+    }
+  });
+
+  it("shows each CSS Studio record once and both launch buttons work", async () => {
+    fetchMock.mockResolvedValueOnce([
+      { _id: "studio-one", kind: "cssStudio", name: "First CMS Studio", description: "First studio description" },
+      { _id: "studio-two", kind: "cssStudio", name: "Second CMS Studio", description: "Second studio description" },
+    ]);
+    renderProject();
+    await screen.findByRole("heading", { name: "First CMS Studio" });
+    expect(screen.getAllByRole("heading", { name: "First CMS Studio" })).toHaveLength(1);
+    expect(screen.getAllByRole("heading", { name: "Second CMS Studio" })).toHaveLength(1);
+    expect(screen.queryByRole("heading", { name: "CSS Theme Studio" })).toBeNull();
+    const launchers = screen.getAllByRole("button", { name: "Open Theme Studio" });
+    expect(launchers).toHaveLength(2);
+    for (let index = 0; index < 2; index += 1) {
+      fireEvent.click(screen.getAllByRole("button", { name: "Open Theme Studio" })[index]);
+      expect(screen.getByRole("button", { name: "Close tools" })).not.toBeNull();
+      fireEvent.click(screen.getByRole("button", { name: "Close tools" }));
+    }
+  });
+
   it("keeps the Page Builder in the same tab when its link includes a query and fragment", async () => {
     fetchMock.mockResolvedValueOnce([{
       _id: "project-html-page-builder",

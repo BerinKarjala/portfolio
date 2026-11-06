@@ -159,7 +159,7 @@ export default function Project() {
                 {projects.length > 0 ? (
                   projects.map((project) => (
                     <a
-                      key={`${project.name}-${project.link}`}
+                      key={project.cardKey || project._id || `${project.name}-${project.link}`}
                       href={project.link}
                       target={project.cardKey === PAGE_BUILDER_PATH && project.link.split(/[?#]/)[0] === PAGE_BUILDER_PATH ? undefined : "_blank"}
                       rel={project.cardKey === PAGE_BUILDER_PATH && project.link.split(/[?#]/)[0] === PAGE_BUILDER_PATH ? undefined : "noreferrer noopener"}
