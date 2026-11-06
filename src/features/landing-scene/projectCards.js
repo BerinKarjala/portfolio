@@ -41,7 +41,8 @@ export function resolveProjectCards(data) {
   const linked = records.filter(project => project?.kind !== 'cssStudio' && safeProject(project));
   const isGame = (project, game) => project._id === game._id || sameRoute(project.link, game.link);
   const resolvedGames = games.map(game => {
-    const cms = linked.find(project => isGame(project, game));
+    const cms = linked.find(project => project._id === game._id) ||
+      linked.find(project => sameRoute(project.link, game.link));
     return {
       ...game,
       ...cms,

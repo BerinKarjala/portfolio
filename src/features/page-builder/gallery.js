@@ -1,4 +1,5 @@
 export const PAGE_BUILDER_PATH = "/projects/page-builder";
+export const PAGE_BUILDER_DOCUMENT_ID = "project-html-page-builder";
 const DEFAULT_PROJECT = {
   name: "HTML Page Builder",
   description:
@@ -13,9 +14,9 @@ const DEFAULT_PROJECT = {
 // Keep the project discoverable without writing to the CMS. Prefer CMS copy/art
 // when available, and avoid creating a second card for the same local route.
 export function includePageBuilder(projects) {
-  const isBuilder = (project) => {
+  const hasBuilderRoute = (link) => {
     try {
-      const url = new URL(project.link, "https://berinkarjala.netlify.app");
+      const url = new URL(link, "https://berinkarjala.netlify.app");
       return (
         url.origin === "https://berinkarjala.netlify.app" &&
         url.pathname.toLowerCase().replace(/\/$/, "") === PAGE_BUILDER_PATH
@@ -24,12 +25,14 @@ export function includePageBuilder(projects) {
       return false;
     }
   };
+  const isBuilder = (project) =>
+    project._id === PAGE_BUILDER_DOCUMENT_ID || hasBuilderRoute(project.link);
   const cms = projects.find(isBuilder);
   const featured = cms
     ? {
         ...DEFAULT_PROJECT,
         ...cms,
-        link: PAGE_BUILDER_PATH,
+        link: hasBuilderRoute(cms.link) ? PAGE_BUILDER_PATH : cms.link || PAGE_BUILDER_PATH,
         thumbnail: cms.thumbnail?.asset?.url
           ? cms.thumbnail
           : DEFAULT_PROJECT.thumbnail,
