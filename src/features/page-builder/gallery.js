@@ -11,8 +11,8 @@ const DEFAULT_PROJECT = {
   },
 };
 
-// Keep the project discoverable without writing to the CMS. Prefer CMS copy/art
-// when available, and avoid creating a second card for the same local route.
+// Keep the project discoverable without writing to the CMS. Prefer its CMS
+// record when available, while preserving any other distinct project records.
 export function includePageBuilder(projects) {
   const hasBuilderRoute = (link) => {
     try {
