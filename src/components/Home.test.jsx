@@ -10,6 +10,8 @@ import LiveMoon from '../features/moon-weather/LiveMoon';
 import { SceneProvider, useScene } from '../features/landing-scene/SceneContext';
 function Home() { return <SceneProvider><WeatherWidget /><HomePage /></SceneProvider>; }
 import sanityClient from '../client.js';
+import sudokuPreview from '../assets/sudoku-solver-preview.svg';
+import minesweeperPreview from '../assets/minesweeper-preview.svg';
 beforeEach(() => vi.stubGlobal('matchMedia', query => ({ matches: query.includes('reduced-motion'), addEventListener() {}, removeEventListener() {} })));
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 it('keeps bundled projects usable offline and exposes only the center destination', async () => {
@@ -221,6 +223,45 @@ it('keeps the Studio card centered and its launcher reachable when late CMS proj
   expect(screen.getByRole('heading', { name: 'CSS Theme Studio', level: 2 })).not.toBeNull();
   fireEvent.click(screen.getByRole('button', { name: 'Close tools' }));
   expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Open Theme Studio' }));
+});
+it('keeps the selected Studio card when CMS content arrives and shows each edited card once', async () => {
+  let resolve;
+  sanityClient.fetch.mockImplementationOnce(() => new Promise(done => { resolve = done; }));
+  const projects = [
+    { _id: 'css-studio', kind: 'cssStudio', name: 'Custom Theme Studio', description: 'CMS theme description', thumbnail: { asset: { url: '/cms-theme.png' }, alt: 'CMS theme image' } },
+    { _id: 'page-builder', name: 'Custom Page Builder', link: '/projects/page-builder', description: 'CMS builder description', thumbnail: { asset: { url: '/cms-builder.png' }, alt: 'CMS builder image' } },
+    { _id: 'sudoku', name: 'Custom Sudoku', link: '/projects/SudokuSolver', description: 'CMS sudoku description', thumbnail: { asset: { url: '/cms-sudoku.png' }, alt: 'CMS sudoku image' } },
+    { _id: 'mines', name: 'Custom Minesweeper', link: '/projects/Minesweeper', description: 'CMS mines description', thumbnail: { asset: { url: '/cms-mines.png' }, alt: 'CMS mines image' } },
+  ];
+  render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);
+  fireEvent.click(screen.getByRole('button', { name: 'Previous project' }));
+  expect(screen.getByRole('heading', { name: 'CSS Theme Studio' })).not.toBeNull();
+  await act(async () => resolve(projects));
+  expect(screen.getByRole('heading', { name: 'Custom Theme Studio' })).not.toBeNull();
+  const cards = [...document.querySelectorAll('[data-carousel-card]')];
+  expect(cards).toHaveLength(4);
+  for (const project of projects) {
+    const matching = cards.filter(card => card.querySelector('h2')?.textContent === project.name);
+    expect(matching).toHaveLength(1);
+    expect(matching[0].textContent).toContain(project.description);
+    const image = matching[0].querySelector('img');
+    expect(image?.getAttribute('src')).toBe(project.thumbnail.asset.url);
+    expect(image?.getAttribute('alt')).toBe(project.thumbnail.alt);
+  }
+  fireEvent.click(screen.getByRole('button', { name: 'Open Theme Studio' }));
+  expect(screen.getByRole('button', { name: 'Close tools' })).not.toBeNull();
+});
+
+it('uses bundled game images on the carousel when CMS thumbnails are absent', async () => {
+  sanityClient.fetch.mockResolvedValueOnce([
+    { _id: 'sudoku', name: 'CMS Sudoku', link: '/projects/SudokuSolver' },
+    { _id: 'mines', name: 'CMS Mines', link: '/projects/Minesweeper' },
+  ]);
+  render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);
+  await screen.findByRole('link', { name: 'Open CMS Sudoku' });
+  expect(document.querySelector('.landing-card--center img').getAttribute('src')).toBe(sudokuPreview);
+  fireEvent.click(screen.getByRole('button', { name: 'Next project' }));
+  expect(document.querySelector('.landing-card--center img').getAttribute('src')).toBe(minesweeperPreview);
 });
 it('opens the text editor in the center and retains drafts while switching utilities', () => {
   localStorage.clear();
