@@ -166,6 +166,13 @@
   background: #123524;
   color: white;
 }
+.studio-gallery img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 8px;
+}
 .studio-gallery h3 {
   font-size: 1.375rem;
   margin: 8px 0;

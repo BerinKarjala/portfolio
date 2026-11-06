@@ -3,24 +3,24 @@ import React, { useEffect, useState } from "react";
 import sanityClient from "../client.js";
 import Seo, { SITE_NAME, SITE_URL } from "./Seo";
 import { cancelIdle, runWhenIdle } from "../utils/idleCallback";
-import sudokuPreview from "../assets/sudoku-solver-preview.svg";
-import minesweeperPreview from "../assets/minesweeper-preview.svg";
-import { includePageBuilder, PAGE_BUILDER_PATH } from "../features/page-builder/gallery";
-
-const PROJECT_PREVIEWS = {
-  sudokusolver: {
-    asset: { url: sudokuPreview },
-    alt: "Sudoku Solver board with Solve and Reset controls",
-  },
-  minesweeper: {
-    asset: { url: minesweeperPreview },
-    alt: "Minesweeper board with instructions, flags remaining, and reset controls",
-  },
-};
+import { PAGE_BUILDER_PATH } from "../features/page-builder/gallery";
+import { resolveProjectCards } from "../features/landing-scene/projectCards";
 
 const EMPTY_PROJECTS = [];
 const EMPTY_PROJECT_DESCRIPTION =
   "Project details are temporarily unavailable. Please check back shortly.";
+
+// Resolve path-relative CMS links against the site root, regardless of whether
+// this page was reached at /project or /project/. Keep external links intact.
+function projectLink(link) {
+  if (/^(?:\/|[a-z][a-z\d+.-]*:)/i.test(link)) return link;
+  try {
+    const url = new URL(link, SITE_URL);
+    return url.origin === SITE_URL ? `${url.pathname}${url.search}${url.hash}` : link;
+  } catch {
+    return link;
+  }
+}
 
 export default function Project() {
   const [projectData, setProjectData] = useState(EMPTY_PROJECTS);
@@ -33,6 +33,8 @@ export default function Project() {
       sanityClient
         .fetch(
           `*[_type == "project"]{
+            _id,
+            kind,
             name,
             description,
             thumbnail{
@@ -70,14 +72,11 @@ export default function Project() {
     };
   }, []);
 
-  const projects = includePageBuilder(
-    projectData.filter((project) => project?.name && project?.link)
-  )
-    .map((project) => {
-      const route = project.link.split(/[?#]/)[0].match(/\/projects\/(SudokuSolver|Minesweeper)\/?$/i);
-      const thumbnail = route && PROJECT_PREVIEWS[route[1].toLowerCase()];
-      return thumbnail ? { ...project, thumbnail } : project;
-    });
+  const cards = resolveProjectCards(projectData);
+  const projects = cards.projectsPage.map((project) => ({
+    ...project,
+    link: typeof project.link === "string" && project.link.trim() ? projectLink(project.link) : undefined,
+  }));
   const projectNames = projects
     .map((project) => project?.name)
     .slice(0, 3);
@@ -151,20 +150,25 @@ export default function Project() {
                 Projects
               </h2>
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                <StudioGalleryEntry />
+                <StudioGalleryEntry project={cards.studio} />
                 {isLoading ? (
                   <div className="md:col-span-2 rounded-2xl border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 p-5 text-sm uppercase tracking-widest text-green-200 shadow-lg backdrop-filter backdrop-blur-sm">
                     Loading project entries...
                   </div>
                 ) : null}
                 {projects.length > 0 ? (
-                  projects.map((project) => (
-                    <a
-                      key={`${project.name}-${project.link}`}
+                  projects.map((project) => {
+                    if (project.kind === "cssStudio") {
+                      return <StudioGalleryEntry key={project.cardKey || project._id} project={project} />;
+                    }
+                    const Card = project.link ? "a" : "article";
+                    const opensBuilder = project.cardKey === PAGE_BUILDER_PATH && project.link?.split(/[?#]/)[0] === PAGE_BUILDER_PATH;
+                    return <Card
+                      key={project.cardKey || project._id || `${project.name}-${project.link}`}
                       href={project.link}
-                      target={project.link === PAGE_BUILDER_PATH ? undefined : "_blank"}
-                      rel={project.link === PAGE_BUILDER_PATH ? undefined : "noreferrer noopener"}
-                      aria-label={`View project: ${project.name}`}
+                      target={project.link && !opensBuilder ? "_blank" : undefined}
+                      rel={project.link && !opensBuilder ? "noreferrer noopener" : undefined}
+                      aria-label={project.link ? `View project: ${project.name}` : `Project: ${project.name}`}
                       className="block h-full border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 rounded-2xl p-4 sm:p-5 shadow-lg backdrop-filter backdrop-blur-sm transition hover:bg-opacity-40 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-2 focus-visible:ring-offset-green-900"
                     >
                       <div
@@ -193,8 +197,9 @@ export default function Project() {
                       <p className="mt-2 text-green-100 text-sm leading-relaxed">
                         {project.description || EMPTY_PROJECT_DESCRIPTION}
                       </p>
-                    </a>
-                  ))
+                      {!project.link && <p>Project link unavailable.</p>}
+                    </Card>;
+                  })
                 ) : (
                   <div className="md:col-span-2 rounded-2xl border border-green-700 border-opacity-30 bg-green-900 bg-opacity-30 p-5 text-sm text-green-100 shadow-lg backdrop-filter backdrop-blur-sm">
                     {emptyStateMessage}

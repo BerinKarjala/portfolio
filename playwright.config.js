@@ -4,6 +4,7 @@ import { defineConfig, devices } from "@playwright/test";
 // Firefox/WebKit, while keeping viewport permutations in the primary browser.
 // playwright.full.config.js selects the complete matrix when needed.
 const crossBrowserCases = [
+  /sanity-project-cards\.spec\.js/,
   /page-builder(?:-acceptance|-canvas|-export)?\.spec\.js/,
   /moon-artwork-review\.spec\.js/,
   /moon-runtime-review\.spec\.js/,
