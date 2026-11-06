@@ -21,17 +21,47 @@ describe('resolveProjectCards', () => {
     }
   });
 
-  it('gives an additional Page Builder record without a link the Page Builder destination', () => {
+  it.each([
+    ['missing', undefined],
+    ['whitespace', '   '],
+    ['unsafe', 'javascript:alert(1)'],
+  ])('keeps a canonical Page Builder with a %s link visible without a destination', (_, link) => {
+    const { projectsPage, carousel } = resolveProjectCards([
+      { _id: builderId, kind: 'pageBuilder', name: 'Primary builder', link },
+    ]);
+    for (const projects of [projectsPage, carousel]) {
+      const primary = projects.filter(project => project.name === 'Primary builder');
+      expect(primary).toHaveLength(1);
+      expect(primary[0].link).toBeUndefined();
+      expect(projects.some(project => project.name === 'HTML Page Builder')).toBe(false);
+    }
+  });
+
+  it.each([
+    ['missing', undefined],
+    ['whitespace', '   '],
+    ['unsafe', 'javascript:alert(1)'],
+  ])('keeps an additional Page Builder with a %s link visible without a destination', (_, link) => {
     const { projectsPage, carousel } = resolveProjectCards([
       { _id: builderId, kind: 'pageBuilder', name: 'Primary builder', link: '/projects/page-builder' },
-      { _id: 'other-builder', kind: 'pageBuilder', name: 'Additional builder' },
+      { _id: 'other-builder', kind: 'pageBuilder', name: 'Additional builder', link },
     ]);
     for (const projects of [projectsPage, carousel]) {
       const primary = projects.filter(project => project.name === 'Primary builder');
       const additional = projects.filter(project => project.name === 'Additional builder');
       expect(primary).toHaveLength(1);
+      expect(primary[0].link).toBe('/projects/page-builder');
       expect(additional).toHaveLength(1);
-      expect(additional[0].link).toBe('/projects/page-builder');
+      expect(additional[0].link).toBeUndefined();
+    }
+  });
+
+  it('uses the built-in Page Builder destination when no CMS Page Builder exists', () => {
+    const { projectsPage, carousel } = resolveProjectCards([]);
+    for (const projects of [projectsPage, carousel]) {
+      const fallback = projects.filter(project => project.name === 'HTML Page Builder');
+      expect(fallback).toHaveLength(1);
+      expect(fallback[0].link).toBe('/projects/page-builder');
     }
   });
 
