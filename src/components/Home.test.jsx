@@ -263,6 +263,25 @@ it('uses bundled game images on the carousel when CMS thumbnails are absent', as
   fireEvent.click(screen.getByRole('button', { name: 'Next project' }));
   expect(document.querySelector('.landing-card--center img').getAttribute('src')).toBe(minesweeperPreview);
 });
+
+it('retains edited links of known CMS projects without duplicate fallback cards', async () => {
+  sanityClient.fetch.mockResolvedValueOnce([
+    { _id: 'c0a1c1ee-3b33-4b80-b423-12f0ab0c8b6f', name: 'Edited Sudoku', link: '/new-sudoku' },
+    { _id: 'project-html-page-builder', name: 'Edited Builder', link: '/new-builder' },
+  ]);
+  render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);
+  const sudoku = await screen.findByRole('link', { name: 'Open Edited Sudoku' });
+  expect(sudoku.getAttribute('href')).toBe('/new-sudoku');
+  const cards = [...document.querySelectorAll('[data-carousel-card]')];
+  for (const [name, link] of [['Edited Sudoku', '/new-sudoku'], ['Edited Builder', '/new-builder']]) {
+    const matching = cards.filter(card => card.querySelector('h2')?.textContent === name);
+    expect(matching).toHaveLength(1);
+    expect(matching[0].querySelector('a').getAttribute('href')).toBe(link);
+  }
+  expect(cards.filter(card => card.querySelector('h2')?.textContent === 'Sudoku Solver')).toHaveLength(0);
+  expect(cards.filter(card => card.querySelector('h2')?.textContent === 'HTML Page Builder')).toHaveLength(0);
+  expect(cards).toHaveLength(4);
+});
 it('opens the text editor in the center and retains drafts while switching utilities', () => {
   localStorage.clear();
   render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);

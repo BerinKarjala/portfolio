@@ -121,6 +121,22 @@ describe("Project", () => {
     expect(mines.querySelector("img").getAttribute("src")).toBe(minesweeperPreview);
   });
 
+  it("retains the edited links of known CMS projects without duplicate fallback cards", async () => {
+    fetchMock.mockResolvedValueOnce([
+      { _id: "c0a1c1ee-3b33-4b80-b423-12f0ab0c8b6f", name: "Edited Sudoku", link: "/new-sudoku" },
+      { _id: "project-html-page-builder", name: "Edited Builder", link: "/new-builder" },
+    ]);
+    renderProject();
+    const sudoku = await screen.findByRole("link", { name: "View project: Edited Sudoku" });
+    const builder = screen.getByRole("link", { name: "View project: Edited Builder" });
+    expect(sudoku.getAttribute("href")).toBe("/new-sudoku");
+    expect(builder.getAttribute("href")).toBe("/new-builder");
+    expect(screen.getAllByRole("link", { name: "View project: Edited Sudoku" })).toHaveLength(1);
+    expect(screen.getAllByRole("link", { name: "View project: Edited Builder" })).toHaveLength(1);
+    expect(screen.queryByRole("link", { name: "View project: Sudoku Solver" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "View project: HTML Page Builder" })).toBeNull();
+  });
+
   it("uses CMS Page Builder content without creating a duplicate gallery card", async () => {
     fetchMock.mockResolvedValueOnce([{ name: "My Page Builder", link: "https://berinkarjala.netlify.app/projects/page-builder/", description: "CMS description" }, { name: "Sudoku Solver", link: "/projects/SudokuSolver" }]);
     renderProject();
