@@ -89,6 +89,33 @@ describe("Project", () => {
     expect(screen.getByRole("link", { name: "View project: Sudoku Solver" })).not.toBeNull();
   });
 
+  it.each([
+    ["projects/custom", "/projects/custom"],
+    ["./projects/custom", "/projects/custom"],
+    ["../projects/custom?view=1#part", "/projects/custom?view=1#part"],
+    ["/projects/custom?view=1#part", "/projects/custom?view=1#part"],
+    ["https://example.com/project?view=1#part", "https://example.com/project?view=1#part"],
+  ])("renders the CMS link %s as %s", async (link, expectedHref) => {
+    fetchMock.mockResolvedValueOnce([{ name: "Custom Project", link }]);
+
+    renderProject();
+
+    const project = await screen.findByRole("link", { name: "View project: Custom Project" });
+    expect(project.getAttribute("href")).toBe(expectedHref);
+  });
+
+  it("keeps the bundled Sudoku preview for a path-relative CMS link", async () => {
+    fetchMock.mockResolvedValueOnce([{
+      name: "Sudoku Solver",
+      link: "projects/SudokuSolver",
+      thumbnail: { asset: { url: "/old-placeholder.png" } },
+    }]);
+    renderProject();
+    const sudoku = await screen.findByRole("link", { name: "View project: Sudoku Solver" });
+    expect(sudoku.getAttribute("href")).toBe("/projects/SudokuSolver");
+    expect(sudoku.querySelector("img").getAttribute("src")).toBe(sudokuPreview);
+  });
+
   it("shows the updated Sudoku preview alongside the bundled Page Builder card", async () => {
     fetchMock.mockResolvedValueOnce([
       {
