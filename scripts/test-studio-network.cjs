@@ -53,6 +53,8 @@ function diagnosticKey(rawUrl, kind) {
   }
   if (url.hostname.endsWith('.sanity.io')) {
     const path = url.pathname.replace(/^\/v\d{4}-\d{2}-\d{2}/, '');
+    if (path === '/check/cors') return 'blocked-sanity-cors-probe';
+    if (/^\/vX\/intake\//.test(path)) return 'blocked-sanity-telemetry';
     if (path.startsWith('/projects/')) return 'blocked-sanity-projects';
     if (path.startsWith('/data/')) return 'blocked-sanity-data';
     if (path.startsWith('/auth/')) return 'blocked-sanity-auth';
@@ -61,4 +63,10 @@ function diagnosticKey(rawUrl, kind) {
   return 'blocked-other';
 }
 
-module.exports = { classifyRequest, diagnosticKey, studioFilePath, ORIGIN };
+function consoleErrorKey(message) {
+  if (/cors|cross.origin/i.test(message)) return 'cors';
+  if (/failed to fetch|net::err|network|offline/i.test(message)) return 'network';
+  return 'other';
+}
+
+module.exports = { classifyRequest, diagnosticKey, consoleErrorKey, studioFilePath, ORIGIN };

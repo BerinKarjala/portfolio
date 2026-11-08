@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { classifyRequest, diagnosticKey, studioFilePath } = require('./test-studio-network.cjs');
+const { classifyRequest, diagnosticKey, consoleErrorKey, studioFilePath } = require('./test-studio-network.cjs');
 
 test('only built app GETs and explicit test-project API GETs can be fulfilled', () => {
   assert.equal(classifyRequest('https://studio.invalid/', 'GET'), 'asset');
@@ -33,5 +33,13 @@ test('failure diagnostics classify requests without exposing URLs, queries or he
   assert.equal(diagnosticKey('https://umy7f73e.api.sanity.io/v2026-05-04/data/query/content-agent-test?query=secret', 'test-query'), 'api-test-query');
   assert.equal(diagnosticKey('https://secret.invalid/private?token=hidden', 'blocked'), 'blocked-other');
   assert.equal(diagnosticKey('https://api.sanity.io/v2026-05-04/projects/private?token=hidden', 'blocked'), 'blocked-sanity-projects');
+  assert.equal(diagnosticKey('https://umy7f73e.api.sanity.io/v2026-05-04/check/cors?secret=hidden', 'blocked'), 'blocked-sanity-cors-probe');
+  assert.equal(diagnosticKey('https://api.sanity.io/vX/intake/tracing?secret=hidden', 'blocked'), 'blocked-sanity-telemetry');
   assert.equal(diagnosticKey('https://secret.invalid/private?token=hidden', 'violation'), 'violation');
+});
+
+test('console diagnostics classify fixed error categories without outputting the message', () => {
+  assert.equal(consoleErrorKey('blocked by CORS policy secret-token'), 'cors');
+  assert.equal(consoleErrorKey('Failed to fetch secret-token'), 'network');
+  assert.equal(consoleErrorKey('unexpected private message'), 'other');
 });

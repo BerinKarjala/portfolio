@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('@playwright/test');
-const { classifyRequest, diagnosticKey, studioFilePath, ORIGIN } = require('./test-studio-network.cjs');
+const { classifyRequest, diagnosticKey, consoleErrorKey, studioFilePath, ORIGIN } = require('./test-studio-network.cjs');
 
 const dist = fs.realpathSync(path.resolve(__dirname, '../studio13/content-agent-test/dist'));
 const types = {
@@ -20,7 +20,7 @@ async function main() {
   const context = await browser.newContext({ offline: true, serviceWorkers: 'block' });
   const violations = [];
   const evidence = new Set();
-  const diagnostics = { stage: 'setup', requests: {}, failedAssets: {}, consoleErrors: 0, pageErrors: {} };
+  const diagnostics = { stage: 'setup', requests: {}, failedAssets: {}, consoleErrors: {}, pageErrors: {} };
   const bump = (group, key) => { group[key] = (group[key] || 0) + 1; };
   let page;
   try {
@@ -73,7 +73,7 @@ async function main() {
 
     page = await context.newPage();
     const pageErrors = [];
-    page.on('console', (message) => { if (message.type() === 'error') diagnostics.consoleErrors++; });
+    page.on('console', (message) => { if (message.type() === 'error') bump(diagnostics.consoleErrors, consoleErrorKey(message.text())); });
     page.on('pageerror', (error) => {
       const type = ['Error', 'TypeError', 'ReferenceError', 'SyntaxError'].includes(error.name) ? error.name : 'Other';
       bump(diagnostics.pageErrors, type);
@@ -103,14 +103,22 @@ async function main() {
   } catch (error) {
     if (page && !page.isClosed()) {
       // Report booleans and counts, never DOM content, URL, headers or payloads.
-      diagnostics.dom = await page.evaluate(() => ({
-        testTitle: /TEST ONLY/i.test(document.title),
-        rootPresent: !!document.querySelector('#sanity'),
-        rootChildren: document.querySelector('#sanity')?.children.length || 0,
-        navbarPresent: !!document.querySelector('[data-testid="studio-navbar"]'),
-        errorScreenPresent: !!document.querySelector('[data-testid="studio-error-screen"]'),
-        bodyTextLength: document.body?.innerText.length || 0,
-      })).catch(() => ({ unavailable: true }));
+      diagnostics.dom = await page.evaluate(() => {
+        const body = document.body?.innerText || '';
+        return {
+          testTitle: /TEST ONLY/i.test(document.title),
+          rootPresent: !!document.querySelector('#sanity'),
+          rootChildren: document.querySelector('#sanity')?.children.length || 0,
+          navbarPresent: !!document.querySelector('[data-testid="studio-navbar"]'),
+          errorScreenPresent: !!document.querySelector('[data-testid="studio-error-screen"]'),
+          bodyTextLength: body.length,
+          mentionsCors: /cors|cross.origin/i.test(body),
+          mentionsConnection: /connect|network|offline/i.test(body),
+          mentionsLogin: /log.?in|sign.?in/i.test(body),
+          mentionsError: /error|something went wrong|failed/i.test(body),
+          mentionsLoading: /loading|please wait/i.test(body),
+        };
+      }).catch(() => ({ unavailable: true }));
     }
     console.error('Sanitized Studio smoke diagnostics:', JSON.stringify(diagnostics));
     throw error;
