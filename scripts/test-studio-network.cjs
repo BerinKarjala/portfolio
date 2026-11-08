@@ -95,6 +95,24 @@ function consoleErrorKey(message) {
   return 'other';
 }
 
+// A blocked POST is described only by fixed host and endpoint family labels.
+function postFamilyKey(rawUrl) {
+  let url;
+  try { url = new URL(rawUrl); } catch { return 'post-invalid'; }
+  let host = 'other-host';
+  if (url.hostname === API_HOST) host = 'project-api';
+  else if (url.hostname === 'umy7f73e.apicdn.sanity.io') host = 'project-cdn';
+  else if (/^[^.]+\.(?:api|apicdn)\.sanity\.io$/.test(url.hostname)) host = 'other-project';
+  else if (url.hostname === 'sanity.io' || url.hostname.endsWith('.sanity.io')) host = 'sanity';
+  const path = url.pathname.replace(/^\/(?:v\d+(?:-\d{2}-\d{2})?|vX)(?=\/)/, '');
+  let family = 'other';
+  if (path.startsWith('/data/query/')) family = 'query';
+  else if (path.startsWith('/data/mutate/')) family = 'mutate';
+  else if (path.startsWith('/descriptors/')) family = 'descriptor';
+  else if (path.startsWith('/intake/')) family = 'telemetry';
+  return `post-${host}-${family}`;
+}
+
 // Synthetic identity only: supply no project grants and a read-only fake ACL.
 // The offline request policy, not these simulated permissions, blocks writes.
 function syntheticResponse(kind, path) {
@@ -108,4 +126,4 @@ function syntheticResponse(kind, path) {
   throw new Error('No synthetic response for this route');
 }
 
-module.exports = { classifyRequest, diagnosticKey, consoleErrorKey, studioFilePath, syntheticResponse, ORIGIN };
+module.exports = { classifyRequest, diagnosticKey, postFamilyKey, consoleErrorKey, studioFilePath, syntheticResponse, ORIGIN };

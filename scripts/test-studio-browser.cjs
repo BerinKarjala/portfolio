@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('@playwright/test');
-const { classifyRequest, diagnosticKey, consoleErrorKey, studioFilePath, syntheticResponse, ORIGIN } = require('./test-studio-network.cjs');
+const { classifyRequest, diagnosticKey, postFamilyKey, consoleErrorKey, studioFilePath, syntheticResponse, ORIGIN } = require('./test-studio-network.cjs');
 
 const dist = fs.realpathSync(path.resolve(__dirname, '../studio13/content-agent-test/dist'));
 const types = {
@@ -20,7 +20,7 @@ async function main() {
   const context = await browser.newContext({ offline: true, serviceWorkers: 'block' });
   const violations = [];
   const evidence = new Set();
-  const diagnostics = { stage: 'setup', requests: {}, failedAssets: {}, consoleErrors: {}, pageErrors: {} };
+  const diagnostics = { stage: 'setup', requests: {}, postFamilies: {}, failedAssets: {}, consoleErrors: {}, pageErrors: {} };
   const bump = (group, key) => { group[key] = (group[key] || 0) + 1; };
   let page;
   try {
@@ -34,6 +34,7 @@ async function main() {
       const kind = classifyRequest(request.url(), request.method());
       const key = diagnosticKey(request.url(), kind, request.method());
       bump(diagnostics.requests, key);
+      if (request.method() === 'POST') bump(diagnostics.postFamilies, postFamilyKey(request.url()));
       if (kind === 'asset') {
         const relative = studioFilePath(url.pathname);
         if (!relative) { bump(diagnostics.failedAssets, key); return route.abort(); }

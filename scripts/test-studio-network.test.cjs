@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { classifyRequest, diagnosticKey, consoleErrorKey, studioFilePath, syntheticResponse } = require('./test-studio-network.cjs');
+const { classifyRequest, diagnosticKey, postFamilyKey, consoleErrorKey, studioFilePath, syntheticResponse } = require('./test-studio-network.cjs');
 
 test('only built app GETs and explicit test-project API GETs can be fulfilled', () => {
   assert.equal(classifyRequest('https://studio.invalid/', 'GET'), 'asset');
@@ -65,6 +65,18 @@ test('console diagnostics classify fixed error categories without outputting the
   assert.equal(consoleErrorKey('blocked by CORS policy secret-token'), 'cors');
   assert.equal(consoleErrorKey('Failed to fetch secret-token'), 'network');
   assert.equal(consoleErrorKey('unexpected private message'), 'other');
+});
+
+test('POST diagnostics reveal only fixed host and endpoint families', () => {
+  const api = 'https://umy7f73e.api.sanity.io/v2026-05-04';
+  for (const [url, expected] of [
+    [`${api}/data/query/content-agent-test?query=private`, 'post-project-api-query'],
+    [`${api}/data/mutate/content-agent-test?secret=x`, 'post-project-api-mutate'],
+    [`${api}/descriptors/claim?secret=x`, 'post-project-api-descriptor'],
+    ['https://api.sanity.io/vX/intake/batch?secret=x', 'post-sanity-telemetry'],
+    ['https://other.api.sanity.io/v1/private?secret=x', 'post-other-project-other'],
+    ['https://secret.invalid/private?secret=x', 'post-other-host-other'],
+  ]) assert.equal(postFamilyKey(url), expected);
 });
 
 test('synthetic user passes Studio role gate with read-only content access and no deploy grant', () => {
