@@ -33,12 +33,30 @@ function studioFilePath(pathname) {
 }
 
 // Return fixed labels only: URLs may include query text or credentials.
-function diagnosticKey(rawUrl, kind) {
-  if (kind === 'violation') return 'violation';
+function diagnosticKey(rawUrl, kind, method = 'GET') {
   if (kind === 'test-query') return 'api-test-query';
   if (kind === 'test-acl') return 'api-test-acl';
   let url;
   try { url = new URL(rawUrl); } catch { return 'invalid'; }
+  const path = url.pathname.replace(/^\/(?:v\d+(?:-\d{2}-\d{2})?|vX)(?=\/)/, '');
+  if (kind === 'violation') {
+    if (method !== 'GET') {
+      if (method === 'POST') return 'violation-method-post';
+      if (method === 'OPTIONS') return 'violation-method-options';
+      return 'violation-method-other';
+    }
+    const projectHost = url.hostname.match(/^([^.]+)\.(?:api|apicdn)\.sanity\.io$/);
+    if (projectHost && projectHost[1] !== 'umy7f73e') return 'violation-project';
+    const data = path.match(/^\/data\/([^/]+)\/([^/]+)/);
+    const dataset = path.match(/^\/projects\/[^/]+\/datasets\/([^/]+)/);
+    if ((data && data[2] !== 'content-agent-test') || (dataset && dataset[1] !== 'content-agent-test')) return 'violation-dataset';
+    if (data && data[2] === 'content-agent-test') {
+      if (data[1] === 'listen') return 'violation-test-listen';
+      if (data[1] === 'doc') return 'violation-test-document';
+      return 'violation-test-data-other';
+    }
+    return 'violation-target-other';
+  }
   if (kind === 'asset') {
     if (url.pathname === '/') return 'asset-index';
     if (/\.m?js$/i.test(url.pathname)) return 'asset-js';
@@ -46,18 +64,26 @@ function diagnosticKey(rawUrl, kind) {
     return 'asset-other';
   }
   if (kind === 'mock') {
-    const path = url.pathname.replace(/^\/v\d{4}-\d{2}-\d{2}/, '');
     if (path === '/users/me') return 'api-users-me';
     if (path === '/auth/providers') return 'api-auth-providers';
     return 'api-project-grants';
   }
   if (url.hostname.endsWith('.sanity.io')) {
-    const path = url.pathname.replace(/^\/v\d{4}-\d{2}-\d{2}/, '');
     if (path === '/check/cors') return 'blocked-sanity-cors-probe';
-    if (/^\/vX\/intake\//.test(path)) return 'blocked-sanity-telemetry';
+    if (path.startsWith('/intake/')) return 'blocked-sanity-telemetry';
+    if (/^\/projects\/[^/]+\/user-applications(?:\/|$)/.test(path)) return 'blocked-sanity-applications';
+    if (/^\/projects\/[^/]+$/.test(path)) return 'blocked-sanity-project';
     if (path.startsWith('/projects/')) return 'blocked-sanity-projects';
+    if (path.startsWith('/users/me/keyvalue')) return 'blocked-sanity-user-keyvalue';
+    if (path.startsWith('/users/')) return 'blocked-sanity-users';
+    if (path.startsWith('/data/listen/')) return 'blocked-sanity-listen';
+    if (path.startsWith('/data/query/')) return 'blocked-sanity-query';
+    if (path.startsWith('/data/doc/')) return 'blocked-sanity-document';
     if (path.startsWith('/data/')) return 'blocked-sanity-data';
     if (path.startsWith('/auth/')) return 'blocked-sanity-auth';
+    if (path.startsWith('/journey/')) return 'blocked-sanity-journey';
+    if (path === '/ping') return 'blocked-sanity-ping';
+    if (path.startsWith('/presence/')) return 'blocked-sanity-presence';
     return 'blocked-sanity-other';
   }
   return 'blocked-other';

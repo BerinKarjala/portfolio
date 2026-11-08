@@ -32,10 +32,33 @@ test('failure diagnostics classify requests without exposing URLs, queries or he
   assert.equal(diagnosticKey('https://umy7f73e.api.sanity.io/v2026-05-04/users/me?token=hidden', 'mock'), 'api-users-me');
   assert.equal(diagnosticKey('https://umy7f73e.api.sanity.io/v2026-05-04/data/query/content-agent-test?query=secret', 'test-query'), 'api-test-query');
   assert.equal(diagnosticKey('https://secret.invalid/private?token=hidden', 'blocked'), 'blocked-other');
-  assert.equal(diagnosticKey('https://api.sanity.io/v2026-05-04/projects/private?token=hidden', 'blocked'), 'blocked-sanity-projects');
+  assert.equal(diagnosticKey('https://api.sanity.io/v2026-05-04/projects/private?token=hidden', 'blocked'), 'blocked-sanity-project');
   assert.equal(diagnosticKey('https://umy7f73e.api.sanity.io/v2026-05-04/check/cors?secret=hidden', 'blocked'), 'blocked-sanity-cors-probe');
   assert.equal(diagnosticKey('https://api.sanity.io/vX/intake/tracing?secret=hidden', 'blocked'), 'blocked-sanity-telemetry');
-  assert.equal(diagnosticKey('https://secret.invalid/private?token=hidden', 'violation'), 'violation');
+  assert.equal(diagnosticKey('https://secret.invalid/private?token=hidden', 'violation', 'POST'), 'violation-method-post');
+});
+
+test('violation and blocked endpoint diagnostics use a bounded set of redacted categories', () => {
+  const api = 'https://umy7f73e.api.sanity.io/v2026-05-04';
+  for (const [url, kind, method, expected] of [
+    [`${api}/data/query/content-agent-test?query=private`, 'violation', 'POST', 'violation-method-post'],
+    [`${api}/data/query/content-agent-test`, 'violation', 'OPTIONS', 'violation-method-options'],
+    ['https://other.api.sanity.io/v1/users/me?private=1', 'violation', 'GET', 'violation-project'],
+    [`${api}/data/query/production?query=secret`, 'violation', 'GET', 'violation-dataset'],
+    [`${api}/projects/umy7f73e/datasets/production/acl`, 'violation', 'GET', 'violation-dataset'],
+    [`${api}/data/listen/content-agent-test?query=private`, 'violation', 'GET', 'violation-test-listen'],
+    [`${api}/data/doc/content-agent-test/secret-id`, 'violation', 'GET', 'violation-test-document'],
+    [`${api}/data/other/content-agent-test/secret`, 'violation', 'GET', 'violation-test-data-other'],
+    ['https://umy7f73e.apicdn.sanity.io/v1/users/me', 'violation', 'GET', 'violation-target-other'],
+    [`${api}/projects/umy7f73e?private=1`, 'blocked', 'GET', 'blocked-sanity-project'],
+    [`${api}/projects/umy7f73e/user-applications`, 'blocked', 'GET', 'blocked-sanity-applications'],
+    [`${api}/users/me/keyvalue/secret`, 'blocked', 'GET', 'blocked-sanity-user-keyvalue'],
+    [`${api}/users/private-id`, 'blocked', 'GET', 'blocked-sanity-users'],
+    [`${api}/journey/announcements`, 'blocked', 'GET', 'blocked-sanity-journey'],
+    [`${api}/ping`, 'blocked', 'GET', 'blocked-sanity-ping'],
+  ]) {
+    assert.equal(diagnosticKey(url, kind, method), expected);
+  }
 });
 
 test('console diagnostics classify fixed error categories without outputting the message', () => {

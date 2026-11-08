@@ -32,7 +32,7 @@ async function main() {
       const request = route.request();
       const url = new URL(request.url());
       const kind = classifyRequest(request.url(), request.method());
-      const key = diagnosticKey(request.url(), kind);
+      const key = diagnosticKey(request.url(), kind, request.method());
       bump(diagnostics.requests, key);
       if (kind === 'asset') {
         const relative = studioFilePath(url.pathname);
