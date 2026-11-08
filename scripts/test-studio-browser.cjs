@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('@playwright/test');
-const { classifyRequest, diagnosticKey, postFamilyKey, consoleErrorKey, studioFilePath, syntheticResponse, ORIGIN } = require('./test-studio-network.cjs');
+const { classifyRequest, diagnosticKey, postFamilyKey, webSocketFamilyKey, smokeFailureReason, consoleErrorKey, studioFilePath, syntheticResponse, ORIGIN } = require('./test-studio-network.cjs');
 
 const dist = fs.realpathSync(path.resolve(__dirname, '../studio13/content-agent-test/dist'));
 const types = {
@@ -20,11 +20,12 @@ async function main() {
   const context = await browser.newContext({ offline: true, serviceWorkers: 'block' });
   const violations = [];
   const evidence = new Set();
-  const diagnostics = { stage: 'setup', requests: {}, postFamilies: {}, failedAssets: {}, consoleErrors: {}, pageErrors: {} };
+  const diagnostics = { stage: 'setup', requests: {}, postFamilies: {}, webSockets: {}, failedAssets: {}, consoleErrors: {}, pageErrors: {} };
   const bump = (group, key) => { group[key] = (group[key] || 0) + 1; };
   let page;
   try {
     await context.routeWebSocket('**/*', (socket) => {
+      bump(diagnostics.webSockets, webSocketFamilyKey(socket.url()));
       violations.push('WebSocket attempted');
       socket.close();
     });
@@ -74,22 +75,30 @@ async function main() {
     await page.locator('[data-testid="studio-navbar"]').waitFor({ state: 'visible', timeout: 45000 });
     diagnostics.stage = 'landing-page';
     await page.getByText('Landing Page', { exact: true }).first().waitFor({ state: 'visible', timeout: 30000 });
-    diagnostics.stage = 'target-evidence';
+    diagnostics.stage = 'title';
     assert.match(await page.title(), /TEST ONLY/i, 'The rendered Studio must identify itself as the test workspace');
     // A mock response counts only after the actual built application requests
     // an endpoint containing the exact test project and dataset.
+    diagnostics.stage = 'evidence';
     const deadline = Date.now() + 30000;
     while (!evidence.has('test-dataset') && Date.now() < deadline && violations.length === 0) {
       await new Promise((resolve) => setTimeout(resolve, 200));
     }
     // Allow late boot requests and errors to surface before final assertions.
     await page.waitForTimeout(1000);
+    diagnostics.stage = 'error-screen';
     assert.equal(await page.locator('[data-testid="studio-error-screen"]').count(), 0, 'Studio rendered its error screen');
+    diagnostics.stage = 'page-errors';
     assert.deepEqual(pageErrors, [], 'Studio raised an uncaught browser error');
+    diagnostics.stage = 'policy';
     assert.deepEqual(violations, [], 'The Studio attempted an unexpected target or write');
+    diagnostics.stage = 'evidence';
     assert.ok(evidence.has('test-dataset'), 'No test-dataset query or ACL request was observed');
     console.log('Built Studio rendered navigation and test workspace title and requested the synthetic test dataset; no request was forwarded.');
   } catch (error) {
+    const socketCount = Object.values(diagnostics.webSockets).reduce((sum, count) => sum + count, 0);
+    const httpCount = Object.entries(diagnostics.requests).reduce((sum, [key, count]) => sum + (key.startsWith('violation-') ? count : 0), 0);
+    diagnostics.failureReason = smokeFailureReason(diagnostics.stage, socketCount, httpCount);
     if (page && !page.isClosed()) {
       // Report booleans and counts, never DOM content, URL, headers or payloads.
       diagnostics.dom = await page.evaluate(() => {

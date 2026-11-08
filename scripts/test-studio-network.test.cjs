@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { classifyRequest, diagnosticKey, postFamilyKey, consoleErrorKey, studioFilePath, syntheticResponse } = require('./test-studio-network.cjs');
+const { classifyRequest, diagnosticKey, postFamilyKey, webSocketFamilyKey, smokeFailureReason, consoleErrorKey, studioFilePath, syntheticResponse } = require('./test-studio-network.cjs');
 
 test('only built app GETs and explicit test-project API GETs can be fulfilled', () => {
   assert.equal(classifyRequest('https://studio.invalid/', 'GET'), 'asset');
@@ -50,6 +50,20 @@ test('known read subscription and telemetry are recognized only to abort them', 
     [`${api}/v2026-05-04/data/mutate/content-agent-test`, 'POST'],
     [`${api}/v2026-05-04/descriptors/claim`, 'POST'],
   ]) assert.equal(classifyRequest(url, method), 'violation', `${method} should fail`);
+});
+
+test('project API mocks require the exact HTTPS origin and no userinfo', () => {
+  for (const path of [
+    '/v2026-05-04/users/me',
+    '/v2026-05-04/auth/providers',
+    '/v2026-05-04/projects/umy7f73e/grants',
+    '/v2026-05-04/data/query/content-agent-test',
+    '/v2021-06-07/projects/umy7f73e/datasets/content-agent-test/acl',
+  ]) {
+    assert.equal(classifyRequest(`https://umy7f73e.api.sanity.io:444${path}`, 'GET'), 'violation');
+    assert.equal(classifyRequest(`https://user@umy7f73e.api.sanity.io${path}`, 'GET'), 'violation');
+    assert.equal(classifyRequest(`http://umy7f73e.api.sanity.io${path}`, 'GET'), 'violation');
+  }
 });
 
 test('static file resolution rejects traversal and does not use an SPA fallback for assets', () => {
@@ -113,6 +127,23 @@ test('POST diagnostics reveal only fixed host and endpoint families', () => {
     ['https://other.api.sanity.io/v1/private?secret=x', 'post-other-project-other'],
     ['https://secret.invalid/private?secret=x', 'post-other-host-other'],
   ]) assert.equal(postFamilyKey(url), expected);
+});
+
+test('WebSocket diagnostics expose only fixed host and path families', () => {
+  assert.equal(webSocketFamilyKey('wss://umy7f73e.api.sanity.io/v2022-06-30/socket/content-agent-test?secret=private'), 'ws-test-project-test-socket');
+  assert.equal(webSocketFamilyKey('wss://umy7f73e.api.sanity.io/v2022-06-30/socket/production?secret=private'), 'ws-test-project-other-socket');
+  assert.equal(webSocketFamilyKey('wss://other.api.sanity.io/v1/socket/private?secret=private'), 'ws-other-project-socket');
+  assert.equal(webSocketFamilyKey('wss://example.invalid/private?secret=private'), 'ws-other');
+});
+
+test('failure reasons are fixed labels for UI, policy, page errors and evidence', () => {
+  assert.equal(smokeFailureReason('navbar', 0, 0), 'ui-navbar');
+  assert.equal(smokeFailureReason('policy', 1, 0), 'policy-websocket');
+  assert.equal(smokeFailureReason('policy', 0, 1), 'policy-http');
+  assert.equal(smokeFailureReason('policy', 1, 1), 'policy-both');
+  assert.equal(smokeFailureReason('page-errors', 0, 0), 'page-errors');
+  assert.equal(smokeFailureReason('evidence', 0, 0), 'dataset-evidence');
+  assert.equal(smokeFailureReason('private-data', 0, 0), 'other');
 });
 
 test('synthetic user passes Studio role gate with read-only content access and no deploy grant', () => {

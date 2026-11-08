@@ -19,7 +19,7 @@ function classifyRequest(rawUrl, method) {
     if (url.hostname !== API_HOST) return 'violation';
   }
   if (url.hostname !== API_HOST) return 'blocked';
-  if (url.protocol !== 'https:') return 'violation';
+  if (!testOrigin || !noUserInfo) return 'violation';
   const path = url.pathname.replace(/^\/v\d{4}-\d{2}-\d{2}/, '');
   if (path.startsWith('/data/')) {
     return path === '/data/query/content-agent-test' ? 'test-query' : 'violation';
@@ -125,6 +125,36 @@ function postFamilyKey(rawUrl) {
   return `post-${host}-${family}`;
 }
 
+// The Bifur client uses /socket/<dataset>; return only fixed labels.
+function webSocketFamilyKey(rawUrl) {
+  let url;
+  try { url = new URL(rawUrl); } catch { return 'ws-invalid'; }
+  const path = url.pathname.replace(/^\/(?:v\d+(?:-\d{2}-\d{2})?|vX)(?=\/)/, '');
+  if (url.hostname === API_HOST) {
+    if (path === '/socket/content-agent-test') return 'ws-test-project-test-socket';
+    if (path.startsWith('/socket/')) return 'ws-test-project-other-socket';
+    return 'ws-test-project-other';
+  }
+  if (/^[^.]+\.(?:api|apicdn)\.sanity\.io$/.test(url.hostname)) return 'ws-other-project-socket';
+  if (url.hostname === 'sanity.io' || url.hostname.endsWith('.sanity.io')) return 'ws-sanity-other';
+  return 'ws-other';
+}
+
+function smokeFailureReason(stage, socketCount, httpCount) {
+  if (stage === 'policy') {
+    if (socketCount && httpCount) return 'policy-both';
+    if (socketCount) return 'policy-websocket';
+    if (httpCount) return 'policy-http';
+    return 'policy-other';
+  }
+  const reasons = {
+    navigation: 'ui-navigation', navbar: 'ui-navbar', 'landing-page': 'ui-landing-page',
+    title: 'ui-title', 'error-screen': 'ui-error-screen', 'page-errors': 'page-errors',
+    evidence: 'dataset-evidence',
+  };
+  return reasons[stage] || 'other';
+}
+
 // Synthetic identity only: supply no project grants and a read-only fake ACL.
 // The offline request policy, not these simulated permissions, blocks writes.
 function syntheticResponse(kind, path) {
@@ -138,4 +168,4 @@ function syntheticResponse(kind, path) {
   throw new Error('No synthetic response for this route');
 }
 
-module.exports = { classifyRequest, diagnosticKey, postFamilyKey, consoleErrorKey, studioFilePath, syntheticResponse, ORIGIN };
+module.exports = { classifyRequest, diagnosticKey, postFamilyKey, webSocketFamilyKey, smokeFailureReason, consoleErrorKey, studioFilePath, syntheticResponse, ORIGIN };
