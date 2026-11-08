@@ -10,6 +10,13 @@ documents or drafts have been created, changed, or published.
 
 ## Current isolation decision and checks: 2026-11-08
 
+The owner chose a cloud browser smoke check for the test Studio because local
+memory was insufficient. Issue [#338](https://github.com/BerinKarjala/portfolio/issues/338)
+tracks that check. It must use a fresh unauthenticated browser and block or
+mock external traffic; it cannot establish real account permissions, Dashboard
+registration, or Content Agent behavior. The local test server previously
+served the intended configuration, but its UI and connection were not verified.
+
 The owner allowlisted project `umy7f73e`, dataset `content-agent-test`, for
 synthetic pilot content only. The dataset metadata identifies it as private.
 This decision does not authorize copying production data, deploying or
