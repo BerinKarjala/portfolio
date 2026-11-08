@@ -35,3 +35,12 @@ jobs:
       - run: npm audit --audit-level=moderate
       - run: npm run build
       - run: npm run build:test-studio
+      - name: Check offline Studio browser routing
+        run: node --test scripts/test-studio-network.test.cjs
+        working-directory: .
+      - name: Install Chromium for offline Studio smoke
+        run: npx playwright install --with-deps chromium
+        working-directory: .
+      - name: Smoke built test Studio with synthetic API responses
+        run: node scripts/test-studio-browser.cjs
+        working-directory: .
