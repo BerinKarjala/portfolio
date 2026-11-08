@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('@playwright/test');
-const { classifyRequest, diagnosticKey, postFamilyKey, webSocketFamilyKey, smokeFailureReason, consoleErrorKey, studioFilePath, syntheticResponse, ORIGIN } = require('./test-studio-network.cjs');
+const { classifyRequest, diagnosticKey, postFamilyKey, webSocketFamilyKey, isExpectedSocket, smokeFailureReason, consoleErrorKey, studioFilePath, syntheticResponse, ORIGIN } = require('./test-studio-network.cjs');
 
 const dist = fs.realpathSync(path.resolve(__dirname, '../studio13/content-agent-test/dist'));
 const types = {
@@ -20,13 +20,16 @@ async function main() {
   const context = await browser.newContext({ offline: true, serviceWorkers: 'block' });
   const violations = [];
   const evidence = new Set();
-  const diagnostics = { stage: 'setup', requests: {}, postFamilies: {}, webSockets: {}, failedAssets: {}, consoleErrors: {}, pageErrors: {} };
+  const diagnostics = { stage: 'setup', requests: {}, postFamilies: {}, webSockets: {}, unexpectedWebSockets: 0, failedAssets: {}, consoleErrors: {}, pageErrors: {} };
   const bump = (group, key) => { group[key] = (group[key] || 0) + 1; };
   let page;
   try {
     await context.routeWebSocket('**/*', (socket) => {
       bump(diagnostics.webSockets, webSocketFamilyKey(socket.url()));
-      violations.push('WebSocket attempted');
+      if (!isExpectedSocket(socket.url())) {
+        diagnostics.unexpectedWebSockets++;
+        violations.push('Unexpected WebSocket attempted');
+      }
       socket.close();
     });
     await context.route('**/*', async (route) => {
@@ -96,9 +99,8 @@ async function main() {
     assert.ok(evidence.has('test-dataset'), 'No test-dataset query or ACL request was observed');
     console.log('Built Studio rendered navigation and test workspace title and requested the synthetic test dataset; no request was forwarded.');
   } catch (error) {
-    const socketCount = Object.values(diagnostics.webSockets).reduce((sum, count) => sum + count, 0);
     const httpCount = Object.entries(diagnostics.requests).reduce((sum, [key, count]) => sum + (key.startsWith('violation-') ? count : 0), 0);
-    diagnostics.failureReason = smokeFailureReason(diagnostics.stage, socketCount, httpCount);
+    diagnostics.failureReason = smokeFailureReason(diagnostics.stage, diagnostics.unexpectedWebSockets, httpCount);
     if (page && !page.isClosed()) {
       // Report booleans and counts, never DOM content, URL, headers or payloads.
       diagnostics.dom = await page.evaluate(() => {

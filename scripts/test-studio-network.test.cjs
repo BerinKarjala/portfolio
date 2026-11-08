@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { classifyRequest, diagnosticKey, postFamilyKey, webSocketFamilyKey, smokeFailureReason, consoleErrorKey, studioFilePath, syntheticResponse } = require('./test-studio-network.cjs');
+const { classifyRequest, diagnosticKey, postFamilyKey, webSocketFamilyKey, isExpectedSocket, smokeFailureReason, consoleErrorKey, studioFilePath, syntheticResponse } = require('./test-studio-network.cjs');
 
 test('only built app GETs and explicit test-project API GETs can be fulfilled', () => {
   assert.equal(classifyRequest('https://studio.invalid/', 'GET'), 'asset');
@@ -134,6 +134,21 @@ test('WebSocket diagnostics expose only fixed host and path families', () => {
   assert.equal(webSocketFamilyKey('wss://umy7f73e.api.sanity.io/v2022-06-30/socket/production?secret=private'), 'ws-test-project-other-socket');
   assert.equal(webSocketFamilyKey('wss://other.api.sanity.io/v1/socket/private?secret=private'), 'ws-other-project-socket');
   assert.equal(webSocketFamilyKey('wss://example.invalid/private?secret=private'), 'ws-other');
+});
+
+test('only the exact test-dataset Bifur socket is expected and it is never connected', () => {
+  const exact = 'wss://umy7f73e.api.sanity.io/v2022-06-30/socket/content-agent-test';
+  assert.equal(isExpectedSocket(`${exact}?tag=example`), true);
+  for (const url of [
+    'ws://umy7f73e.api.sanity.io/v2022-06-30/socket/content-agent-test',
+    'wss://umy7f73e.api.sanity.io:444/v2022-06-30/socket/content-agent-test',
+    'wss://user@umy7f73e.api.sanity.io/v2022-06-30/socket/content-agent-test',
+    'wss://other.api.sanity.io/v2022-06-30/socket/content-agent-test',
+    'wss://umy7f73e.api.sanity.io/v2022-06-30/socket/production',
+    `${exact}/extra`,
+    'wss://umy7f73e.api.sanity.io/v2022-07-01/socket/content-agent-test',
+    'https://umy7f73e.api.sanity.io/v2022-06-30/socket/content-agent-test',
+  ]) assert.equal(isExpectedSocket(url), false);
 });
 
 test('failure reasons are fixed labels for UI, policy, page errors and evidence', () => {

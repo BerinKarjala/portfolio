@@ -140,6 +140,15 @@ function webSocketFamilyKey(rawUrl) {
   return 'ws-other';
 }
 
+// Studio's Bifur client uses this exact API version and dataset path.
+// This permits recognition only; the browser handler always closes the socket.
+function isExpectedSocket(rawUrl) {
+  let url;
+  try { url = new URL(rawUrl); } catch { return false; }
+  return url.origin === `wss://${API_HOST}` && !url.username && !url.password &&
+    url.pathname === '/v2022-06-30/socket/content-agent-test';
+}
+
 function smokeFailureReason(stage, socketCount, httpCount) {
   if (stage === 'policy') {
     if (socketCount && httpCount) return 'policy-both';
@@ -168,4 +177,4 @@ function syntheticResponse(kind, path) {
   throw new Error('No synthetic response for this route');
 }
 
-module.exports = { classifyRequest, diagnosticKey, postFamilyKey, webSocketFamilyKey, smokeFailureReason, consoleErrorKey, studioFilePath, syntheticResponse, ORIGIN };
+module.exports = { classifyRequest, diagnosticKey, postFamilyKey, webSocketFamilyKey, isExpectedSocket, smokeFailureReason, consoleErrorKey, studioFilePath, syntheticResponse, ORIGIN };
