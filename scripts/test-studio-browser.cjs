@@ -119,6 +119,14 @@ async function main() {
           mentionsLoading: /loading|please wait/i.test(body),
         };
       }).catch(() => ({ unavailable: true }));
+      // The browser has no credentials and every response is local or synthetic.
+      // Save the visible failure state only; the CI artifact expires after a day.
+      const output = path.resolve(__dirname, '../test-results/studio-offline-failure.png');
+      try {
+        fs.mkdirSync(path.dirname(output), { recursive: true });
+        await page.screenshot({ path: output });
+        diagnostics.screenshot = 'saved';
+      } catch { diagnostics.screenshot = 'unavailable'; }
     }
     console.error('Sanitized Studio smoke diagnostics:', JSON.stringify(diagnostics));
     throw error;
