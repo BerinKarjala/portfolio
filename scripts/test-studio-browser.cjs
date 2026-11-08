@@ -53,7 +53,7 @@ async function main() {
         violations.push('Unexpected project, dataset, or write request');
         return route.abort();
       }
-      if (kind === 'blocked') return route.abort();
+      if (kind === 'blocked' || kind === 'expected-listen' || kind === 'expected-telemetry') return route.abort();
       const apiPath = url.pathname.replace(/^\/v\d{4}-\d{2}-\d{2}/, '');
       if (kind === 'test-query' || kind === 'test-acl') evidence.add('test-dataset');
       const body = syntheticResponse(kind, apiPath);

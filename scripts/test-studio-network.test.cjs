@@ -18,6 +18,33 @@ test('only built app GETs and explicit test-project API GETs can be fulfilled', 
   assert.equal(classifyRequest('https://other.invalid/', 'GET'), 'blocked');
 });
 
+test('known read subscription and telemetry are recognized only to abort them', () => {
+  const api = 'https://umy7f73e.api.sanity.io';
+  const listen = '/v2026-05-04/data/listen/content-agent-test';
+  assert.equal(classifyRequest(`${api}${listen}?query=example`, 'GET'), 'expected-listen');
+  assert.equal(classifyRequest('https://api.sanity.io/vX/intake/tracing', 'POST'), 'expected-telemetry');
+  assert.equal(classifyRequest(`${api}/v2023-12-18/intake/batch`, 'POST'), 'expected-telemetry');
+  assert.throws(() => syntheticResponse('expected-listen', '/data/listen/content-agent-test'));
+  assert.throws(() => syntheticResponse('expected-telemetry', '/intake/tracing'));
+  for (const [url, method] of [
+    [`${api}/v2026-05-04/data/listen/production`, 'GET'],
+    [`https://other.api.sanity.io${listen}`, 'GET'],
+    [`${api}${listen}/extra`, 'GET'],
+    [`${api}${listen}`, 'POST'],
+    ['http://api.sanity.io/vX/intake/tracing', 'POST'],
+    ['https://api.sanity.io:444/vX/intake/tracing', 'POST'],
+    ['https://other.sanity.io/vX/intake/tracing', 'POST'],
+    ['https://user@api.sanity.io/vX/intake/tracing', 'POST'],
+    ['https://user@umy7f73e.api.sanity.io/v2026-05-04/data/listen/content-agent-test', 'GET'],
+    ['https://api.sanity.io/vX/intake/tracing/extra', 'POST'],
+    ['https://api.sanity.io/vX/intake/feedback', 'POST'],
+    [`${api}/v2023-12-18/intake/batch`, 'PUT'],
+    ['https://other.api.sanity.io/v2023-12-18/intake/batch', 'POST'],
+    [`${api}/v2026-05-04/data/mutate/content-agent-test`, 'POST'],
+    [`${api}/v2026-05-04/descriptors/claim`, 'POST'],
+  ]) assert.equal(classifyRequest(url, method), 'violation', `${method} should fail`);
+});
+
 test('static file resolution rejects traversal and does not use an SPA fallback for assets', () => {
   assert.equal(studioFilePath('/'), 'index.html');
   assert.equal(studioFilePath('/static/app.js'), 'static/app.js');
@@ -74,6 +101,8 @@ test('POST diagnostics reveal only fixed host and endpoint families', () => {
     [`${api}/data/mutate/content-agent-test?secret=x`, 'post-project-api-mutate'],
     [`${api}/descriptors/claim?secret=x`, 'post-project-api-descriptor'],
     ['https://api.sanity.io/vX/intake/batch?secret=x', 'post-sanity-telemetry'],
+    ['https://api.sanity.io/vX/intake/tracing?secret=x', 'post-sanity-tracing'],
+    ['https://api.sanity.io/vX/intake/feedback?secret=x', 'post-sanity-feedback'],
     ['https://other.api.sanity.io/v1/private?secret=x', 'post-other-project-other'],
     ['https://secret.invalid/private?secret=x', 'post-other-host-other'],
   ]) assert.equal(postFamilyKey(url), expected);

@@ -5,6 +5,14 @@ const API_HOST = 'umy7f73e.api.sanity.io';
 function classifyRequest(rawUrl, method) {
   let url;
   try { url = new URL(rawUrl); } catch { return 'violation'; }
+  const noUserInfo = !url.username && !url.password;
+  const testOrigin = url.origin === `https://${API_HOST}`;
+  if (noUserInfo && method === 'POST' && (
+    (url.origin === 'https://api.sanity.io' && url.pathname === '/vX/intake/tracing') ||
+    (testOrigin && url.pathname === '/v2023-12-18/intake/batch')
+  )) return 'expected-telemetry';
+  if (noUserInfo && testOrigin && method === 'GET' &&
+      /^\/v\d{4}-\d{2}-\d{2}\/data\/listen\/content-agent-test$/.test(url.pathname)) return 'expected-listen';
   if (method !== 'GET') return 'violation';
   if (url.origin === ORIGIN) return 'asset';
   if (url.hostname.endsWith('.api.sanity.io') || url.hostname.endsWith('.apicdn.sanity.io')) {
@@ -34,6 +42,8 @@ function studioFilePath(pathname) {
 
 // Return fixed labels only: URLs may include query text or credentials.
 function diagnosticKey(rawUrl, kind, method = 'GET') {
+  if (kind === 'expected-listen') return 'expected-test-listen-aborted';
+  if (kind === 'expected-telemetry') return 'expected-telemetry-aborted';
   if (kind === 'test-query') return 'api-test-query';
   if (kind === 'test-acl') return 'api-test-acl';
   let url;
@@ -109,6 +119,8 @@ function postFamilyKey(rawUrl) {
   if (path.startsWith('/data/query/')) family = 'query';
   else if (path.startsWith('/data/mutate/')) family = 'mutate';
   else if (path.startsWith('/descriptors/')) family = 'descriptor';
+  else if (path === '/intake/tracing') family = 'tracing';
+  else if (path === '/intake/feedback') family = 'feedback';
   else if (path.startsWith('/intake/')) family = 'telemetry';
   return `post-${host}-${family}`;
 }
