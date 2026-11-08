@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { classifyRequest, studioFilePath } = require('./test-studio-network.cjs');
+const { classifyRequest, diagnosticKey, studioFilePath } = require('./test-studio-network.cjs');
 
 test('only built app GETs and explicit test-project API GETs can be fulfilled', () => {
   assert.equal(classifyRequest('https://studio.invalid/', 'GET'), 'asset');
@@ -25,4 +25,13 @@ test('static file resolution rejects traversal and does not use an SPA fallback 
   assert.equal(studioFilePath('/static%2f..%2fprivate'), null);
   assert.equal(studioFilePath('/static%5c..%5cprivate'), null);
   assert.equal(studioFilePath('/%00'), null);
+});
+
+test('failure diagnostics classify requests without exposing URLs, queries or headers', () => {
+  assert.equal(diagnosticKey('https://studio.invalid/static/app-123.js?secret=hidden', 'asset'), 'asset-js');
+  assert.equal(diagnosticKey('https://umy7f73e.api.sanity.io/v2026-05-04/users/me?token=hidden', 'mock'), 'api-users-me');
+  assert.equal(diagnosticKey('https://umy7f73e.api.sanity.io/v2026-05-04/data/query/content-agent-test?query=secret', 'test-query'), 'api-test-query');
+  assert.equal(diagnosticKey('https://secret.invalid/private?token=hidden', 'blocked'), 'blocked-other');
+  assert.equal(diagnosticKey('https://api.sanity.io/v2026-05-04/projects/private?token=hidden', 'blocked'), 'blocked-sanity-projects');
+  assert.equal(diagnosticKey('https://secret.invalid/private?token=hidden', 'violation'), 'violation');
 });

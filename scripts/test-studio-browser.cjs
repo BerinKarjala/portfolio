@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('@playwright/test');
-const { classifyRequest, studioFilePath, ORIGIN } = require('./test-studio-network.cjs');
+const { classifyRequest, diagnosticKey, studioFilePath, ORIGIN } = require('./test-studio-network.cjs');
 
 const dist = fs.realpathSync(path.resolve(__dirname, '../studio13/content-agent-test/dist'));
 const types = {
@@ -20,6 +20,9 @@ async function main() {
   const context = await browser.newContext({ offline: true, serviceWorkers: 'block' });
   const violations = [];
   const evidence = new Set();
+  const diagnostics = { stage: 'setup', requests: {}, failedAssets: {}, consoleErrors: 0, pageErrors: {} };
+  const bump = (group, key) => { group[key] = (group[key] || 0) + 1; };
+  let page;
   try {
     await context.routeWebSocket('**/*', (socket) => {
       violations.push('WebSocket attempted');
@@ -29,15 +32,20 @@ async function main() {
       const request = route.request();
       const url = new URL(request.url());
       const kind = classifyRequest(request.url(), request.method());
+      const key = diagnosticKey(request.url(), kind);
+      bump(diagnostics.requests, key);
       if (kind === 'asset') {
         const relative = studioFilePath(url.pathname);
-        if (!relative) return route.abort();
+        if (!relative) { bump(diagnostics.failedAssets, key); return route.abort(); }
         const filename = path.resolve(dist, relative);
         try {
           const actual = fs.realpathSync(filename);
-          if (!actual.startsWith(`${dist}${path.sep}`) || !fs.statSync(actual).isFile()) return route.abort();
+          if (!actual.startsWith(`${dist}${path.sep}`) || !fs.statSync(actual).isFile()) {
+            bump(diagnostics.failedAssets, key);
+            return route.abort();
+          }
           return route.fulfill({ status: 200, contentType: types[path.extname(actual)] || 'application/octet-stream', body: fs.readFileSync(actual) });
-        } catch { return route.abort(); }
+        } catch { bump(diagnostics.failedAssets, key); return route.abort(); }
       }
       if (kind === 'violation') {
         // Do not log full URLs, request bodies, or headers.
@@ -63,12 +71,21 @@ async function main() {
       return route.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(body) });
     });
 
-    const page = await context.newPage();
+    page = await context.newPage();
     const pageErrors = [];
-    page.on('pageerror', () => pageErrors.push('Uncaught browser error'));
+    page.on('console', (message) => { if (message.type() === 'error') diagnostics.consoleErrors++; });
+    page.on('pageerror', (error) => {
+      const type = ['Error', 'TypeError', 'ReferenceError', 'SyntaxError'].includes(error.name) ? error.name : 'Other';
+      bump(diagnostics.pageErrors, type);
+      pageErrors.push('Uncaught browser error');
+    });
+    diagnostics.stage = 'navigation';
     await page.goto(`${ORIGIN}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    diagnostics.stage = 'navbar';
     await page.locator('[data-testid="studio-navbar"]').waitFor({ state: 'visible', timeout: 45000 });
+    diagnostics.stage = 'landing-page';
     await page.getByText('Landing Page', { exact: true }).first().waitFor({ state: 'visible', timeout: 30000 });
+    diagnostics.stage = 'target-evidence';
     assert.match(await page.title(), /TEST ONLY/i, 'The rendered Studio must identify itself as the test workspace');
     // A mock response counts only after the actual built application requests
     // an endpoint containing the exact test project and dataset.
@@ -83,13 +100,27 @@ async function main() {
     assert.deepEqual(violations, [], 'The Studio attempted an unexpected target or write');
     assert.ok(evidence.has('test-dataset'), 'No test-dataset query or ACL request was observed');
     console.log('Built Studio rendered navigation and test workspace title and requested the synthetic test dataset; no request was forwarded.');
+  } catch (error) {
+    if (page && !page.isClosed()) {
+      // Report booleans and counts, never DOM content, URL, headers or payloads.
+      diagnostics.dom = await page.evaluate(() => ({
+        testTitle: /TEST ONLY/i.test(document.title),
+        rootPresent: !!document.querySelector('#sanity'),
+        rootChildren: document.querySelector('#sanity')?.children.length || 0,
+        navbarPresent: !!document.querySelector('[data-testid="studio-navbar"]'),
+        errorScreenPresent: !!document.querySelector('[data-testid="studio-error-screen"]'),
+        bodyTextLength: document.body?.innerText.length || 0,
+      })).catch(() => ({ unavailable: true }));
+    }
+    console.error('Sanitized Studio smoke diagnostics:', JSON.stringify(diagnostics));
+    throw error;
   } finally {
     await context.close();
     await browser.close();
   }
 }
 
-main().catch((error) => {
-  console.error(error.message);
+main().catch(() => {
+  console.error('Offline Studio smoke failed; see sanitized diagnostics above.');
   process.exitCode = 1;
 });
