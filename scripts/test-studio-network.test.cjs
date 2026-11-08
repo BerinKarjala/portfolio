@@ -23,9 +23,11 @@ test('known read subscription and telemetry are recognized only to abort them', 
   const listen = '/v2026-05-04/data/listen/content-agent-test';
   assert.equal(classifyRequest(`${api}${listen}?query=example`, 'GET'), 'expected-listen');
   assert.equal(classifyRequest('https://api.sanity.io/vX/intake/tracing', 'POST'), 'expected-telemetry');
+  assert.equal(classifyRequest('https://api.sanity.io/vX/intake/feedback', 'POST'), 'expected-telemetry');
   assert.equal(classifyRequest(`${api}/v2023-12-18/intake/batch`, 'POST'), 'expected-telemetry');
   assert.throws(() => syntheticResponse('expected-listen', '/data/listen/content-agent-test'));
   assert.throws(() => syntheticResponse('expected-telemetry', '/intake/tracing'));
+  assert.throws(() => syntheticResponse('expected-telemetry', '/intake/feedback'));
   for (const [url, method] of [
     [`${api}/v2026-05-04/data/listen/production`, 'GET'],
     [`https://other.api.sanity.io${listen}`, 'GET'],
@@ -37,7 +39,12 @@ test('known read subscription and telemetry are recognized only to abort them', 
     ['https://user@api.sanity.io/vX/intake/tracing', 'POST'],
     ['https://user@umy7f73e.api.sanity.io/v2026-05-04/data/listen/content-agent-test', 'GET'],
     ['https://api.sanity.io/vX/intake/tracing/extra', 'POST'],
-    ['https://api.sanity.io/vX/intake/feedback', 'POST'],
+    ['https://api.sanity.io/vX/intake/feedback/extra', 'POST'],
+    ['https://api.sanity.io/vX/intake/feedback', 'PUT'],
+    ['https://other.sanity.io/vX/intake/feedback', 'POST'],
+    ['https://api.sanity.io:444/vX/intake/feedback', 'POST'],
+    ['http://api.sanity.io/vX/intake/feedback', 'POST'],
+    ['https://user@api.sanity.io/vX/intake/feedback', 'POST'],
     [`${api}/v2023-12-18/intake/batch`, 'PUT'],
     ['https://other.api.sanity.io/v2023-12-18/intake/batch', 'POST'],
     [`${api}/v2026-05-04/data/mutate/content-agent-test`, 'POST'],

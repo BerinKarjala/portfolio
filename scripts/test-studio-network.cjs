@@ -8,7 +8,7 @@ function classifyRequest(rawUrl, method) {
   const noUserInfo = !url.username && !url.password;
   const testOrigin = url.origin === `https://${API_HOST}`;
   if (noUserInfo && method === 'POST' && (
-    (url.origin === 'https://api.sanity.io' && url.pathname === '/vX/intake/tracing') ||
+    (url.origin === 'https://api.sanity.io' && ['/vX/intake/tracing', '/vX/intake/feedback'].includes(url.pathname)) ||
     (testOrigin && url.pathname === '/v2023-12-18/intake/batch')
   )) return 'expected-telemetry';
   if (noUserInfo && testOrigin && method === 'GET' &&
