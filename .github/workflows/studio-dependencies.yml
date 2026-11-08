@@ -31,5 +31,7 @@ jobs:
       - run: npm run test:dependencies
       - run: npm run test:project-links
       - run: npm run test:author-schema
+      - run: npm run test:test-studio
       - run: npm audit --audit-level=moderate
       - run: npm run build
+      - run: npm run build:test-studio
