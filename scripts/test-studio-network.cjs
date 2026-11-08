@@ -69,4 +69,17 @@ function consoleErrorKey(message) {
   return 'other';
 }
 
-module.exports = { classifyRequest, diagnosticKey, consoleErrorKey, studioFilePath, ORIGIN };
+// Synthetic identity only: supply no project grants and a read-only fake ACL.
+// The offline request policy, not these simulated permissions, blocks writes.
+function syntheticResponse(kind, path) {
+  if (kind === 'mock' && path === '/users/me') {
+    return { id: 'synthetic-user', name: 'Synthetic User', displayName: 'Synthetic User', roles: [{ name: 'viewer', title: 'Viewer' }] };
+  }
+  if (kind === 'mock' && path === '/auth/providers') return { providers: [] };
+  if (kind === 'mock' && path === '/projects/umy7f73e/grants') return {};
+  if (kind === 'test-acl' && path === '/projects/umy7f73e/datasets/content-agent-test/acl') return [{ filter: '_id in path("**")', permissions: ['read'] }];
+  if (kind === 'test-query' && path === '/data/query/content-agent-test') return { result: [], ms: 0 };
+  throw new Error('No synthetic response for this route');
+}
+
+module.exports = { classifyRequest, diagnosticKey, consoleErrorKey, studioFilePath, syntheticResponse, ORIGIN };

@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { classifyRequest, diagnosticKey, consoleErrorKey, studioFilePath } = require('./test-studio-network.cjs');
+const { classifyRequest, diagnosticKey, consoleErrorKey, studioFilePath, syntheticResponse } = require('./test-studio-network.cjs');
 
 test('only built app GETs and explicit test-project API GETs can be fulfilled', () => {
   assert.equal(classifyRequest('https://studio.invalid/', 'GET'), 'asset');
@@ -42,4 +42,14 @@ test('console diagnostics classify fixed error categories without outputting the
   assert.equal(consoleErrorKey('blocked by CORS policy secret-token'), 'cors');
   assert.equal(consoleErrorKey('Failed to fetch secret-token'), 'network');
   assert.equal(consoleErrorKey('unexpected private message'), 'other');
+});
+
+test('synthetic user passes Studio role gate with read-only content access and no deploy grant', () => {
+  const user = syntheticResponse('mock', '/users/me');
+  assert.equal(user.id, 'synthetic-user');
+  assert.deepEqual(user.roles, [{ name: 'viewer', title: 'Viewer' }]);
+  assert.deepEqual(syntheticResponse('mock', '/projects/umy7f73e/grants'), {});
+  assert.deepEqual(syntheticResponse('test-acl', '/projects/umy7f73e/datasets/content-agent-test/acl'), [{ filter: '_id in path("**")', permissions: ['read'] }]);
+  assert.deepEqual(syntheticResponse('test-query', '/data/query/content-agent-test'), { result: [], ms: 0 });
+  assert.throws(() => syntheticResponse('blocked', '/anything'));
 });

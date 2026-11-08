@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('@playwright/test');
-const { classifyRequest, diagnosticKey, consoleErrorKey, studioFilePath, ORIGIN } = require('./test-studio-network.cjs');
+const { classifyRequest, diagnosticKey, consoleErrorKey, studioFilePath, syntheticResponse, ORIGIN } = require('./test-studio-network.cjs');
 
 const dist = fs.realpathSync(path.resolve(__dirname, '../studio13/content-agent-test/dist'));
 const types = {
@@ -54,20 +54,8 @@ async function main() {
       }
       if (kind === 'blocked') return route.abort();
       const apiPath = url.pathname.replace(/^\/v\d{4}-\d{2}-\d{2}/, '');
-      let body;
-      if (kind === 'test-query') {
-        evidence.add('test-dataset');
-        body = { result: [], ms: 0 };
-      } else if (kind === 'test-acl') {
-        evidence.add('test-dataset');
-        body = [];
-      } else if (apiPath === '/users/me') {
-        body = { id: 'synthetic-user', name: 'Synthetic User', displayName: 'Synthetic User', roles: [] };
-      } else if (apiPath === '/auth/providers') {
-        body = { providers: [] };
-      } else {
-        body = {};
-      }
+      if (kind === 'test-query' || kind === 'test-acl') evidence.add('test-dataset');
+      const body = syntheticResponse(kind, apiPath);
       return route.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(body) });
     });
 
