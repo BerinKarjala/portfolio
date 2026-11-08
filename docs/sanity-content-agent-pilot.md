@@ -8,6 +8,29 @@ This record starts the Dashboard-and-Studio pilot described in the handover. It
 is not evidence that Content Agent has been configured or tested. No Sanity
 documents or drafts have been created, changed, or published.
 
+## Current isolation decision and checks: 2026-11-08
+
+The owner allowlisted project `umy7f73e`, dataset `content-agent-test`, for
+synthetic pilot content only. The dataset metadata identifies it as private.
+This decision does not authorize copying production data, deploying or
+registering a Studio, or writing test documents. Permissions for the test
+workspace and synthetic writes have not yet been verified. The production
+project and dataset pair remains outside the test-write allowlist.
+
+An authenticated, non-CDN raw-perspective metadata audit found one accessible
+production draft, of type `landingPage`; the test dataset returned only system
+documents. This is a point-in-time, permission-scoped observation, not a
+guarantee about inaccessible or future records. Preserve the production draft
+and repeat the audit before acting. The Dashboard still reported that Studio
+action was required, and the observed monthly AI usage was 0 of 1,000 credits.
+No Content Agent prompt or action was run as part of these checks.
+
+The isolation decision supplies a named target; it does not establish a working
+Studio workspace, registered schema, test permissions, or a recovery method.
+The recovery and deployment safeguards below continue to apply. Earlier
+observations in this record describe their stated dates and are retained as
+historical evidence.
+
 ## Baseline and scope
 
 - On 2026-11-02, the repository baseline was `origin/main` at
@@ -274,14 +297,14 @@ read-only assessment. A successful code preview does not deploy the Studio.
 | Handover case | Status | Evidence or blocker |
 | --- | --- | --- |
 | CA-01 access and context | BLOCKED | Organization and project administrator roles, active project, plan, production dataset, AI usage, and deployed Studio 2.26.0 verified. Content Agent requires a compatible connected Studio and registered schema. |
-| CA-02 inventory fixtures | BLOCKED | No verified, allowlisted non-production target, configured Studio workspace, or fixtures. The published baseline above is not this fixture test. |
+| CA-02 inventory fixtures | BLOCKED | The owner allowlisted `umy7f73e` / `content-agent-test` for synthetic content; a configured Studio workspace, test permissions, and fixtures remain unverified or unavailable. The published baseline above is not this fixture test. |
 | CA-03 schema and unknown metadata | BLOCKED | Deployed Studio schema differs from the repository; project and author field preservation, registered schema, and agent response need verification. |
 | CA-04 editorial accuracy and untrusted content | BLOCKED | Requires the agent and controlled synthetic fixtures. |
 | CA-05 proposal and discard | BLOCKED | Requires the agent and an appropriate isolated test record. |
 | CA-06 existing draft protection | BLOCKED | One accessible production Landing Page draft exists and must be preserved; testing requires an isolated fixture with an existing draft. |
-| CA-07 confirm draft in isolation | BLOCKED | No explicitly verified, allowlisted non-production target and workspace. |
+| CA-07 confirm draft in isolation | BLOCKED | The synthetic target is allowlisted, but its Studio workspace and test permissions are not yet verified. |
 | CA-08 display and fallbacks | NOT RUN | Source inspected; no controlled-data browser test or approved isolated preview performed. |
-| CA-09 publication and recovery rehearsal | BLOCKED | No verified isolated target or tested recovery method. |
+| CA-09 publication and recovery rehearsal | BLOCKED | The synthetic target is allowlisted, but its workspace and permissions are unverified and no recovery method has been tested. |
 | CA-10 usage and failure handling | NOT RUN | Baseline usage is 0 of 1,000 credits for the month to date. No agent prompts were sent; a before/after pilot comparison is pending. |
 | CA-11 code and preview release | PENDING | Obtain applicable exact-head CI and Netlify preview evidence for this documentation change. |
 
@@ -306,9 +329,10 @@ and does not replace the cloud release checks or preview.
    selected document IDs, field states, and published/draft context with a
    fresh baseline and the actual Studio schema. Treat content as data, not
    instructions; do not create or confirm changes during the inventory.
-3. Verify a separately configured and explicitly allowlisted non-production
-   project/dataset and Studio workspace before any synthetic write. If one is
-   unavailable, keep fixture, draft-confirmation, and recovery cases blocked.
+3. Verify the separately configured Studio workspace and permissions for the
+   owner-allowlisted `umy7f73e` / `content-agent-test` target before any
+   synthetic write. If they are unavailable, keep fixture, draft-confirmation,
+   and recovery cases blocked. Do not copy production data to the test dataset.
 4. With the owner, choose one record and authorized fields. Inspect any
    existing draft and review the exact proposal before draft confirmation;
    never overwrite unrelated draft work. The owner decides whether to publish.
