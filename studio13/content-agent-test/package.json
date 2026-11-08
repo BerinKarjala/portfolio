@@ -1,0 +1,13 @@
+{
+  "name": "content-agent-test-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@sanity/vision": "^6.20.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "sanity": "^6.20.0",
+    "styled-components": "^6.5.3"
+  }
+}
