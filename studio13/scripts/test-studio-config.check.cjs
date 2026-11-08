@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const { registerHooks } = require('node:module');
+const { createRequire, registerHooks } = require('node:module');
 const path = require('node:path');
 const { test } = require('node:test');
 const { pathToFileURL } = require('node:url');
@@ -59,4 +59,18 @@ test('the installed Sanity CLI finds the test Studio before the parent Studio', 
   assert.equal(root.type, 'studio');
   assert.equal(root.directory, directory);
   assert.equal(root.path, path.join(directory, 'sanity.config.js'));
+});
+
+test('test Studio declares the shared build dependencies and resolves the parent installation', () => {
+  const testPackagePath = path.resolve(__dirname, '../content-agent-test/package.json');
+  const testPackage = require(testPackagePath);
+  const parentPackage = require('../package.json');
+  const fromTest = createRequire(testPackagePath);
+  const fromParent = createRequire(path.resolve(__dirname, '../package.json'));
+
+  assert.equal(testPackage.private, true);
+  for (const name of ['sanity', '@sanity/vision', 'react', 'react-dom', 'styled-components']) {
+    assert.equal(testPackage.dependencies[name], parentPackage.dependencies[name], `${name} range must match`);
+    assert.equal(fromTest.resolve(name), fromParent.resolve(name), `${name} must resolve from the parent installation`);
+  }
 });
