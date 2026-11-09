@@ -14,4 +14,9 @@ test('both Studio configurations declare aligned Sanity and Vision versions', ()
     assert.equal(major, 6, `${name} major version`);
     assert.ok(minor >= 22, `${name} lockfile must include the reviewed 6.22 upgrade`);
   }
+  assert.equal(
+    lock.packages['node_modules/sanity'].version,
+    lock.packages['node_modules/@sanity/vision'].version,
+    'Studio and Vision must resolve to the same release',
+  );
 });

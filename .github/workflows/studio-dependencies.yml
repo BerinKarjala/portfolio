@@ -31,6 +31,7 @@ jobs:
       - run: npm run test:dependencies
       - run: npm run test:project-links
       - run: npm run test:author-schema
+      - run: npm run test:studio-version
       - run: npm run test:test-studio
       - run: npm audit --audit-level=moderate
       - run: npm run build
@@ -44,6 +45,13 @@ jobs:
       - name: Smoke built test Studio with synthetic API responses
         run: node scripts/test-studio-browser.cjs
         working-directory: .
+      - name: Retain validated test Studio build
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-agent-test-studio
+          path: studio13/content-agent-test/dist/
+          retention-days: 7
+          if-no-files-found: error
       - name: Retain offline Studio failure screenshot
         if: failure()
         uses: actions/upload-artifact@v4
