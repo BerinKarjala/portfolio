@@ -3,6 +3,19 @@ name: Studio dependency checks
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      deploy_test_studio:
+        description: 'Deploy the isolated Content Agent test Studio after validation'
+        type: boolean
+        default: false
+      expected_commit:
+        description: 'Full reviewed commit SHA (required for deployment)'
+        type: string
+        required: false
+      confirmation:
+        description: 'Type deploy-content-agent-test to confirm deployment'
+        type: string
+        required: false
 
 permissions:
   contents: read
@@ -32,6 +45,7 @@ jobs:
       - run: npm run test:project-links
       - run: npm run test:author-schema
       - run: npm run test:studio-version
+      - run: node --test --test-concurrency=1 scripts/test-studio-deployment-guard.test.cjs
       - run: npm run test:test-studio
       - run: npm audit --audit-level=moderate
       - run: npm run build
@@ -60,3 +74,48 @@ jobs:
           path: test-results/studio-offline-failure.png
           retention-days: 1
           if-no-files-found: ignore
+
+  deploy-test-studio:
+    name: Deploy isolated Content Agent test Studio
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_test_studio
+    needs: studio
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: sanity-test-deploy
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: studio13
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - name: Verify the reviewed commit and fixed test target
+        env:
+          EXPECTED_COMMIT: ${{ inputs.expected_commit }}
+          DEPLOY_CONFIRMATION: ${{ inputs.confirmation }}
+        run: node scripts/test-studio-deployment-guard.cjs
+      - name: Install shared PostCSS dependencies without deploy credentials
+        run: npm ci
+        working-directory: .
+      - name: Install Studio dependencies without deploy credentials
+        run: npm ci
+      - name: Retrieve the test Studio validated in this workflow run
+        uses: actions/download-artifact@v4
+        with:
+          name: content-agent-test-studio
+          path: studio13/content-agent-test/dist
+      - name: Deploy only the isolated test Studio
+        working-directory: studio13/content-agent-test
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_TEST_DEPLOY_TOKEN }}
+        run: |
+          if [ -z "$SANITY_AUTH_TOKEN" ]; then
+            echo 'The sanity-test-deploy environment secret is missing.' >&2
+            exit 1
+          fi
+          npx --no-install sanity deploy --no-build --url berinkarjala-content-agent-test --schema-required --no-auto-updates --yes
