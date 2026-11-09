@@ -77,7 +77,7 @@ jobs:
 
   deploy-test-studio:
     name: Deploy isolated Content Agent test Studio
-    if: github.event_name == 'workflow_dispatch' && inputs.deploy_test_studio
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.deploy_test_studio
     needs: studio
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -95,6 +95,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
       - name: Verify the reviewed commit and fixed test target
+        id: target
         env:
           EXPECTED_COMMIT: ${{ inputs.expected_commit }}
           DEPLOY_CONFIRMATION: ${{ inputs.confirmation }}
@@ -113,9 +114,10 @@ jobs:
         working-directory: studio13/content-agent-test
         env:
           SANITY_AUTH_TOKEN: ${{ secrets.SANITY_TEST_DEPLOY_TOKEN }}
+          SANITY_TEST_HOST: ${{ steps.target.outputs.host }}
         run: |
           if [ -z "$SANITY_AUTH_TOKEN" ]; then
             echo 'The sanity-test-deploy environment secret is missing.' >&2
             exit 1
           fi
-          npx --no-install sanity deploy --no-build --url berinkarjala-content-agent-test --schema-required --no-auto-updates --yes
+          npx --no-install sanity deploy --no-build --url "$SANITY_TEST_HOST" --schema-required --no-auto-updates --yes

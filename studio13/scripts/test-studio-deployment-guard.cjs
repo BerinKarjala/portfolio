@@ -1,4 +1,5 @@
 const { execFileSync } = require('node:child_process');
+const { appendFileSync } = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 
@@ -8,7 +9,7 @@ function validateDeploymentRequest(request) {
   };
   requireMatch(request.event, 'workflow_dispatch', 'event');
   requireMatch(request.repository, 'BerinKarjala/portfolio', 'repository');
-  requireMatch(request.ref, 'refs/heads/feat/340-sanity-studio-upgrade', 'branch');
+  requireMatch(request.ref, 'refs/heads/main', 'branch');
   if (!/^[a-f0-9]{40}$/.test(request.sha || '')) throw new Error('Refusing deployment: invalid commit SHA');
   requireMatch(request.checkedOutSha, request.sha, 'checkout commit');
   requireMatch(request.expectedSha, request.sha, 'approved commit');
@@ -23,7 +24,12 @@ function validateDeploymentRequest(request) {
   }
 }
 
-module.exports = { validateDeploymentRequest };
+function deploymentOutput(request) {
+  validateDeploymentRequest(request);
+  return `host=${request.host}\n`;
+}
+
+module.exports = { validateDeploymentRequest, deploymentOutput };
 
 if (require.main === module) {
   (async () => {
@@ -42,7 +48,8 @@ if (require.main === module) {
       host: 'berinkarjala-content-agent-test',
       cliConfig,
     };
-    validateDeploymentRequest(request);
+    const output = deploymentOutput(request);
+    if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, output);
     console.log(`Approved test-only target ${request.projectId}/${request.dataset} at ${request.sha}`);
   })().catch((error) => {
     console.error(error.message);
