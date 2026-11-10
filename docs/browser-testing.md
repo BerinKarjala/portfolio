@@ -20,9 +20,10 @@ marking the PR ready for the owner's acceptance test and owner merge.
 ## Local loop
 
 Use Node from `.nvmrc`. Reuse existing dev servers and identify their checkout.
-Keep the frontend on the active task branch. A controlled replacement of the
-identified frontend process is permitted when changing worktrees; preserve the
-Sanity process, unrelated apps and edits, and never start duplicates. Run:
+Keep the frontend on the active task branch in the primary checkout. A controlled
+replacement of the identified frontend process is permitted when switching
+branches; preserve the Sanity process, unrelated apps and edits, and never start
+duplicates. Run:
 
 ```sh
 npm run test:e2e:local

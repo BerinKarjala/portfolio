@@ -15,9 +15,10 @@ and update the UI implementation and its acceptance tests together.
 
 1. Start with a GitHub issue and observable acceptance criteria. When a chat
    request has no issue, find an existing matching issue or create one before
-   implementation. Create a task branch from current `main`; preserve unrelated
-   working-tree edits. Do not add the automation-triggering `in progress` label
-   to an issue being handled interactively.
+   implementation. Use the single primary portfolio checkout and create a task
+   branch from current `main`; preserve unrelated working-tree edits. Do not add
+   the automation-triggering `in progress` label to an issue being handled
+   interactively.
 2. Resolve the issue using test-driven development: reproduce the behavior with
    a meaningful failing test, implement the fix, and refactor with passing tests.
    Documentation-only changes need review rather than artificial behavior tests.
@@ -49,16 +50,22 @@ and update the UI implementation and its acceptance tests together.
 
 During development, `http://localhost:3000` must serve the active task branch.
 Identify the serving checkout and commit before claiming local evidence. Reuse
-the existing Vite process when its checkout can safely switch branches. If a
-worktree needs its own server, deliberately replace only the identified
-portfolio frontend process; do not start duplicate servers or disturb unrelated
-apps or the existing Sanity server at `http://localhost:3333`.
+the existing Vite process when the primary checkout can safely switch branches.
+If replacement is necessary, deliberately replace only the identified portfolio
+frontend process; do not start duplicate servers or disturb unrelated apps or
+the existing Sanity server at `http://localhost:3333`.
 
 Preserve unrelated edits when switching branches or synchronizing after merge.
 Never discard or automatically stash them. If they prevent a safe switch, report
-the blocker and use an isolated checkout with a controlled server change. Record
-the app-server checkout separately from the test runner's checkout. An HTTP 200
+the blocker and stop before switching; resolve the edits with their owner before
+continuing. Do not create another checkout to work around the blocker. Record the
+app-server checkout separately from the test runner's checkout. An HTTP 200
 response establishes readiness, not a rendered browser test pass.
+
+Retire obsolete portfolio worktrees only after identifying active work, committed
+and uncommitted changes, untracked and ignored files, and processes using each
+checkout. Preserve anything needed and use Git's worktree removal for registered
+worktrees; do not force-remove a dirty checkout or delete unrelated files.
 
 ## Automated issue fixes
 

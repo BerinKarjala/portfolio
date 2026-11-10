@@ -10,6 +10,8 @@ import LiveMoon from '../features/moon-weather/LiveMoon';
 import { SceneProvider, useScene } from '../features/landing-scene/SceneContext';
 function Home() { return <SceneProvider><WeatherWidget /><HomePage /></SceneProvider>; }
 import sanityClient from '../client.js';
+import sudokuPreview from '../assets/sudoku-solver-preview.svg';
+import minesweeperPreview from '../assets/minesweeper-preview.svg';
 beforeEach(() => vi.stubGlobal('matchMedia', query => ({ matches: query.includes('reduced-motion'), addEventListener() {}, removeEventListener() {} })));
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 it('keeps bundled projects usable offline and exposes only the center destination', async () => {
@@ -38,7 +40,7 @@ it('disables carousel controls while the floating calendar is open and restores 
   expect(next.disabled).toBe(false);
 });
 
-it('normalizes local application URLs and rejects unsafe CMS destinations', async () => {
+it('normalizes local application URLs and makes unsafe CMS destinations non-clickable', async () => {
   sanityClient.fetch.mockResolvedValueOnce([
     { name: 'CMS Sudoku', description: '<script>untrusted text</script>', link: 'https://berinkarjala.netlify.app/projects/SudokuSolver/' },
     { name: 'Unsafe entry', link: 'javascript:alert(1)' },
@@ -48,7 +50,7 @@ it('normalizes local application URLs and rejects unsafe CMS destinations', asyn
   expect(entry.getAttribute('href')).toBe('/projects/SudokuSolver');
   expect(screen.getByText('<script>untrusted text</script>')).not.toBeNull();
   expect(document.querySelector('a[href^="javascript:"]')).toBeNull();
-  expect(screen.queryByText('Unsafe entry')).toBeNull();
+  expect(screen.getByText('Unsafe entry').closest('[data-carousel-card]').querySelector('a[href]')).toBeNull();
 });
 
 // Rotation runs only while the scene is idle. Studio is a real nonmodal utility.
@@ -221,6 +223,104 @@ it('keeps the Studio card centered and its launcher reachable when late CMS proj
   expect(screen.getByRole('heading', { name: 'CSS Theme Studio', level: 2 })).not.toBeNull();
   fireEvent.click(screen.getByRole('button', { name: 'Close tools' }));
   expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Open Theme Studio' }));
+});
+it('keeps the selected Studio card when CMS content arrives and shows each edited card once', async () => {
+  let resolve;
+  sanityClient.fetch.mockImplementationOnce(() => new Promise(done => { resolve = done; }));
+  const projects = [
+    { _id: 'css-studio', kind: 'cssStudio', name: 'Custom Theme Studio', description: 'CMS theme description', thumbnail: { asset: { url: '/cms-theme.png' }, alt: 'CMS theme image' } },
+    { _id: 'page-builder', name: 'Custom Page Builder', link: '/projects/page-builder', description: 'CMS builder description', thumbnail: { asset: { url: '/cms-builder.png' }, alt: 'CMS builder image' } },
+    { _id: 'sudoku', name: 'Custom Sudoku', link: '/projects/SudokuSolver', description: 'CMS sudoku description', thumbnail: { asset: { url: '/cms-sudoku.png' }, alt: 'CMS sudoku image' } },
+    { _id: 'mines', name: 'Custom Minesweeper', link: '/projects/Minesweeper', description: 'CMS mines description', thumbnail: { asset: { url: '/cms-mines.png' }, alt: 'CMS mines image' } },
+  ];
+  render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);
+  fireEvent.click(screen.getByRole('button', { name: 'Previous project' }));
+  expect(screen.getByRole('heading', { name: 'CSS Theme Studio' })).not.toBeNull();
+  await act(async () => resolve(projects));
+  expect(screen.getByRole('heading', { name: 'Custom Theme Studio' })).not.toBeNull();
+  const cards = [...document.querySelectorAll('[data-carousel-card]')];
+  expect(cards).toHaveLength(4);
+  for (const project of projects) {
+    const matching = cards.filter(card => card.querySelector('h2')?.textContent === project.name);
+    expect(matching).toHaveLength(1);
+    expect(matching[0].textContent).toContain(project.description);
+    const image = matching[0].querySelector('img');
+    expect(image?.getAttribute('src')).toBe(project.thumbnail.asset.url);
+    expect(image?.getAttribute('alt')).toBe(project.thumbnail.alt);
+  }
+  fireEvent.click(screen.getByRole('button', { name: 'Open Theme Studio' }));
+  expect(screen.getByRole('button', { name: 'Close tools' })).not.toBeNull();
+});
+
+it('uses bundled game images on the carousel when CMS thumbnails are absent', async () => {
+  sanityClient.fetch.mockResolvedValueOnce([
+    { _id: 'sudoku', name: 'CMS Sudoku', link: '/projects/SudokuSolver' },
+    { _id: 'mines', name: 'CMS Mines', link: '/projects/Minesweeper' },
+  ]);
+  render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);
+  await screen.findByRole('link', { name: 'Open CMS Sudoku' });
+  expect(document.querySelector('.landing-card--center img').getAttribute('src')).toBe(sudokuPreview);
+  fireEvent.click(screen.getByRole('button', { name: 'Next project' }));
+  expect(document.querySelector('.landing-card--center img').getAttribute('src')).toBe(minesweeperPreview);
+});
+
+it('retains edited links of known CMS projects without duplicate fallback cards', async () => {
+  sanityClient.fetch.mockResolvedValueOnce([
+    { _id: 'c0a1c1ee-3b33-4b80-b423-12f0ab0c8b6f', name: 'Edited Sudoku', link: '/new-sudoku' },
+    { _id: 'project-html-page-builder', name: 'Edited Builder', link: '/new-builder' },
+  ]);
+  render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);
+  const sudoku = await screen.findByRole('link', { name: 'Open Edited Sudoku' });
+  expect(sudoku.getAttribute('href')).toBe('/new-sudoku');
+  const cards = [...document.querySelectorAll('[data-carousel-card]')];
+  for (const [name, link] of [['Edited Sudoku', '/new-sudoku'], ['Edited Builder', '/new-builder']]) {
+    const matching = cards.filter(card => card.querySelector('h2')?.textContent === name);
+    expect(matching).toHaveLength(1);
+    expect(matching[0].querySelector('a').getAttribute('href')).toBe(link);
+  }
+  expect(cards.filter(card => card.querySelector('h2')?.textContent === 'Sudoku Solver')).toHaveLength(0);
+  expect(cards.filter(card => card.querySelector('h2')?.textContent === 'HTML Page Builder')).toHaveLength(0);
+  expect(cards).toHaveLength(4);
+});
+
+it('shows projects with absent, empty, whitespace or unsafe links as non-clickable carousel cards', async () => {
+  sanityClient.fetch.mockResolvedValueOnce([
+    { _id: 'no-link', name: 'No link project', description: 'No link description' },
+    { _id: 'empty-link', name: 'Empty link project', description: 'Empty link description', link: '' },
+    { _id: 'space-link', name: 'Whitespace link project', description: 'Whitespace link description', link: '   ' },
+    { _id: 'unsafe-link', name: 'Unsafe link project', description: 'Unsafe link description', link: 'javascript:alert(1)' },
+  ]);
+  render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);
+  await act(async () => {});
+  const cards = [...document.querySelectorAll('[data-carousel-card]')];
+  for (const [name, description] of [['No link project', 'No link description'], ['Empty link project', 'Empty link description'], ['Whitespace link project', 'Whitespace link description'], ['Unsafe link project', 'Unsafe link description']]) {
+    const matching = cards.filter(card => card.querySelector('h2')?.textContent === name);
+    expect(matching).toHaveLength(1);
+    expect(matching[0].textContent).toContain(description);
+    expect(matching[0].querySelector('a[href]')).toBeNull();
+  }
+});
+
+it('shows both CMS Studio cards once and each can launch the Studio', async () => {
+  sanityClient.fetch.mockResolvedValueOnce([
+    { _id: 'studio-one', kind: 'cssStudio', name: 'First CMS Studio', description: 'First studio description' },
+    { _id: 'studio-two', kind: 'cssStudio', name: 'Second CMS Studio', description: 'Second studio description' },
+  ]);
+  render(<HelmetProvider><MemoryRouter><StudioProvider><Home /></StudioProvider></MemoryRouter></HelmetProvider>);
+  await act(async () => {});
+  const titles = [...document.querySelectorAll('[data-carousel-card] h2')].map(heading => heading.textContent);
+  expect(titles.filter(title => title === 'First CMS Studio')).toHaveLength(1);
+  expect(titles.filter(title => title === 'Second CMS Studio')).toHaveLength(1);
+  expect(titles).not.toContain('CSS Theme Studio');
+  for (const name of ['First CMS Studio', 'Second CMS Studio']) {
+    for (let step = 0; step < titles.length && !screen.queryByRole('heading', { name }); step += 1) {
+      fireEvent.click(screen.getByRole('button', { name: 'Next project' }));
+    }
+    expect(screen.getByRole('heading', { name })).not.toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Open Theme Studio' }));
+    expect(screen.getByRole('button', { name: 'Close tools' })).not.toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Close tools' }));
+  }
 });
 it('opens the text editor in the center and retains drafts while switching utilities', () => {
   localStorage.clear();

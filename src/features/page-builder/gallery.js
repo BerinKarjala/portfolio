@@ -1,4 +1,5 @@
 export const PAGE_BUILDER_PATH = "/projects/page-builder";
+export const PAGE_BUILDER_DOCUMENT_ID = "project-html-page-builder";
 const DEFAULT_PROJECT = {
   name: "HTML Page Builder",
   description:
@@ -10,12 +11,12 @@ const DEFAULT_PROJECT = {
   },
 };
 
-// Keep the project discoverable without writing to the CMS. Prefer CMS copy/art
-// when available, and avoid creating a second card for the same local route.
+// Keep the project discoverable without writing to the CMS. Prefer its CMS
+// record when available, while preserving any other distinct project records.
 export function includePageBuilder(projects) {
-  const isBuilder = (project) => {
+  const hasBuilderRoute = (link) => {
     try {
-      const url = new URL(project.link, "https://berinkarjala.netlify.app");
+      const url = new URL(link, "https://berinkarjala.netlify.app");
       return (
         url.origin === "https://berinkarjala.netlify.app" &&
         url.pathname.toLowerCase().replace(/\/$/, "") === PAGE_BUILDER_PATH
@@ -24,16 +25,24 @@ export function includePageBuilder(projects) {
       return false;
     }
   };
-  const cms = projects.find(isBuilder);
+  const isBuilder = (project) =>
+    project._id === PAGE_BUILDER_DOCUMENT_ID || project.kind === "pageBuilder" || hasBuilderRoute(project.link);
+  const cms = projects.find((project) => project._id === PAGE_BUILDER_DOCUMENT_ID) ||
+    projects.find((project) => project.kind === "pageBuilder") || projects.find(isBuilder);
+  let canonicalLink = cms ? cms.link : PAGE_BUILDER_PATH;
+  if (cms && hasBuilderRoute(cms.link)) {
+    const url = new URL(cms.link, "https://berinkarjala.netlify.app");
+    canonicalLink = `${PAGE_BUILDER_PATH}${url.search}${url.hash}`;
+  }
   const featured = cms
     ? {
         ...DEFAULT_PROJECT,
         ...cms,
-        link: PAGE_BUILDER_PATH,
+        link: canonicalLink,
         thumbnail: cms.thumbnail?.asset?.url
           ? cms.thumbnail
           : DEFAULT_PROJECT.thumbnail,
       }
     : DEFAULT_PROJECT;
-  return [featured, ...projects.filter((project) => !isBuilder(project))];
+  return [featured, ...projects.filter((project) => project !== cms)];
 }

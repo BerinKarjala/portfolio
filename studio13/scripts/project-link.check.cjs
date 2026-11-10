@@ -41,6 +41,12 @@ async function validateLink(link) {
   return result;
 }
 
+test('project list preview selects its name and thumbnail', async () => {
+  const { default: project } = await import('../schemas/project.js');
+  assert.equal(project.preview?.select?.title, 'name');
+  assert.equal(project.preview?.select?.media, 'thumbnail');
+});
+
 test('existing and other internal paths pass project-link validation', async (t) => {
   for (const link of [
     '/projects/SudokuSolver',

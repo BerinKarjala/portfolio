@@ -4,7 +4,23 @@ export default defineType({
   name: "project",
   title: "Project",
   type: "document",
+  preview: {
+    select: { title: "name", media: "thumbnail" },
+  },
   fields: [
+    defineField({
+      name: "kind",
+      title: "Project action",
+      type: "string",
+      description: "Select CSS Studio to open its tools or Page Builder to identify that card; leave empty for an ordinary project link.",
+      options: {
+        list: [
+          { title: "Project link", value: "link" },
+          { title: "HTML Page Builder", value: "pageBuilder" },
+          { title: "CSS Theme Studio", value: "cssStudio" },
+        ],
+      },
+    }),
     defineField({
       name: "name",
       title: "Project name",
