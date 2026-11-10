@@ -869,17 +869,23 @@ export function StudioLauncher() {
     </span>
   );
 }
-export function StudioGalleryEntry({ headingAs: Heading = "h3" } = {}) {
+export function StudioGalleryEntry({ headingAs: Heading = "h3", project } = {}) {
   const context = useContext(StudioContext);
   if (!context) return null;
   const { launch } = context;
   return (
     <article className="studio-gallery">
       <p>FOUR SEASONS</p>
-      <Heading>CSS Theme Studio</Heading>
+      {project?.thumbnail?.asset?.url && (
+        <img
+          src={project.thumbnail.asset.url}
+          alt={project.thumbnail.alt || `${project.name || "CSS Theme Studio"} preview`}
+          loading="lazy"
+        />
+      )}
+      <Heading>{project?.name || "CSS Theme Studio"}</Heading>
       <p>
-        Style this portfolio with seasonal and international holiday palettes.
-        Explore CSS variables and keep your own presets.
+        {project?.description || "Style this portfolio with seasonal and international holiday palettes. Explore CSS variables and keep your own presets."}
       </p>
       <button onClick={launch}>Open Theme Studio</button>
     </article>
