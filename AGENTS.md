@@ -31,11 +31,12 @@ Follow `docs/working-methods.md`, `docs/development-standards.md` and
   changes that direction.
 - Preserve test-first development, existing assertions and zero browser retries.
   Record the exact tested commit/runtime and distinguish local dev-server
-  checkout state from the test runner's worktree.
-- Keep unrelated working-tree edits and unrelated dev servers intact. Use an
-  isolated branch/worktree; follow the controlled frontend switching rule above.
-  Never write or publish CMS records as
-  part of the read-only environment smoke checks.
+  checkout state from the test runner's checkout.
+- Use one primary portfolio checkout and a separate branch for each task. Keep
+  unrelated edits and dev servers intact. If edits prevent a safe branch switch,
+  stop and report the blocker; never automatically stash or discard them. Follow
+  the controlled frontend switching rule above. Never write or publish CMS
+  records as part of the read-only environment smoke checks.
 - Before starting a dependency ticket, check its live alert and default-branch
   lockfile. If already fixed, record that evidence and the existing merged fix;
   do not manufacture a new code change or close an issue merely on PR creation.
