@@ -17,6 +17,7 @@
     "test:dependencies": "node --test scripts/dependency-security.check.cjs scripts/zod-security.check.cjs scripts/minimatch-security.check.cjs",
     "test:project-links": "node --test --test-concurrency=1 scripts/project-link.check.cjs",
     "test:author-schema": "node --test --test-concurrency=1 scripts/author-schema.check.cjs",
+    "test:studio-version": "node --test --test-concurrency=1 scripts/studio-version.check.cjs",
     "test:test-studio": "node --test --test-concurrency=1 scripts/test-studio-config.check.cjs",
     "build:test-studio": "cd content-agent-test && sanity build",
     "postinstall": "node scripts/fix-argparse-compat.cjs",
@@ -27,14 +28,14 @@
     "sanity"
   ],
   "dependencies": {
-    "@sanity/vision": "^6.20.0",
+    "@sanity/vision": "^6.22.0",
     "get-youtube-id": "^1.0.1",
     "pdfjs-dist": "6.4.299",
     "prop-types": "^15.7",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-youtube": "^10.1.0",
-    "sanity": "^6.20.0",
+    "sanity": "^6.22.0",
     "styled-components": "^6.5.3",
     "uuid": "14.0.3"
   },
